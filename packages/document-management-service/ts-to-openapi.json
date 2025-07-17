@@ -17,6 +17,7 @@
 		"Attestation(.*?)": "https://schema.twindev.org/attestation/Attestation$1",
 		"BlobStorage(.*?)": "https://schema.twindev.org/blob-storage/BlobStorage$1",
 		"ImmutableProof(.*)": "https://schema.twindev.org/immutable-proof/ImmutableProof$1",
-		"DocumentAttestation(.*)": "https://schema.twindev.org/documents/DocumentAttestation$1"
+		"DocumentAttestation(.*)": "https://schema.twindev.org/documents/DocumentAttestation$1",
+		"Unece(.*)": "https://schema.twindev.org/unece/Unece$1"
 	}
 }
