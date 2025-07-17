@@ -16,6 +16,7 @@
 		"AuditableItemGraph(.*?)": "https://schema.twindev.org/aig/AuditableItemGraph$1",
 		"Attestation(.*?)": "https://schema.twindev.org/attestation/Attestation$1",
 		"BlobStorage(.*?)": "https://schema.twindev.org/blob-storage/BlobStorage$1",
-		"ImmutableProof(.*)": "https://schema.twindev.org/immutable-proof/ImmutableProof$1"
+		"ImmutableProof(.*)": "https://schema.twindev.org/immutable-proof/ImmutableProof$1",
+		"DocumentAttestation(.*)": "https://schema.twindev.org/documents/DocumentAttestation$1"
 	}
 }
