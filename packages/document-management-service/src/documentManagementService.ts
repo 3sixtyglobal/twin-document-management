@@ -50,11 +50,6 @@ import type { IDocumentManagementServiceConstructorOptions } from "./models/IDoc
  */
 export class DocumentManagementService implements IDocumentManagementComponent {
 	/**
-	 * The namespace supported by the document management service.
-	 */
-	public static readonly NAMESPACE: string = "documents";
-
-	/**
 	 * Runtime name for the class.
 	 */
 	public readonly CLASS_NAME: string = nameof<DocumentManagementService>();
