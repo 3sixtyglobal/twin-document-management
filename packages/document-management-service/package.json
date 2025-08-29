@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/document-management-service",
-	"version": "0.0.2-next.1",
+	"version": "0.0.2-next.2",
 	"description": "Document management contract implementation and REST endpoint definitions",
 	"repository": {
 		"type": "git",
@@ -37,7 +37,7 @@
 		"@twin.org/auditable-item-graph-models": "next",
 		"@twin.org/blob-storage-models": "next",
 		"@twin.org/data-processing-models": "next",
-		"@twin.org/document-management-models": "0.0.2-next.1",
+		"@twin.org/document-management-models": "0.0.2-next.2",
 		"@twin.org/core": "next",
 		"@twin.org/crypto": "next",
 		"@twin.org/data-json-ld": "next",
