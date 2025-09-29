@@ -40,7 +40,7 @@ export interface IDocumentManagementCreateRequest {
 		 * The auditable item graph vertices to connect the document to.
 		 */
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[];

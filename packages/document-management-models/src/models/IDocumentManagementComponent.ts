@@ -36,7 +36,7 @@ export interface IDocumentManagementComponent extends IComponent {
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[],
@@ -66,7 +66,7 @@ export interface IDocumentManagementComponent extends IComponent {
 		blob?: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[],

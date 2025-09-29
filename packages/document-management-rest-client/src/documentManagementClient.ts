@@ -75,7 +75,7 @@ export class DocumentManagementClient
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[],
@@ -130,7 +130,7 @@ export class DocumentManagementClient
 		blob?: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[]

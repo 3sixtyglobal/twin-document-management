@@ -124,7 +124,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[],
@@ -152,7 +152,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			const connectedVertices: { [id: string]: IAuditableItemGraphVertex } = {};
 			if (Is.arrayValue(auditableItemGraphEdges)) {
 				for (const edge of auditableItemGraphEdges) {
-					connectedVertices[edge.id] = await this._auditableItemGraphComponent.get(edge.id);
+					connectedVertices[edge.targetId] = await this._auditableItemGraphComponent.get(
+						edge.targetId
+					);
 				}
 			}
 
@@ -264,7 +266,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		blob?: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			id: string;
+			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[],
@@ -296,11 +298,13 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			// If auditableItemGraphEdges is undefined we are not updating the edges
 			// an empty array can be passed to remove all edges
-			const connectedVertices: { [id: string]: IAuditableItemGraphVertex } = {};
+			const connectedVertices: { [targetId: string]: IAuditableItemGraphVertex } = {};
 			if (Is.array(auditableItemGraphEdges)) {
 				// Get the updated connected vertices first, if one fails we abort the update
 				for (const edge of auditableItemGraphEdges) {
-					connectedVertices[edge.id] = await this._auditableItemGraphComponent.get(edge.id);
+					connectedVertices[edge.targetId] = await this._auditableItemGraphComponent.get(
+						edge.targetId
+					);
 				}
 				// Also get the current edges in case some need disconnecting
 				if (Is.arrayValue(documents.edges)) {
@@ -371,7 +375,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				latestRevision.dateModified = new Date(Date.now()).toISOString();
 			}
 
-			const existingEdgeIds = documentVertex.edges?.map(e => e.id) ?? [];
+			const existingEdgeIds = documentVertex.edges?.map(e => e.targetId) ?? [];
 
 			// Update the edges from the document to the items
 			const edgesUpdated = this.updateEdges(documentVertex, auditableItemGraphEdges);
@@ -627,16 +631,16 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	private updateEdges(
 		documentVertex: Omit<IAuditableItemGraphVertex, "@context" | "id" | "type">,
 		auditableItemGraphEdges:
-			| { id: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
+			| { targetId: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
 			| undefined
 	): boolean {
 		let changed = false;
 
-		const existingEdgeIds = documentVertex.edges?.map(e => e.id) ?? [];
+		const existingEdgeIds = documentVertex.edges?.map(e => e.targetId) ?? [];
 
 		if (Is.array(auditableItemGraphEdges)) {
 			for (const aigEdge of auditableItemGraphEdges) {
-				const existingIndex = existingEdgeIds.indexOf(aigEdge.id);
+				const existingIndex = existingEdgeIds.indexOf(aigEdge.targetId);
 				if (existingIndex !== -1) {
 					// If the edge already exists then we don't need to add it again
 					// We just need to remove it from the list of existing ids
@@ -646,7 +650,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					const vertexEdge: IAuditableItemGraphEdge = {
 						"@context": AuditableItemGraphContexts.ContextRoot,
 						type: AuditableItemGraphTypes.Edge,
-						id: aigEdge.id,
+						targetId: aigEdge.targetId,
 						edgeRelationships: ["document"]
 					};
 
@@ -659,7 +663,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			// Anything left in the existingEdgeIds array means they need to be removed
 			if (existingEdgeIds.length > 0 && Is.array(documentVertex.edges)) {
 				for (const existingEdgeId of existingEdgeIds) {
-					const existingIndex = documentVertex.edges.findIndex(e => e.id === existingEdgeId);
+					const existingIndex = documentVertex.edges.findIndex(e => e.targetId === existingEdgeId);
 					if (existingIndex !== -1) {
 						documentVertex.edges.splice(existingIndex, 1);
 						changed = true;
@@ -688,7 +692,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		auditableItemGraphDocumentId: string,
 		existingEdgeIds: string[],
 		auditableItemGraphEdges:
-			| { id: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
+			| { targetId: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
 			| undefined,
 		documentId: string,
 		documentIdFormat: string | undefined,
@@ -697,12 +701,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	): Promise<void> {
 		if (Is.array(auditableItemGraphEdges)) {
 			for (const aigEdge of auditableItemGraphEdges) {
-				const connected = connectedVertices[aigEdge.id];
+				const connected = connectedVertices[aigEdge.targetId];
 
 				if (!Is.empty(connected)) {
 					let updatedConnected = false;
 
-					const existingIndex = existingEdgeIds.indexOf(aigEdge.id);
+					const existingIndex = existingEdgeIds.indexOf(aigEdge.targetId);
 					if (existingIndex !== -1) {
 						// If the edge already exists we remove it from the list of existing ids
 						// any remaining after this loop will be need to be disconnected
@@ -710,12 +714,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					}
 
 					// Add the edge with the document vertex id if it doesn't already exist
-					const hasEdge = connected.edges?.some(e => e.id === auditableItemGraphDocumentId);
+					const hasEdge = connected.edges?.some(e => e.targetId === auditableItemGraphDocumentId);
 					if (!hasEdge) {
 						const vertexEdge: IAuditableItemGraphEdge = {
 							"@context": AuditableItemGraphContexts.ContextRoot,
 							type: AuditableItemGraphTypes.Edge,
-							id: auditableItemGraphDocumentId,
+							targetId: auditableItemGraphDocumentId,
 							edgeRelationships: ["document"]
 						};
 
@@ -769,7 +773,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					// Remove the edge from the connected vertex
 					if (Is.arrayValue(connected.edges)) {
 						const existingIndex = connected.edges.findIndex(
-							e => e.id === auditableItemGraphDocumentId
+							e => e.targetId === auditableItemGraphDocumentId
 						);
 						if (existingIndex !== -1) {
 							connected.edges.splice(existingIndex, 1);
@@ -926,7 +930,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			for (const edge of documentVertex.edges) {
 				if (Is.object(edge)) {
-					docList.edges.push(edge.id);
+					docList.edges.push(edge.targetId);
 				}
 			}
 		}
