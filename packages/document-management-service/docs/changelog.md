@@ -1,5 +1,19 @@
 # @twin.org/document-management-service - Changelog
 
+## [0.0.2-next.3](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.2-next.2...document-management-service-v0.0.2-next.3) (2025-09-29)
+
+
+### Features
+
+* use targetId in AIG for edges ([82dec81](https://github.com/twinfoundation/document-management/commit/82dec8190d8b523b350ef133bdcf648cab1023b0))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.2-next.2 to 0.0.2-next.3
+
 ## [0.0.2-next.2](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.2-next.1...document-management-service-v0.0.2-next.2) (2025-08-29)
 
 
