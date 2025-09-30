@@ -76,5 +76,20 @@
 		"dist/types",
 		"locales",
 		"docs"
+	],
+	"keywords": [
+		"twin",
+		"trade",
+		"iota",
+		"framework",
+		"blockchain",
+		"document-management",
+		"documents",
+		"management",
+		"storage",
+		"rest-api",
+		"models",
+		"types",
+		"schemas"
 	]
 }
