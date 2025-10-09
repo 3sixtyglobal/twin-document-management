@@ -85,7 +85,7 @@ export interface IDocumentManagementComponent extends IComponent {
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
-	 * @param pageSize Page size of items to return, defaults to 1 so only most recent is returned.
+	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
 	 * @param userIdentity The identity to perform the auditable item graph operation with.
 	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
@@ -101,7 +101,7 @@ export interface IDocumentManagementComponent extends IComponent {
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		pageSize?: number,
+		limit?: number,
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<IDocumentList>;
@@ -154,7 +154,7 @@ export interface IDocumentManagementComponent extends IComponent {
 	 * Find all the document with a specific id.
 	 * @param documentId The document id to find in the graph.
 	 * @param cursor The cursor to get the next chunk of documents.
-	 * @param pageSize The page size to get the next chunk of documents.
+	 * @param limit The limit to get the next chunk of documents.
 	 * @param userIdentity The identity to perform the auditable item graph operation with.
 	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The graph vertices that contain documents referencing the specified document id.
@@ -162,7 +162,7 @@ export interface IDocumentManagementComponent extends IComponent {
 	query(
 		documentId: string,
 		cursor?: string,
-		pageSize?: number,
+		limit?: number,
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<IAuditableItemGraphVertexList>;

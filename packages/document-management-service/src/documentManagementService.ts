@@ -52,7 +52,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	/**
 	 * Runtime name for the class.
 	 */
-	public readonly CLASS_NAME: string = nameof<DocumentManagementService>();
+	public static readonly CLASS_NAME: string = nameof<DocumentManagementService>();
 
 	/**
 	 * The component for the auditable item graph.
@@ -136,16 +136,16 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<string> {
-		Guards.stringValue(this.CLASS_NAME, nameof(documentId), documentId);
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 		Guards.arrayOneOf(
-			this.CLASS_NAME,
+			DocumentManagementService.CLASS_NAME,
 			nameof(documentCode),
 			documentCode,
 			Object.values(UneceDocumentCodes)
 		);
-		Guards.uint8Array(this.CLASS_NAME, nameof(blob), blob);
-		Guards.stringValue(this.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(this.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		Guards.uint8Array(DocumentManagementService.CLASS_NAME, nameof(blob), blob);
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(userIdentity), userIdentity);
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
 
 		try {
 			// Get the connected vertices first, if one fails we abort the create
@@ -245,7 +245,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "createFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"createFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -273,9 +278,13 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<void> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.stringValue(this.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(this.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(userIdentity), userIdentity);
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
@@ -284,7 +293,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (Is.empty(documentVertex.resources)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
 			const documents = await this.getDocumentsFromVertex(documentVertex);
@@ -293,7 +302,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			documentVertex.resources = documentVertex.resources.filter(r => Is.empty(r.dateDeleted));
 
 			if (Is.empty(latestRevision)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
 			// If auditableItemGraphEdges is undefined we are not updating the edges
@@ -403,7 +412,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "updateFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"updateFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -418,7 +432,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
-	 * @param pageSize Page size of items to return, defaults to 1 so only most recent is returned.
+	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
 	 * @param userIdentity The identity to perform the auditable item graph operation with.
 	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
@@ -434,11 +448,15 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		pageSize?: number,
+		limit?: number,
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<IDocumentList> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
@@ -451,7 +469,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				documentVertex,
 				options,
 				cursor,
-				pageSize,
+				limit,
 				userIdentity,
 				nodeIdentity
 			);
@@ -461,7 +479,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "getFailed", undefined, error);
+			throw new GeneralError(DocumentManagementService.CLASS_NAME, "getFailed", undefined, error);
 		}
 	}
 
@@ -492,8 +510,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<IDocument> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.integer(this.CLASS_NAME, nameof(revision), revision);
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.integer(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
@@ -502,7 +524,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (Is.empty(documentVertex.resources)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
 			documentVertex.resources = documentVertex.resources.filter(
@@ -510,7 +532,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (documentVertex.resources.length === 0) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNotFound", revision.toString());
+				throw new NotFoundError(
+					DocumentManagementService.CLASS_NAME,
+					"documentRevisionNotFound",
+					revision.toString()
+				);
 			}
 
 			// Populate the document and revisions with the options set
@@ -531,7 +557,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "getRevisionFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"getRevisionFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -550,8 +581,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<void> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.number(this.CLASS_NAME, nameof(revision), revision);
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.number(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
@@ -559,7 +594,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (Is.empty(documentVertex.resources)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
 			const docRevisionIndex = documentVertex.resources.findIndex(
@@ -567,7 +602,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (docRevisionIndex === -1) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNotFound", revision.toString());
+				throw new NotFoundError(
+					DocumentManagementService.CLASS_NAME,
+					"documentRevisionNotFound",
+					revision.toString()
+				);
 			}
 
 			documentVertex.resources.splice(docRevisionIndex, 1);
@@ -577,7 +616,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "removeRevisionFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"removeRevisionFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -585,7 +629,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * Find all the document with a specific id.
 	 * @param documentId The document id to find in the graph.
 	 * @param cursor The cursor to get the next chunk of documents.
-	 * @param pageSize The page size to get the next chunk of documents.
+	 * @param limit The limit to get the next chunk of documents.
 	 * @param userIdentity The identity to perform the auditable item graph operation with.
 	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The graph vertices that contain documents referencing the specified document id.
@@ -593,11 +637,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	public async query(
 		documentId: string,
 		cursor?: string,
-		pageSize?: number,
+		limit?: number,
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<IAuditableItemGraphVertexList> {
-		Guards.stringValue(this.CLASS_NAME, nameof(documentId), documentId);
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 
 		try {
 			return this._auditableItemGraphComponent.query(
@@ -611,13 +655,13 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				undefined,
 				["id", "dateCreated", "dateModified", "aliases", "annotationObject", "resources", "edges"],
 				cursor,
-				pageSize
+				limit
 			);
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "queryFailed", undefined, error);
+			throw new GeneralError(DocumentManagementService.CLASS_NAME, "queryFailed", undefined, error);
 		}
 	}
 
@@ -818,7 +862,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
-	 * @param pageSize Page size of items to return, defaults to 1 so only most recent is returned.
+	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
 	 * @param userIdentity The identity to perform the auditable item graph operation with.
 	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The finalised list of documents.
@@ -834,7 +878,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		pageSize?: number,
+		limit?: number,
 		userIdentity?: string,
 		nodeIdentity?: string
 	): Promise<IDocumentList> {
@@ -857,7 +901,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			const startIndex = Coerce.integer(cursor) ?? 0;
-			const endIndex = Math.min(startIndex + (pageSize ?? 1), documentVertex.resources.length);
+			const endIndex = Math.min(startIndex + (limit ?? 1), documentVertex.resources.length);
 			const slicedResources = documentVertex.resources.slice(startIndex, endIndex);
 			docList[SchemaOrgTypes.NextItem] =
 				documentVertex.resources.length > endIndex ? (endIndex + 1).toString() : undefined;

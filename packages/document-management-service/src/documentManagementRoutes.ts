@@ -608,7 +608,7 @@ export async function documentManagementGet(
 			extractMimeType: request.query?.extractMimeType
 		},
 		request.query?.cursor,
-		Coerce.integer(request.query?.pageSize),
+		Coerce.integer(request.query?.limit),
 		httpRequestContext.userIdentity,
 		httpRequestContext.nodeIdentity
 	);
@@ -781,7 +781,7 @@ export async function documentManagementQuery(
 	const result = await component.query(
 		request.query.documentId,
 		request.query?.cursor,
-		Coerce.integer(request.query?.pageSize),
+		Coerce.integer(request.query?.limit),
 		httpRequestContext.userIdentity,
 		httpRequestContext.nodeIdentity
 	);

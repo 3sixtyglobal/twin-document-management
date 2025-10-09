@@ -62,10 +62,10 @@ export interface IDocumentManagementGetRequest {
 		extractMimeType?: string;
 
 		/**
-		 * Page size of items to return, defaults to 1 so only most recent is returned.
+		 * PLimit the number of items to return, defaults to 1 so only most recent is returned.
 		 * @default 1
 		 */
-		pageSize?: number | string;
+		limit?: string;
 
 		/**
 		 * The cursor to get the next chunk of revisions.

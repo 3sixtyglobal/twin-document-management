@@ -1,4 +1,4 @@
-# Class: DocumentManagementClient
+# Class: DocumentManagementRestClient
 
 Client for performing document management through to REST endpoints.
 
@@ -14,9 +14,9 @@ Client for performing document management through to REST endpoints.
 
 ### Constructor
 
-> **new DocumentManagementClient**(`config`): `DocumentManagementClient`
+> **new DocumentManagementRestClient**(`config`): `DocumentManagementRestClient`
 
-Create a new instance of DocumentManagementClient.
+Create a new instance of DocumentManagementRestClient.
 
 #### Parameters
 
@@ -28,7 +28,7 @@ The configuration for the client.
 
 #### Returns
 
-`DocumentManagementClient`
+`DocumentManagementRestClient`
 
 #### Overrides
 
@@ -38,13 +38,9 @@ The configuration for the client.
 
 ### CLASS\_NAME
 
-> `readonly` **CLASS\_NAME**: `string` = `DocumentManagementClient._CLASS_NAME`
+> `readonly` `static` **CLASS\_NAME**: `string`
 
 Runtime name for the class.
-
-#### Implementation of
-
-`IDocumentManagementComponent.CLASS_NAME`
 
 ## Methods
 
@@ -176,7 +172,7 @@ Nothing.
 
 ### get()
 
-> **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `pageSize?`): `Promise`\<`IDocumentList`\>
+> **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `limit?`): `Promise`\<`IDocumentList`\>
 
 Get a document using it's auditable item graph vertex id and optional revision.
 
@@ -234,11 +230,11 @@ By default extraction will auto detect the mime type of the document, this can b
 
 The cursor to get the next chunk of revisions.
 
-##### pageSize?
+##### limit?
 
 `number`
 
-Page size of items to return, defaults to 1 so only most recent is returned.
+The limit of items to return, defaults to 1 so only most recent is returned.
 
 #### Returns
 
@@ -353,7 +349,7 @@ Nothing.
 
 ### query()
 
-> **query**(`documentId`, `cursor?`, `pageSize?`): `Promise`\<`IAuditableItemGraphVertexList`\>
+> **query**(`documentId`, `cursor?`, `limit?`): `Promise`\<`IAuditableItemGraphVertexList`\>
 
 Find all the document with a specific id.
 
@@ -371,11 +367,11 @@ The document id to find in the graph.
 
 The cursor to get the next chunk of documents.
 
-##### pageSize?
+##### limit?
 
 `number`
 
-The page size to get the next chunk of documents.
+The limit to get the next chunk of documents.
 
 #### Returns
 

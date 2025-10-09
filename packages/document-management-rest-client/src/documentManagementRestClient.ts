@@ -29,27 +29,21 @@ import { UneceDocumentCodes } from "@twin.org/standards-unece";
 /**
  * Client for performing document management through to REST endpoints.
  */
-export class DocumentManagementClient
+export class DocumentManagementRestClient
 	extends BaseRestClient
 	implements IDocumentManagementComponent
 {
 	/**
 	 * Runtime name for the class.
-	 * @internal
 	 */
-	private static readonly _CLASS_NAME: string = nameof<DocumentManagementClient>();
+	public static readonly CLASS_NAME: string = nameof<DocumentManagementRestClient>();
 
 	/**
-	 * Runtime name for the class.
-	 */
-	public readonly CLASS_NAME: string = DocumentManagementClient._CLASS_NAME;
-
-	/**
-	 * Create a new instance of DocumentManagementClient.
+	 * Create a new instance of DocumentManagementRestClient.
 	 * @param config The configuration for the client.
 	 */
 	constructor(config: IBaseRestClientConfig) {
-		super(DocumentManagementClient._CLASS_NAME, config, "document-management");
+		super(DocumentManagementRestClient.CLASS_NAME, config, "document-management");
 	}
 
 	/**
@@ -85,14 +79,14 @@ export class DocumentManagementClient
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}
 	): Promise<string> {
-		Guards.stringValue(this.CLASS_NAME, nameof(documentId), documentId);
+		Guards.stringValue(DocumentManagementRestClient.CLASS_NAME, nameof(documentId), documentId);
 		Guards.arrayOneOf(
-			this.CLASS_NAME,
+			DocumentManagementRestClient.CLASS_NAME,
 			nameof(documentCode),
 			documentCode,
 			Object.values(UneceDocumentCodes)
 		);
-		Guards.uint8Array(this.CLASS_NAME, nameof(blob), blob);
+		Guards.uint8Array(DocumentManagementRestClient.CLASS_NAME, nameof(blob), blob);
 
 		const response = await this.fetch<IDocumentManagementCreateRequest, ICreatedResponse>(
 			"/",
@@ -135,7 +129,11 @@ export class DocumentManagementClient
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}[]
 	): Promise<void> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
+		Urn.guard(
+			DocumentManagementRestClient.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
 
 		await this.fetch<IDocumentManagementUpdateRequest, INoContentResponse>(
 			"/:auditableItemGraphDocumentId",
@@ -164,7 +162,7 @@ export class DocumentManagementClient
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
-	 * @param pageSize Page size of items to return, defaults to 1 so only most recent is returned.
+	 * @param limit The limit of items to return, defaults to 1 so only most recent is returned.
 	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
 	 */
 	public async get(
@@ -178,9 +176,13 @@ export class DocumentManagementClient
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		pageSize?: number
+		limit?: number
 	): Promise<IDocumentList> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
+		Urn.guard(
+			DocumentManagementRestClient.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
 
 		const response = await this.fetch<
 			IDocumentManagementGetRequest,
@@ -197,7 +199,7 @@ export class DocumentManagementClient
 				extractRuleGroupId: options?.extractRuleGroupId,
 				extractMimeType: options?.extractMimeType,
 				cursor,
-				pageSize: Coerce.string(pageSize)
+				limit: Coerce.string(limit)
 			}
 		});
 
@@ -227,8 +229,12 @@ export class DocumentManagementClient
 			extractMimeType?: string;
 		}
 	): Promise<IDocument> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.integer(this.CLASS_NAME, nameof(revision), revision);
+		Urn.guard(
+			DocumentManagementRestClient.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.integer(DocumentManagementRestClient.CLASS_NAME, nameof(revision), revision);
 
 		const response = await this.fetch<
 			IDocumentManagementGetRevisionRequest,
@@ -261,8 +267,12 @@ export class DocumentManagementClient
 		auditableItemGraphDocumentId: string,
 		revision: number
 	): Promise<void> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.number(this.CLASS_NAME, nameof(revision), revision);
+		Urn.guard(
+			DocumentManagementRestClient.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.number(DocumentManagementRestClient.CLASS_NAME, nameof(revision), revision);
 
 		await this.fetch<IDocumentManagementRemoveRequest, INoContentResponse>(
 			"/:auditableItemGraphDocumentId/:revision",
@@ -280,15 +290,15 @@ export class DocumentManagementClient
 	 * Find all the document with a specific id.
 	 * @param documentId The document id to find in the graph.
 	 * @param cursor The cursor to get the next chunk of documents.
-	 * @param pageSize The page size to get the next chunk of documents.
+	 * @param limit The limit to get the next chunk of documents.
 	 * @returns The graph vertices that contain documents referencing the specified document id.
 	 */
 	public async query(
 		documentId: string,
 		cursor?: string,
-		pageSize?: number
+		limit?: number
 	): Promise<IAuditableItemGraphVertexList> {
-		Guards.stringValue(this.CLASS_NAME, nameof(documentId), documentId);
+		Guards.stringValue(DocumentManagementRestClient.CLASS_NAME, nameof(documentId), documentId);
 
 		const response = await this.fetch<
 			IDocumentManagementQueryRequest,
@@ -297,7 +307,7 @@ export class DocumentManagementClient
 			query: {
 				documentId,
 				cursor,
-				pageSize: Coerce.string(pageSize)
+				limit: Coerce.string(limit)
 			}
 		});
 

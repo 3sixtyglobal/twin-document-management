@@ -6,6 +6,14 @@ Interface describing an document management contract.
 
 - `IComponent`
 
+## Indexable
+
+\[`key`: `string`\]: `any`
+
+All methods are optional, so we introduce an index signature to allow
+any additional properties or methods, which removes the TypeScript error where
+the class has no properties in common with the type.
+
 ## Methods
 
 ### create()
@@ -152,7 +160,7 @@ Nothing.
 
 ### get()
 
-> **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `pageSize?`, `userIdentity?`, `nodeIdentity?`): `Promise`\<[`IDocumentList`](IDocumentList.md)\>
+> **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `limit?`, `userIdentity?`, `nodeIdentity?`): `Promise`\<[`IDocumentList`](IDocumentList.md)\>
 
 Get a document using it's auditable item graph vertex id and optional revision.
 
@@ -210,11 +218,11 @@ By default extraction will auto detect the mime type of the document, this can b
 
 The cursor to get the next chunk of revisions.
 
-##### pageSize?
+##### limit?
 
 `number`
 
-Page size of items to return, defaults to 1 so only most recent is returned.
+Limit the number of items to return, defaults to 1 so only most recent is returned.
 
 ##### userIdentity?
 
@@ -353,7 +361,7 @@ Nothing.
 
 ### query()
 
-> **query**(`documentId`, `cursor?`, `pageSize?`, `userIdentity?`, `nodeIdentity?`): `Promise`\<`IAuditableItemGraphVertexList`\>
+> **query**(`documentId`, `cursor?`, `limit?`, `userIdentity?`, `nodeIdentity?`): `Promise`\<`IAuditableItemGraphVertexList`\>
 
 Find all the document with a specific id.
 
@@ -371,11 +379,11 @@ The document id to find in the graph.
 
 The cursor to get the next chunk of documents.
 
-##### pageSize?
+##### limit?
 
 `number`
 
-The page size to get the next chunk of documents.
+The limit to get the next chunk of documents.
 
 ##### userIdentity?
 
