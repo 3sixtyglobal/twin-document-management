@@ -1,5 +1,12 @@
 # @twin.org/document-management-models - Changelog
 
+## [0.0.2-next.4](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.2-next.3...document-management-models-v0.0.2-next.4) (2025-10-09)
+
+
+### Features
+
+* add validate-locales ([b6b6f9e](https://github.com/twinfoundation/document-management/commit/b6b6f9e9d66c17af3d030247ca168ac0b5844bdc))
+
 ## [0.0.2-next.3](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.2-next.2...document-management-models-v0.0.2-next.3) (2025-09-29)
 
 
