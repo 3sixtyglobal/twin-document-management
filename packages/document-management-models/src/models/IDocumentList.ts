@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IJsonLdContextDefinitionElement } from "@twin.org/data-json-ld";
 import type { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
-import type { DocumentContexts } from "./documentContexts";
-import type { IDocument } from "./IDocument";
+import type { DocumentContexts } from "./documentContexts.js";
+import type { IDocument } from "./IDocument.js";
 
 /**
  * Interface describing a list of document entries.

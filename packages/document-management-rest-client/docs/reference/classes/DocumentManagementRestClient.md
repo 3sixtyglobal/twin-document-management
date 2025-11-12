@@ -44,6 +44,24 @@ Runtime name for the class.
 
 ## Methods
 
+### className()
+
+> **className**(): `string`
+
+Returns the class name of the component.
+
+#### Returns
+
+`string`
+
+The class name of the component.
+
+#### Implementation of
+
+`IDocumentManagementComponent.className`
+
+***
+
 ### create()
 
 > **create**(`documentId`, `documentIdFormat`, `documentCode`, `blob`, `annotationObject?`, `auditableItemGraphEdges?`, `options?`): `Promise`\<`string`\>
@@ -64,7 +82,7 @@ The document id to create.
 
 The format of the document identifier.
 
-`undefined` | `string`
+`string` | `undefined`
 
 ##### documentCode
 

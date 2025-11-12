@@ -217,7 +217,7 @@ export function generateRestRoutesDocumentManagement(
 											"@type": "DigitalDocument",
 											name: "myfile.pdf"
 										},
-										nodeIdentity:
+										organizationIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 										userIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -264,7 +264,7 @@ export function generateRestRoutesDocumentManagement(
 											"@type": "DigitalDocument",
 											name: "myfile.pdf"
 										},
-										nodeIdentity:
+										organizationIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 										userIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -334,7 +334,7 @@ export function generateRestRoutesDocumentManagement(
 									"@type": "DigitalDocument",
 									name: "myfile.pdf"
 								},
-								nodeIdentity:
+								organizationIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 								userIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -371,7 +371,7 @@ export function generateRestRoutesDocumentManagement(
 									"@type": "DigitalDocument",
 									name: "myfile.pdf"
 								},
-								nodeIdentity:
+								organizationIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 								userIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -497,7 +497,7 @@ export function generateRestRoutesDocumentManagement(
 													blobStorageId:
 														"blob:memory:1370eeaaba7a6c7a234b1f82cc3b6d013a0088fd5e16408300f05b28b0015463",
 													dateCreated: "2024-08-22T04:13:20.000Z",
-													nodeIdentity:
+													organizationIdentity:
 														"did:entity-storage:0x0101010101010101010101010101010101010101010101010101010101010101",
 													userIdentity:
 														"did:entity-storage:0x0404040404040404040404040404040404040404040404040404040404040404"
@@ -556,9 +556,7 @@ export async function documentManagementCreate(
 			createAttestation: request.body.createAttestation,
 			addAlias: request.body.addAlias,
 			aliasAnnotationObject: request.body.aliasAnnotationObject
-		},
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		}
 	);
 
 	return {
@@ -608,9 +606,7 @@ export async function documentManagementGet(
 			extractMimeType: request.query?.extractMimeType
 		},
 		request.query?.cursor,
-		Coerce.integer(request.query?.limit),
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		Coerce.integer(request.query?.limit)
 	);
 
 	return {
@@ -661,9 +657,7 @@ export async function documentManagementGetRevision(
 			includeAttestation: Coerce.boolean(request.query?.includeAttestation),
 			extractRuleGroupId: request.query?.extractRuleGroupId,
 			extractMimeType: request.query?.extractMimeType
-		},
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		}
 	);
 
 	return {
@@ -704,9 +698,7 @@ export async function documentManagementUpdate(
 		request.pathParams.auditableItemGraphDocumentId,
 		Is.stringValue(request.body.blob) ? Converter.base64ToBytes(request.body.blob) : undefined,
 		request.body.annotationObject,
-		request.body.auditableItemGraphEdges,
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		request.body.auditableItemGraphEdges
 	);
 
 	return {
@@ -742,12 +734,7 @@ export async function documentManagementRemove(
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
-	await component.removeRevision(
-		request.pathParams.auditableItemGraphDocumentId,
-		revision,
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
-	);
+	await component.removeRevision(request.pathParams.auditableItemGraphDocumentId, revision);
 
 	return {
 		statusCode: HttpStatusCode.noContent
@@ -781,9 +768,7 @@ export async function documentManagementQuery(
 	const result = await component.query(
 		request.query.documentId,
 		request.query?.cursor,
-		Coerce.integer(request.query?.limit),
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		Coerce.integer(request.query?.limit)
 	);
 
 	return {

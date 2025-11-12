@@ -47,6 +47,14 @@ export class DocumentManagementRestClient
 	}
 
 	/**
+	 * Returns the class name of the component.
+	 * @returns The class name of the component.
+	 */
+	public className(): string {
+		return DocumentManagementRestClient.CLASS_NAME;
+	}
+
+	/**
 	 * Store a document as an auditable item graph vertex and add its content to blob storage.
 	 * If the document id already exists and the blob data is different a new revision will be created.
 	 * For any other changes the current revision will be updated.

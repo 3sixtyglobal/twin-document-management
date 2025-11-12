@@ -13,6 +13,7 @@ import {
 } from "@twin.org/auditable-item-graph-models";
 import type { IBlobStorageComponent } from "@twin.org/blob-storage-models";
 import { BlobStorageContexts } from "@twin.org/blob-storage-models";
+import { ContextIdKeys, ContextIdStore } from "@twin.org/context";
 import {
 	BaseError,
 	Coerce,
@@ -43,7 +44,7 @@ import {
 	SchemaOrgTypes
 } from "@twin.org/standards-schema-org";
 import { UneceDocumentCodes } from "@twin.org/standards-unece";
-import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions";
+import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions.js";
 
 /**
  * Service for performing document management operations.
@@ -100,6 +101,14 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	}
 
 	/**
+	 * Returns the class name of the component.
+	 * @returns The class name of the component.
+	 */
+	public className(): string {
+		return DocumentManagementService.CLASS_NAME;
+	}
+
+	/**
 	 * Store a document as an auditable item graph vertex and add its content to blob storage.
 	 * If the document id already exists and the blob data is different a new revision will be created.
 	 * For any other changes the current revision will be updated.
@@ -113,8 +122,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.createAttestation Flag to create an attestation for the document, defaults to false.
 	 * @param options.addAlias Flag to add the document id as an alias to the aig vertex, defaults to true.
 	 * @param options.aliasAnnotationObject Annotation object for the alias.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The auditable item graph vertex created for the document including its revision.
 	 */
 	public async create(
@@ -132,9 +139,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			createAttestation?: boolean;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
-		},
-		userIdentity?: string,
-		nodeIdentity?: string
+		}
 	): Promise<string> {
 		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 		Guards.arrayOneOf(
@@ -144,8 +149,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			Object.values(UneceDocumentCodes)
 		);
 		Guards.uint8Array(DocumentManagementService.CLASS_NAME, nameof(blob), blob);
-		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+
+		const contextIds = await ContextIdStore.getContextIds();
 
 		try {
 			// Get the connected vertices first, if one fails we abort the create
@@ -172,15 +177,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 
 			// Add the blob to blob storage
-			const blobStorageId = await this._blobStorageComponent.create(
-				Converter.bytesToBase64(blob),
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				userIdentity,
-				nodeIdentity
-			);
+			const blobStorageId = await this._blobStorageComponent.create(Converter.bytesToBase64(blob));
 
 			const currentRevision: IDocument & IJsonLdNodeObject = {
 				"@context": [
@@ -198,16 +195,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				blobHash: this.generateBlobHash(blob),
 				blobStorageId,
 				dateCreated: new Date(Date.now()).toISOString(),
-				nodeIdentity,
-				userIdentity
+				organizationIdentity: contextIds?.[ContextIdKeys.Organization],
+				userIdentity: contextIds?.[ContextIdKeys.User]
 			};
 
 			if (options?.createAttestation ?? false) {
-				currentRevision.attestationId = await this.createAttestation(
-					currentRevision,
-					userIdentity,
-					nodeIdentity
-				);
+				currentRevision.attestationId = await this.createAttestation(currentRevision);
 			}
 
 			// Add the new revision in to the vertex
@@ -222,11 +215,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			this.updateEdges(documentVertex, auditableItemGraphEdges);
 
 			// And create the vertex
-			const vertexId = await this._auditableItemGraphComponent.create(
-				documentVertex,
-				userIdentity,
-				nodeIdentity
-			);
+			const vertexId = await this._auditableItemGraphComponent.create(documentVertex);
 
 			// Now add the edges to the connected vertices
 			await this.updateConnectedEdges(
@@ -235,9 +224,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				[],
 				auditableItemGraphEdges,
 				documentId,
-				documentIdFormat,
-				userIdentity,
-				nodeIdentity
+				documentIdFormat
 			);
 
 			return vertexId;
@@ -262,8 +249,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param blob The data to update the document with.
 	 * @param annotationObject Additional information to associate with the document.
 	 * @param auditableItemGraphEdges The auditable item graph vertices to connect the document to, if undefined retains current connections.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns Nothing.
 	 */
 	public async update(
@@ -274,17 +259,13 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			targetId: string;
 			addAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[],
-		userIdentity?: string,
-		nodeIdentity?: string
+		}[]
 	): Promise<void> {
 		Urn.guard(
 			DocumentManagementService.CLASS_NAME,
 			nameof(auditableItemGraphDocumentId),
 			auditableItemGraphDocumentId
 		);
-		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
@@ -335,13 +316,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				if (latestRevision.blobHash !== newBlobHash) {
 					// Add the blob to blob storage
 					const blobStorageId = await this._blobStorageComponent.create(
-						Converter.bytesToBase64(blob),
-						undefined,
-						undefined,
-						undefined,
-						undefined,
-						userIdentity,
-						nodeIdentity
+						Converter.bytesToBase64(blob)
 					);
 
 					const newRevision = ObjectHelper.clone(latestRevision);
@@ -356,11 +331,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					newRevision.annotationObject = annotationObject;
 
 					if (Is.stringValue(latestRevision.attestationId)) {
-						newRevision.attestationId = await this.createAttestation(
-							newRevision,
-							userIdentity,
-							nodeIdentity
-						);
+						newRevision.attestationId = await this.createAttestation(newRevision);
 					}
 
 					documentVertex.resources.push({
@@ -393,7 +364,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 
 			if (updatedVertex) {
-				await this._auditableItemGraphComponent.update(documentVertex, userIdentity, nodeIdentity);
+				await this._auditableItemGraphComponent.update(documentVertex);
 			}
 
 			if (edgesUpdated) {
@@ -403,9 +374,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					existingEdgeIds,
 					auditableItemGraphEdges,
 					latestRevision.documentId,
-					latestRevision.documentIdFormat,
-					userIdentity,
-					nodeIdentity
+					latestRevision.documentIdFormat
 				);
 			}
 		} catch (error) {
@@ -433,8 +402,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
 	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
 	 */
 	public async get(
@@ -448,9 +415,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		limit?: number,
-		userIdentity?: string,
-		nodeIdentity?: string
+		limit?: number
 	): Promise<IDocumentList> {
 		Urn.guard(
 			DocumentManagementService.CLASS_NAME,
@@ -465,16 +430,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			// Populate the document and revisions with the options set
-			const documents = await this.getDocumentsFromVertex(
-				documentVertex,
-				options,
-				cursor,
-				limit,
-				userIdentity,
-				nodeIdentity
-			);
+			const documents = await this.getDocumentsFromVertex(documentVertex, options, cursor, limit);
 
-			return JsonLdProcessor.compact(documents, documents["@context"]);
+			const result = await JsonLdProcessor.compact(documents, documents["@context"]);
+			return result;
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
@@ -493,8 +452,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
 	 */
 	public async getRevision(
@@ -506,9 +463,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			includeAttestation?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
-		},
-		userIdentity?: string,
-		nodeIdentity?: string
+		}
 	): Promise<IDocument> {
 		Urn.guard(
 			DocumentManagementService.CLASS_NAME,
@@ -540,19 +495,13 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 
 			// Populate the document and revisions with the options set
-			const docList = await this.getDocumentsFromVertex(
-				documentVertex,
-				options,
-				undefined,
-				undefined,
-				userIdentity,
-				nodeIdentity
-			);
+			const docList = await this.getDocumentsFromVertex(documentVertex, options);
 
-			return JsonLdProcessor.compact(
+			const result = await JsonLdProcessor.compact(
 				docList.itemListElement[0],
 				docList.itemListElement[0]["@context"]
 			);
+			return result;
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
@@ -571,15 +520,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * The document dateDeleted will be set, but can still be queried with the includeRemoved flag.
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
 	 * @param revision The revision of the document to remove.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns Nothing.
 	 */
 	public async removeRevision(
 		auditableItemGraphDocumentId: string,
-		revision: number,
-		userIdentity?: string,
-		nodeIdentity?: string
+		revision: number
 	): Promise<void> {
 		Urn.guard(
 			DocumentManagementService.CLASS_NAME,
@@ -611,7 +556,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			documentVertex.resources.splice(docRevisionIndex, 1);
 
-			await this._auditableItemGraphComponent.update(documentVertex, userIdentity, nodeIdentity);
+			await this._auditableItemGraphComponent.update(documentVertex);
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
@@ -630,21 +575,17 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param documentId The document id to find in the graph.
 	 * @param cursor The cursor to get the next chunk of documents.
 	 * @param limit The limit to get the next chunk of documents.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The graph vertices that contain documents referencing the specified document id.
 	 */
 	public async query(
 		documentId: string,
 		cursor?: string,
-		limit?: number,
-		userIdentity?: string,
-		nodeIdentity?: string
+		limit?: number
 	): Promise<IAuditableItemGraphVertexList> {
 		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 
 		try {
-			return this._auditableItemGraphComponent.query(
+			const result = await this._auditableItemGraphComponent.query(
 				{
 					id: documentId,
 					idMode: "both",
@@ -657,6 +598,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				cursor,
 				limit
 			);
+			return result;
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
@@ -727,8 +669,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param auditableItemGraphEdges The list of edges to use.
 	 * @param documentId The document identifier.
 	 * @param documentIdFormat The format of the document identifier.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @internal
 	 */
 	private async updateConnectedEdges(
@@ -739,9 +679,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			| { targetId: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
 			| undefined,
 		documentId: string,
-		documentIdFormat: string | undefined,
-		userIdentity: string,
-		nodeIdentity: string
+		documentIdFormat: string | undefined
 	): Promise<void> {
 		if (Is.array(auditableItemGraphEdges)) {
 			for (const aigEdge of auditableItemGraphEdges) {
@@ -800,7 +738,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					}
 
 					if (updatedConnected) {
-						await this._auditableItemGraphComponent.update(connected, userIdentity, nodeIdentity);
+						await this._auditableItemGraphComponent.update(connected);
 					}
 				}
 			}
@@ -835,7 +773,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					}
 
 					if (updatedConnected) {
-						await this._auditableItemGraphComponent.update(connected, userIdentity, nodeIdentity);
+						await this._auditableItemGraphComponent.update(connected);
 					}
 				}
 			}
@@ -863,8 +801,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
 	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The finalised list of documents.
 	 * @internal
 	 */
@@ -878,9 +814,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		limit?: number,
-		userIdentity?: string,
-		nodeIdentity?: string
+		limit?: number
 	): Promise<IDocumentList> {
 		const docList: IDocumentList = {
 			"@context": [
@@ -920,14 +854,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 					const blobRequired = includeBlobStorageMetadata || includeBlobStorageData;
 					if (blobRequired || extractData) {
-						const blobEntry = await this._blobStorageComponent.get(
-							document.blobStorageId,
-							{
-								includeContent: includeBlobStorageData || extractData
-							},
-							userIdentity,
-							nodeIdentity
-						);
+						const blobEntry = await this._blobStorageComponent.get(document.blobStorageId, {
+							includeContent: includeBlobStorageData || extractData
+						});
 
 						if (blobRequired) {
 							document.blobStorageEntry = blobEntry;
@@ -985,15 +914,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	/**
 	 * Create an attestation for the document.
 	 * @param document The document to create the attestation for.
-	 * @param userIdentity The identity to perform the attestation operation with.
-	 * @param nodeIdentity The node identity to perform attestation operation with.
 	 * @returns The attestation identifier.
 	 */
-	private async createAttestation(
-		document: IDocument,
-		userIdentity: string,
-		nodeIdentity: string
-	): Promise<string> {
+	private async createAttestation(document: IDocument): Promise<string> {
 		const documentAttestation: IDocumentAttestation & IJsonLdNodeObject = {
 			"@context": [
 				DocumentContexts.ContextRoot,
@@ -1008,12 +931,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			dateCreated: document.dateCreated,
 			blobHash: document.blobHash
 		};
-		return this._attestationComponent.create(
-			documentAttestation,
-			undefined,
-			userIdentity,
-			nodeIdentity
-		);
+		return this._attestationComponent.create(documentAttestation);
 	}
 
 	/**

@@ -5,8 +5,8 @@ import type { IBlobStorageEntry } from "@twin.org/blob-storage-models";
 import type { IJsonLdContextDefinitionElement, IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { SchemaOrgContexts } from "@twin.org/standards-schema-org";
 import type { UneceDocumentCodes } from "@twin.org/standards-unece";
-import type { DocumentContexts } from "./documentContexts";
-import type { DocumentTypes } from "./documentTypes";
+import type { DocumentContexts } from "./documentContexts.js";
+import type { DocumentTypes } from "./documentTypes.js";
 
 /**
  * Interface describing a document.
@@ -103,12 +103,12 @@ export interface IDocument {
 	dateDeleted?: string;
 
 	/**
-	 * The node which added the document to the graph.
+	 * The organization which added the document to the graph.
 	 */
-	nodeIdentity: string;
+	organizationIdentity?: string;
 
 	/**
 	 * The user who added the document to the graph.
 	 */
-	userIdentity: string;
+	userIdentity?: string;
 }

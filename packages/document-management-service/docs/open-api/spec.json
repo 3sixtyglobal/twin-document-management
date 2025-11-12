@@ -243,7 +243,7 @@
 																"blobHash": "sha256:E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
 																"blobStorageId": "blob:memory:1370eeaaba7a6c7a234b1f82cc3b6d013a0088fd5e16408300f05b28b0015463",
 																"dateCreated": "2024-08-22T04:13:20.000Z",
-																"nodeIdentity": "did:entity-storage:0x0101010101010101010101010101010101010101010101010101010101010101",
+																"organizationIdentity": "did:entity-storage:0x0101010101010101010101010101010101010101010101010101010101010101",
 																"userIdentity": "did:entity-storage:0x0404040404040404040404040404040404040404040404040404040404040404"
 															}
 														}
@@ -582,7 +582,7 @@
 														"@type": "DigitalDocument",
 														"name": "myfile.pdf"
 													},
-													"nodeIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+													"organizationIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 													"userIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
 												}
 											]
@@ -624,7 +624,7 @@
 														"@type": "DigitalDocument",
 														"name": "myfile.pdf"
 													},
-													"nodeIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+													"organizationIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 													"userIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
 												}
 											]
@@ -781,7 +781,7 @@
 												"@type": "DigitalDocument",
 												"name": "myfile.pdf"
 											},
-											"nodeIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+											"organizationIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 											"userIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
 										}
 									}
@@ -813,7 +813,7 @@
 												"@type": "DigitalDocument",
 												"name": "myfile.pdf"
 											},
-											"nodeIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
+											"organizationIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 											"userIdentity": "did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
 										}
 									}
@@ -1030,9 +1030,6 @@
 					"@context": {
 						"type": "array",
 						"minItems": 3,
-						"items": {
-							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
-						},
 						"description": "JSON-LD Context.",
 						"prefixItems": [
 							{
@@ -1047,7 +1044,10 @@
 								"type": "string",
 								"const": "https://schema.org"
 							}
-						]
+						],
+						"items": {
+							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
+						}
 					},
 					"type": {
 						"type": "string",
@@ -1109,9 +1109,9 @@
 						"type": "string",
 						"description": "The date/time of when the document was deleted, as we never actually remove items."
 					},
-					"nodeIdentity": {
+					"organizationIdentity": {
 						"type": "string",
-						"description": "The node which added the document to the graph."
+						"description": "The organization which added the document to the graph."
 					},
 					"userIdentity": {
 						"type": "string",
@@ -1127,9 +1127,7 @@
 					"documentRevision",
 					"blobStorageId",
 					"blobHash",
-					"dateCreated",
-					"nodeIdentity",
-					"userIdentity"
+					"dateCreated"
 				],
 				"additionalProperties": false,
 				"description": "Interface describing a document."
@@ -1140,9 +1138,6 @@
 					"@context": {
 						"type": "array",
 						"minItems": 3,
-						"items": {
-							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
-						},
 						"description": "JSON-LD Context.",
 						"prefixItems": [
 							{
@@ -1157,7 +1152,10 @@
 								"type": "string",
 								"const": "https://schema.twindev.org/common/"
 							}
-						]
+						],
+						"items": {
+							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
+						}
 					},
 					"type": {
 						"type": "string",
@@ -1166,23 +1164,17 @@
 					},
 					"itemListElement": {
 						"type": "array",
-						"items": false,
-						"description": "The list of documents.",
-						"prefixItems": [
-							{
-								"$ref": "#/components/schemas/Document"
-							}
-						]
+						"items": {
+							"$ref": "#/components/schemas/Document"
+						},
+						"description": "The list of documents."
 					},
 					"edges": {
 						"type": "array",
-						"items": false,
-						"description": "The ids of the other vertices which are connected to the document.",
-						"prefixItems": [
-							{
-								"type": "string"
-							}
-						]
+						"items": {
+							"type": "string"
+						},
+						"description": "The ids of the other vertices which are connected to the document."
 					},
 					"nextItem": {
 						"type": "string",
@@ -1220,28 +1212,25 @@
 					},
 					"auditableItemGraphEdges": {
 						"type": "array",
-						"items": false,
-						"description": "The auditable item graph vertices to connect the document to.",
-						"prefixItems": [
-							{
-								"type": "object",
-								"properties": {
-									"targetId": {
-										"type": "string"
-									},
-									"addAlias": {
-										"type": "boolean"
-									},
-									"aliasAnnotationObject": {
-										"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
-									}
+						"items": {
+							"type": "object",
+							"properties": {
+								"targetId": {
+									"type": "string"
 								},
-								"required": [
-									"targetId"
-								],
-								"additionalProperties": false
-							}
-						]
+								"addAlias": {
+									"type": "boolean"
+								},
+								"aliasAnnotationObject": {
+									"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+								}
+							},
+							"required": [
+								"targetId"
+							],
+							"additionalProperties": false
+						},
+						"description": "The auditable item graph vertices to connect the document to."
 					},
 					"createAttestation": {
 						"type": "boolean",
@@ -1275,28 +1264,25 @@
 					},
 					"auditableItemGraphEdges": {
 						"type": "array",
-						"items": false,
-						"description": "The auditable item graph vertices to connect the document to.",
-						"prefixItems": [
-							{
-								"type": "object",
-								"properties": {
-									"targetId": {
-										"type": "string"
-									},
-									"addAlias": {
-										"type": "boolean"
-									},
-									"aliasAnnotationObject": {
-										"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
-									}
+						"items": {
+							"type": "object",
+							"properties": {
+								"targetId": {
+									"type": "string"
 								},
-								"required": [
-									"targetId"
-								],
-								"additionalProperties": false
-							}
-						]
+								"addAlias": {
+									"type": "boolean"
+								},
+								"aliasAnnotationObject": {
+									"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+								}
+							},
+							"required": [
+								"targetId"
+							],
+							"additionalProperties": false
+						},
+						"description": "The auditable item graph vertices to connect the document to."
 					}
 				},
 				"additionalProperties": false,

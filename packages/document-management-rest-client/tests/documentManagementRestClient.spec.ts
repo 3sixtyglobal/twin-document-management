@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { DocumentManagementRestClient } from "../src/documentManagementRestClient";
+import { DocumentManagementRestClient } from "../src/documentManagementRestClient.js";
 
 describe("DocumentManagementRestClient", () => {
 	test("Can create an instance", async () => {

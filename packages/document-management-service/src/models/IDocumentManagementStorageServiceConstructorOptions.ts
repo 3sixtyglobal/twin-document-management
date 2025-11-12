@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IDocumentManagementServiceConfig } from "./IDocumentManagementServiceConfig";
+import type { IDocumentManagementServiceConfig } from "./IDocumentManagementServiceConfig.js";
 
 /**
  * Options for the document management Service constructor.

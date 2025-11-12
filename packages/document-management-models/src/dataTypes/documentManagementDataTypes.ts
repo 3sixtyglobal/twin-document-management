@@ -1,9 +1,9 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import { DataTypeHandlerFactory, type IJsonSchema } from "@twin.org/data-core";
-import { DocumentContexts } from "../models/documentContexts";
-import { DocumentTypes } from "../models/documentTypes";
-import DocumentSchema from "../schemas/Document.json";
+import { DocumentContexts } from "../models/documentContexts.js";
+import { DocumentTypes } from "../models/documentTypes.js";
+import DocumentSchema from "../schemas/Document.json" with { type: "json" };
 
 /**
  * Handle all the data types for document management.

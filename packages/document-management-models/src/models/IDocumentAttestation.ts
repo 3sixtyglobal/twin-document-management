@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { SchemaOrgContexts } from "@twin.org/standards-schema-org";
 import type { UneceDocumentCodes } from "@twin.org/standards-unece";
-import type { DocumentContexts } from "./documentContexts";
-import type { DocumentTypes } from "./documentTypes";
+import type { DocumentContexts } from "./documentContexts.js";
+import type { DocumentTypes } from "./documentTypes.js";
 
 /**
  * Interface describing a document attestation.
