@@ -1,5 +1,12 @@
 # @twin.org/document-management-models - Changelog
 
+## [0.0.3-next.2](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.1...document-management-models-v0.0.3-next.2) (2025-11-28)
+
+
+### Features
+
+* update background task service ([5c380dc](https://github.com/twinfoundation/document-management/commit/5c380dca3114254201768f184f9486828501ff66))
+
 ## [0.0.3-next.1](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.0...document-management-models-v0.0.3-next.1) (2025-11-12)
 
 
