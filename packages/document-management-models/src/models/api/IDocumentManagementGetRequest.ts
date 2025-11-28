@@ -31,25 +31,25 @@ export interface IDocumentManagementGetRequest {
 		 * Include the blob storage metadata in the response.
 		 * @default false
 		 */
-		includeBlobStorageMetadata?: boolean | string;
+		includeBlobStorageMetadata?: string;
 
 		/**
 		 * Include the blob storage data in the response.
 		 * @default false
 		 */
-		includeBlobStorageData?: boolean | string;
+		includeBlobStorageData?: string;
 
 		/**
 		 * Include the attestation information in the response.
 		 * @default false
 		 */
-		includeAttestation?: boolean | string;
+		includeAttestation?: string;
 
 		/**
 		 * Include deleted documents in the response.
 		 * @default false
 		 */
-		includeRemoved?: boolean | string;
+		includeRemoved?: string;
 
 		/**
 		 * If provided will extract data from the document using the specified rule group id.

@@ -12,10 +12,9 @@ import {
 } from "@twin.org/auditable-item-graph-service";
 import {
 	type BackgroundTask,
-	EntityStorageBackgroundTaskConnector,
+	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
-} from "@twin.org/background-task-connector-entity-storage";
-import { BackgroundTaskConnectorFactory } from "@twin.org/background-task-models";
+} from "@twin.org/background-task-service";
 import { MemoryBlobStorageConnector } from "@twin.org/blob-storage-connector-memory";
 import { BlobStorageConnectorFactory } from "@twin.org/blob-storage-models";
 import {
@@ -23,7 +22,12 @@ import {
 	BlobStorageService,
 	initSchema as initSchemaBlobStorage
 } from "@twin.org/blob-storage-service";
-import { ContextIdHandlerFactory, ContextIdKeys, ContextIdStore } from "@twin.org/context";
+import {
+	ContextIdHandlerFactory,
+	ContextIdKeys,
+	ContextIdStore,
+	type IContextIds
+} from "@twin.org/context";
 import { ComponentFactory, Converter } from "@twin.org/core";
 import { JsonConverterConnector } from "@twin.org/data-processing-converters";
 import { JsonPathExtractorConnector } from "@twin.org/data-processing-extractors";
@@ -76,7 +80,7 @@ let immutableProofComponent: ImmutableProofService;
 let nftEntityStorage: MemoryEntityStorageConnector<Nft>;
 let nftConnector: EntityStorageNftConnector;
 let backgroundTaskStorage: MemoryEntityStorageConnector<BackgroundTask>;
-let backgroundTaskConnector: EntityStorageBackgroundTaskConnector;
+let backgroundTaskService: BackgroundTaskService;
 let blobEntryEntityStorage: MemoryEntityStorageConnector<BlobStorageEntry>;
 let blobStorageConnector: MemoryBlobStorageConnector;
 let blobStorageComponent: BlobStorageService;
@@ -118,9 +122,9 @@ describe("document-management-service", async () => {
 		});
 		EntityStorageConnectorFactory.register("background-task", () => backgroundTaskStorage);
 
-		backgroundTaskConnector = new EntityStorageBackgroundTaskConnector();
-		BackgroundTaskConnectorFactory.register("background-task", () => backgroundTaskConnector);
-		await backgroundTaskConnector.start();
+		backgroundTaskService = new BackgroundTaskService();
+		ComponentFactory.register("background-task", () => backgroundTaskService);
+		await backgroundTaskService.start();
 
 		immutableProofEntityStorage = new MemoryEntityStorageConnector({
 			entitySchema: "ImmutableProof"
@@ -193,12 +197,14 @@ describe("document-management-service", async () => {
 		ComponentFactory.register("data-processing", () => dataProcessingComponent);
 
 		// Mock the module helper to execute the method in the same thread, so we don't have to create an engine
-		// and the background tasks will run in this thread
-		ModuleHelper.execModuleMethodThread = vi
+		ModuleHelper.execModuleMethodThreadMessage = vi
 			.fn()
-			.mockImplementation(async (module, method, args) =>
-				ModuleHelper.execModuleMethod(module, method, args)
-			);
+			.mockImplementation((module, completed) => ({
+				executeMethod: async (method: string, args?: unknown, contextIds?: IContextIds) => {
+					const res = await ModuleHelper.execModuleMethod(module, method, args as unknown[]);
+					completed(method, res);
+				}
+			}));
 
 		// Mock Date.now so that timestamps always return the same value
 		const BASE_TICK = 1724300000000;

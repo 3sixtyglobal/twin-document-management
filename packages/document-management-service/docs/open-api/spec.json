@@ -451,10 +451,7 @@
 						"in": "query",
 						"required": false,
 						"schema": {
-							"type": [
-								"boolean",
-								"string"
-							]
+							"type": "string"
 						}
 					},
 					{
@@ -463,10 +460,7 @@
 						"in": "query",
 						"required": false,
 						"schema": {
-							"type": [
-								"boolean",
-								"string"
-							]
+							"type": "string"
 						}
 					},
 					{
@@ -475,10 +469,7 @@
 						"in": "query",
 						"required": false,
 						"schema": {
-							"type": [
-								"boolean",
-								"string"
-							]
+							"type": "string"
 						}
 					},
 					{
@@ -487,10 +478,7 @@
 						"in": "query",
 						"required": false,
 						"schema": {
-							"type": [
-								"boolean",
-								"string"
-							]
+							"type": "string"
 						}
 					},
 					{

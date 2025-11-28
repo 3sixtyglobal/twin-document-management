@@ -52,7 +52,7 @@
 		"@twin.org/attestation-service": "next",
 		"@twin.org/auditable-item-graph-service": "next",
 		"@twin.org/background-task-models": "next",
-		"@twin.org/background-task-connector-entity-storage": "next",
+		"@twin.org/background-task-service": "next",
 		"@twin.org/blob-storage-connector-memory": "next",
 		"@twin.org/blob-storage-service": "next",
 		"@twin.org/data-processing-converters": "next",

@@ -200,10 +200,10 @@ export class DocumentManagementRestClient
 				auditableItemGraphDocumentId
 			},
 			query: {
-				includeBlobStorageMetadata: options?.includeBlobStorageMetadata,
-				includeBlobStorageData: options?.includeBlobStorageData,
-				includeAttestation: options?.includeAttestation,
-				includeRemoved: options?.includeRemoved,
+				includeBlobStorageMetadata: Coerce.string(options?.includeBlobStorageMetadata),
+				includeBlobStorageData: Coerce.string(options?.includeBlobStorageData),
+				includeAttestation: Coerce.string(options?.includeAttestation),
+				includeRemoved: Coerce.string(options?.includeRemoved),
 				extractRuleGroupId: options?.extractRuleGroupId,
 				extractMimeType: options?.extractMimeType,
 				cursor,
@@ -253,9 +253,9 @@ export class DocumentManagementRestClient
 				revision: revision.toString()
 			},
 			query: {
-				includeBlobStorageMetadata: options?.includeBlobStorageMetadata,
-				includeBlobStorageData: options?.includeBlobStorageData,
-				includeAttestation: options?.includeAttestation,
+				includeBlobStorageMetadata: Coerce.string(options?.includeBlobStorageMetadata),
+				includeBlobStorageData: Coerce.string(options?.includeBlobStorageData),
+				includeAttestation: Coerce.string(options?.includeAttestation),
 				extractRuleGroupId: options?.extractRuleGroupId,
 				extractMimeType: options?.extractMimeType
 			}
