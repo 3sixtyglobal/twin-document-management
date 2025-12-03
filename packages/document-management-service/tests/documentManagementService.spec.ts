@@ -56,7 +56,7 @@ import {
 	type Nft
 } from "@twin.org/nft-connector-entity-storage";
 import { NftConnectorFactory } from "@twin.org/nft-models";
-import { UneceDocumentCodes } from "@twin.org/standards-unece";
+import { DocumentCodeList } from "@twin.org/standards-unece";
 import {
 	EntityStorageVerifiableStorageConnector,
 	initSchema as initSchemaVerifiableStorage,
@@ -233,7 +233,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			undefined,
 			undefined,
@@ -304,7 +304,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			"foo",
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			[
@@ -464,7 +464,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -554,7 +554,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -588,7 +588,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			"foo",
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			[
@@ -886,7 +886,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -936,7 +936,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -997,7 +997,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1062,7 +1062,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1152,7 +1152,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1182,7 +1182,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1215,7 +1215,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1242,7 +1242,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1281,7 +1281,7 @@ describe("document-management-service", async () => {
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1332,7 +1332,7 @@ describe("document-management-service", async () => {
 			await service.create(
 				`test-id-${i}`,
 				undefined,
-				UneceDocumentCodes.BillOfLading,
+				DocumentCodeList.BillOfLading,
 				Converter.utf8ToBytes(`Hello World${i}`),
 				{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 				undefined,
@@ -1353,7 +1353,7 @@ describe("document-management-service", async () => {
 		const docId = await service.create(
 			"test-id",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1389,7 +1389,7 @@ describe("document-management-service", async () => {
 		const docId = await service.create(
 			"test-id",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
@@ -1429,7 +1429,7 @@ describe("document-management-service", async () => {
 		const docId = await service.create(
 			"test-id",
 			undefined,
-			UneceDocumentCodes.BillOfLading,
+			DocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
 			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,

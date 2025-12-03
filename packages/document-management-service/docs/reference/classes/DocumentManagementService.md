@@ -78,7 +78,7 @@ The format of the document identifier.
 
 ##### documentCode
 
-`string`
+`DocumentCodeList`
 
 The code for the document type.
 

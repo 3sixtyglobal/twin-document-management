@@ -46,7 +46,7 @@ The format of the document id.
 
 ### documentCode
 
-> **documentCode**: `string`
+> **documentCode**: `DocumentCodeList`
 
 The code for the document type.
 

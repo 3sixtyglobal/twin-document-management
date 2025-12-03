@@ -30,7 +30,7 @@ The id of the document.
 
 ### documentCode
 
-> **documentCode**: `string`
+> **documentCode**: `DocumentCodeList`
 
 The code for the document type.
 

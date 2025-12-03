@@ -3,7 +3,7 @@
 import type { IAuditableItemGraphVertexList } from "@twin.org/auditable-item-graph-models";
 import type { IComponent } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { UneceDocumentCodes } from "@twin.org/standards-unece";
+import type { DocumentCodeList } from "@twin.org/standards-unece";
 import type { IDocument } from "./IDocument.js";
 import type { IDocumentList } from "./IDocumentList.js";
 
@@ -30,7 +30,7 @@ export interface IDocumentManagementComponent extends IComponent {
 	create(
 		documentId: string,
 		documentIdFormat: string | undefined,
-		documentCode: UneceDocumentCodes,
+		documentCode: DocumentCodeList,
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {

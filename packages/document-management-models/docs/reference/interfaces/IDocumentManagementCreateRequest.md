@@ -24,7 +24,7 @@ The format of the document identifier.
 
 #### documentCode
 
-> **documentCode**: `string`
+> **documentCode**: `DocumentCodeList`
 
 The code for the document type.
 

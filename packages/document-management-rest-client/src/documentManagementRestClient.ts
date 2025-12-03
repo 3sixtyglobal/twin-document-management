@@ -24,7 +24,7 @@ import type {
 	IDocumentManagementUpdateRequest
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
-import { UneceDocumentCodes } from "@twin.org/standards-unece";
+import { DocumentCodeList } from "@twin.org/standards-unece";
 
 /**
  * Client for performing document management through to REST endpoints.
@@ -73,7 +73,7 @@ export class DocumentManagementRestClient
 	public async create(
 		documentId: string,
 		documentIdFormat: string | undefined,
-		documentCode: UneceDocumentCodes,
+		documentCode: DocumentCodeList,
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
@@ -92,7 +92,7 @@ export class DocumentManagementRestClient
 			DocumentManagementRestClient.CLASS_NAME,
 			nameof(documentCode),
 			documentCode,
-			Object.values(UneceDocumentCodes)
+			Object.values(DocumentCodeList)
 		);
 		Guards.uint8Array(DocumentManagementRestClient.CLASS_NAME, nameof(blob), blob);
 
