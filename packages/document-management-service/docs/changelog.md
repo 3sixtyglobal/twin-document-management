@@ -1,5 +1,19 @@
 # @twin.org/document-management-service - Changelog
 
+## [0.0.3-next.3](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.2...document-management-service-v0.0.3-next.3) (2025-12-03)
+
+
+### Features
+
+* use updated unece types ([c141a89](https://github.com/twinfoundation/document-management/commit/c141a895138cb45fa0b1e95c42f56e31708c846c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.2 to 0.0.3-next.3
+
 ## [0.0.3-next.2](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.1...document-management-service-v0.0.3-next.2) (2025-11-28)
 
 
