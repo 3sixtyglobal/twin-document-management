@@ -1,5 +1,12 @@
 # @twin.org/document-management-models - Changelog
 
+## [0.0.3-next.4](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.3...document-management-models-v0.0.3-next.4) (2026-01-06)
+
+
+### Features
+
+* update unece dependencies ([a27548c](https://github.com/twinfoundation/document-management/commit/a27548cdebbe1d9577fc8341166538c2f07348a3))
+
 ## [0.0.3-next.3](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.2...document-management-models-v0.0.3-next.3) (2025-12-03)
 
 
