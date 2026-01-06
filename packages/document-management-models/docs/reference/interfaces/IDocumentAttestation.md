@@ -30,7 +30,7 @@ The id of the document.
 
 ### documentCode
 
-> **documentCode**: `DocumentCodeList`
+> **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
 

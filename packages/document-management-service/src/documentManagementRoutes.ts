@@ -29,7 +29,7 @@ import {
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
 import { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
-import { DocumentCodeList } from "@twin.org/standards-unece";
+import { UneceDocumentCodeList } from "@twin.org/standards-unece";
 import { HeaderTypes, HttpStatusCode, MimeTypes } from "@twin.org/web";
 
 /**
@@ -78,7 +78,7 @@ export function generateRestRoutesDocumentManagement(
 						body: {
 							documentId: "2721000",
 							documentIdFormat: "bol",
-							documentCode: DocumentCodeList.BillOfLading,
+							documentCode: UneceDocumentCodeList.BillOfLading,
 							blob: "SGVsbG8gV29ybGQ=",
 							annotationObject: {
 								"@context": "https://schema.org",
@@ -206,7 +206,7 @@ export function generateRestRoutesDocumentManagement(
 										id: "2721000:0",
 										documentId: "2721000",
 										documentIdFormat: "bol",
-										documentCode: DocumentCodeList.BillOfLading,
+										documentCode: UneceDocumentCodeList.BillOfLading,
 										documentRevision: 0,
 										blobStorageId:
 											"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
@@ -253,7 +253,7 @@ export function generateRestRoutesDocumentManagement(
 										id: "2721000:0",
 										documentId: "2721000",
 										documentIdFormat: "bol",
-										documentCode: DocumentCodeList.BillOfLading,
+										documentCode: UneceDocumentCodeList.BillOfLading,
 										documentRevision: 0,
 										blobStorageId:
 											"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
@@ -323,7 +323,7 @@ export function generateRestRoutesDocumentManagement(
 								id: "2721000:0",
 								documentId: "2721000",
 								documentIdFormat: "bol",
-								documentCode: DocumentCodeList.BillOfLading,
+								documentCode: UneceDocumentCodeList.BillOfLading,
 								documentRevision: 1,
 								blobStorageId:
 									"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
@@ -360,7 +360,7 @@ export function generateRestRoutesDocumentManagement(
 								id: "2721000:0",
 								documentId: "2721000",
 								documentIdFormat: "bol",
-								documentCode: DocumentCodeList.BillOfLading,
+								documentCode: UneceDocumentCodeList.BillOfLading,
 								documentRevision: 1,
 								blobStorageId:
 									"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",

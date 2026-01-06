@@ -4,7 +4,7 @@ import type { IAttestationInformation } from "@twin.org/attestation-models";
 import type { IBlobStorageEntry } from "@twin.org/blob-storage-models";
 import type { IJsonLdContextDefinitionElement, IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { SchemaOrgContexts } from "@twin.org/standards-schema-org";
-import type { DocumentCodeList } from "@twin.org/standards-unece";
+import type { UneceDocumentCodeList } from "@twin.org/standards-unece";
 import type { DocumentContexts } from "./documentContexts.js";
 import type { DocumentTypes } from "./documentTypes.js";
 
@@ -45,7 +45,7 @@ export interface IDocument {
 	/**
 	 * The code for the document type.
 	 */
-	documentCode: DocumentCodeList;
+	documentCode: UneceDocumentCodeList;
 
 	/**
 	 * The revision of the document as a 0 based index.

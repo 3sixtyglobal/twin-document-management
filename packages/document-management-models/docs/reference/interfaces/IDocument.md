@@ -46,7 +46,7 @@ The format of the document id.
 
 ### documentCode
 
-> **documentCode**: `DocumentCodeList`
+> **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
 

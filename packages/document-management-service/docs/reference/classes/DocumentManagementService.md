@@ -78,7 +78,7 @@ The format of the document identifier.
 
 ##### documentCode
 
-`DocumentCodeList`
+`UneceDocumentCodeList`
 
 The code for the document type.
 

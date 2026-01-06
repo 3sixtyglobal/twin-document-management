@@ -44,7 +44,7 @@
 			"description": "The format of the document id."
 		},
 		"documentCode": {
-			"$ref": "https://schema.twindev.org/documents/DocumentCodeList",
+			"$ref": "https://schema.twindev.org/unece/UneceDocumentCodeList",
 			"description": "The code for the document type."
 		},
 		"documentRevision": {

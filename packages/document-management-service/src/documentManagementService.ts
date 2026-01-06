@@ -43,7 +43,7 @@ import {
 	SchemaOrgDataTypes,
 	SchemaOrgTypes
 } from "@twin.org/standards-schema-org";
-import { DocumentCodeList } from "@twin.org/standards-unece";
+import { UneceDocumentCodeList } from "@twin.org/standards-unece";
 import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions.js";
 
 /**
@@ -127,7 +127,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	public async create(
 		documentId: string,
 		documentIdFormat: string | undefined,
-		documentCode: DocumentCodeList,
+		documentCode: UneceDocumentCodeList,
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
@@ -146,7 +146,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			DocumentManagementService.CLASS_NAME,
 			nameof(documentCode),
 			documentCode,
-			Object.values(DocumentCodeList)
+			Object.values(UneceDocumentCodeList)
 		);
 		Guards.uint8Array(DocumentManagementService.CLASS_NAME, nameof(blob), blob);
 

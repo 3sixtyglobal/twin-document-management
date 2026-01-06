@@ -24,7 +24,7 @@ The format of the document identifier.
 
 #### documentCode
 
-> **documentCode**: `DocumentCodeList`
+> **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
 
