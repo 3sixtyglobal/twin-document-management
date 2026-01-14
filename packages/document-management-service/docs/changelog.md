@@ -1,5 +1,19 @@
 # @twin.org/document-management-service - Changelog
 
+## [0.0.3-next.5](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.4...document-management-service-v0.0.3-next.5) (2026-01-14)
+
+
+### Features
+
+* update contexts and namespaces ([#29](https://github.com/twinfoundation/document-management/issues/29)) ([ef7abc0](https://github.com/twinfoundation/document-management/commit/ef7abc01d10b3f9528be8afaa21dbd00181939ae))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.4 to 0.0.3-next.5
+
 ## [0.0.3-next.4](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.3...document-management-service-v0.0.3-next.4) (2026-01-06)
 
 
