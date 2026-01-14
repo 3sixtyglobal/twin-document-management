@@ -168,7 +168,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (options?.addAlias ?? true) {
 				documentVertex.aliases ??= [];
 				documentVertex.aliases.push({
-					"@context": AuditableItemGraphContexts.ContextRoot,
+					"@context": AuditableItemGraphContexts.Namespace,
 					type: AuditableItemGraphTypes.Alias,
 					id: documentId,
 					aliasFormat: documentIdFormat,
@@ -181,9 +181,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			const currentRevision: IDocument & IJsonLdNodeObject = {
 				"@context": [
-					DocumentContexts.ContextRoot,
-					DocumentContexts.ContextRootCommon,
-					SchemaOrgContexts.ContextRoot
+					DocumentContexts.Namespace,
+					DocumentContexts.NamespaceCommon,
+					SchemaOrgContexts.Namespace
 				],
 				type: DocumentTypes.Document,
 				id: this.createDocumentId(documentId, 0),
@@ -206,7 +206,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			// Add the new revision in to the vertex
 			documentVertex.resources ??= [];
 			documentVertex.resources.push({
-				"@context": AuditableItemGraphContexts.ContextRoot,
+				"@context": AuditableItemGraphContexts.Namespace,
 				type: AuditableItemGraphTypes.Resource,
 				resourceObject: currentRevision
 			});
@@ -335,7 +335,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					}
 
 					documentVertex.resources.push({
-						"@context": AuditableItemGraphContexts.ContextRoot,
+						"@context": AuditableItemGraphContexts.Namespace,
 						type: AuditableItemGraphTypes.Resource,
 						resourceObject: newRevision as unknown as IJsonLdNodeObject
 					});
@@ -634,7 +634,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					existingEdgeIds.splice(existingIndex, 1);
 				} else {
 					const vertexEdge: IAuditableItemGraphEdge = {
-						"@context": AuditableItemGraphContexts.ContextRoot,
+						"@context": AuditableItemGraphContexts.Namespace,
 						type: AuditableItemGraphTypes.Edge,
 						targetId: aigEdge.targetId,
 						edgeRelationships: ["document"]
@@ -699,7 +699,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					const hasEdge = connected.edges?.some(e => e.targetId === auditableItemGraphDocumentId);
 					if (!hasEdge) {
 						const vertexEdge: IAuditableItemGraphEdge = {
-							"@context": AuditableItemGraphContexts.ContextRoot,
+							"@context": AuditableItemGraphContexts.Namespace,
 							type: AuditableItemGraphTypes.Edge,
 							targetId: auditableItemGraphDocumentId,
 							edgeRelationships: ["document"]
@@ -716,7 +716,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 						if (Is.empty(alias)) {
 							// No existing alias, so create one
 							const vertexAlias: IAuditableItemGraphAlias = {
-								"@context": AuditableItemGraphContexts.ContextRoot,
+								"@context": AuditableItemGraphContexts.Namespace,
 								type: AuditableItemGraphTypes.Alias,
 								id: documentId,
 								aliasFormat: documentIdFormat,
@@ -818,9 +818,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	): Promise<IDocumentList> {
 		const docList: IDocumentList = {
 			"@context": [
-				SchemaOrgContexts.ContextRoot,
-				DocumentContexts.ContextRoot,
-				DocumentContexts.ContextRootCommon
+				SchemaOrgContexts.Namespace,
+				DocumentContexts.Namespace,
+				DocumentContexts.NamespaceCommon
 			],
 			type: SchemaOrgTypes.ItemList,
 			[SchemaOrgTypes.ItemListElement]: []
@@ -861,8 +861,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 						if (blobRequired) {
 							document.blobStorageEntry = blobEntry;
 
-							if (!docList["@context"].includes(BlobStorageContexts.ContextRoot)) {
-								docList["@context"].push(BlobStorageContexts.ContextRoot);
+							if (!docList["@context"].includes(BlobStorageContexts.Namespace)) {
+								docList["@context"].push(BlobStorageContexts.Namespace);
 							}
 						}
 
@@ -890,8 +890,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 							document.attestationId
 						);
 						document.attestationInformation = attestationInformation;
-						if (!docList["@context"].includes(AttestationContexts.ContextRoot)) {
-							docList["@context"].push(AttestationContexts.ContextRoot);
+						if (!docList["@context"].includes(AttestationContexts.Namespace)) {
+							docList["@context"].push(AttestationContexts.Namespace);
 						}
 					}
 				}
@@ -919,9 +919,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	private async createAttestation(document: IDocument): Promise<string> {
 		const documentAttestation: IDocumentAttestation & IJsonLdNodeObject = {
 			"@context": [
-				DocumentContexts.ContextRoot,
-				DocumentContexts.ContextRootCommon,
-				SchemaOrgContexts.ContextRoot
+				DocumentContexts.Namespace,
+				DocumentContexts.NamespaceCommon,
+				SchemaOrgContexts.Namespace
 			],
 			type: DocumentTypes.DocumentAttestation,
 			id: document.id,

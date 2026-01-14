@@ -7,14 +7,14 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const DocumentContexts = {
 	/**
-	 * The context root for the document types.
+	 * The namespace for the document types.
 	 */
-	ContextRoot: "https://schema.twindev.org/documents/",
+	Namespace: "https://schema.twindev.org/documents/",
 
 	/**
-	 * The context root for the common types.
+	 * The namespace for the common types.
 	 */
-	ContextRootCommon: "https://schema.twindev.org/common/"
+	NamespaceCommon: "https://schema.twindev.org/common/"
 } as const;
 
 /**

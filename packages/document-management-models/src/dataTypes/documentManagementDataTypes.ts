@@ -14,9 +14,9 @@ export class DocumentManagementDataTypes {
 	 */
 	public static registerTypes(): void {
 		DataTypeHandlerFactory.register(
-			`${DocumentContexts.ContextRoot}${DocumentTypes.Document}`,
+			`${DocumentContexts.Namespace}${DocumentTypes.Document}`,
 			() => ({
-				context: DocumentContexts.ContextRoot,
+				namespace: DocumentContexts.Namespace,
 				type: DocumentTypes.Document,
 				defaultValue: {},
 				jsonSchema: async () => DocumentSchema as IJsonSchema
@@ -24,9 +24,9 @@ export class DocumentManagementDataTypes {
 		);
 
 		DataTypeHandlerFactory.register(
-			`${DocumentContexts.ContextRoot}${DocumentTypes.DocumentAttestation}`,
+			`${DocumentContexts.Namespace}${DocumentTypes.DocumentAttestation}`,
 			() => ({
-				context: DocumentContexts.ContextRoot,
+				namespace: DocumentContexts.Namespace,
 				type: DocumentTypes.DocumentAttestation,
 				defaultValue: {},
 				jsonSchema: async () => DocumentSchema as IJsonSchema

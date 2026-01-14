@@ -190,17 +190,17 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									SchemaOrgContexts.ContextRoot,
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon
+									SchemaOrgContexts.Namespace,
+									DocumentContexts.Namespace,
+									DocumentContexts.NamespaceCommon
 								],
 								type: SchemaOrgTypes.ItemList,
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											DocumentContexts.ContextRoot,
-											DocumentContexts.ContextRootCommon,
-											SchemaOrgContexts.ContextRoot
+											DocumentContexts.Namespace,
+											DocumentContexts.NamespaceCommon,
+											SchemaOrgContexts.Namespace
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
@@ -237,17 +237,17 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									SchemaOrgContexts.ContextRoot,
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon
+									SchemaOrgContexts.Namespace,
+									DocumentContexts.Namespace,
+									DocumentContexts.NamespaceCommon
 								],
 								type: SchemaOrgTypes.ItemList,
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											DocumentContexts.ContextRoot,
-											DocumentContexts.ContextRootCommon,
-											SchemaOrgContexts.ContextRoot
+											DocumentContexts.Namespace,
+											DocumentContexts.NamespaceCommon,
+											SchemaOrgContexts.Namespace
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
@@ -315,9 +315,9 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon,
-									SchemaOrgContexts.ContextRoot
+									DocumentContexts.Namespace,
+									DocumentContexts.NamespaceCommon,
+									SchemaOrgContexts.Namespace
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
@@ -352,9 +352,9 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon,
-									SchemaOrgContexts.ContextRoot
+									DocumentContexts.Namespace,
+									DocumentContexts.NamespaceCommon,
+									SchemaOrgContexts.Namespace
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
@@ -453,20 +453,20 @@ export function generateRestRoutesDocumentManagement(
 						id: "DocumentManagementQueryResponseExample",
 						response: {
 							body: {
-								"@context": [SchemaOrgContexts.ContextRoot, AuditableItemGraphContexts.ContextRoot],
+								"@context": [SchemaOrgContexts.Namespace, AuditableItemGraphContexts.Namespace],
 								type: [SchemaOrgTypes.ItemList, AuditableItemGraphTypes.VertexList],
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											AuditableItemGraphContexts.ContextRoot,
-											AuditableItemGraphContexts.ContextRootCommon
+											AuditableItemGraphContexts.Namespace,
+											AuditableItemGraphContexts.NamespaceCommon
 										],
 										id: "aig:c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7",
 										type: AuditableItemGraphTypes.Vertex,
 										dateCreated: "2024-08-22T04:13:20.000Z",
 										aliases: [
 											{
-												"@context": [AuditableItemGraphContexts.ContextRoot],
+												"@context": [AuditableItemGraphContexts.Namespace],
 												id: "test-id-0",
 												type: AuditableItemGraphTypes.Alias,
 												dateCreated: "2024-08-22T04:13:20.000Z"
@@ -474,7 +474,7 @@ export function generateRestRoutesDocumentManagement(
 										],
 										resources: [
 											{
-												"@context": AuditableItemGraphContexts.ContextRoot,
+												"@context": AuditableItemGraphContexts.Namespace,
 												type: AuditableItemGraphTypes.Resource,
 												dateCreated: "2024-08-22T04:13:20.000Z",
 												resourceObject: {
