@@ -190,17 +190,17 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									SchemaOrgContexts.Namespace,
-									DocumentContexts.Namespace,
-									DocumentContexts.NamespaceCommon
+									SchemaOrgContexts.Context,
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon
 								],
 								type: SchemaOrgTypes.ItemList,
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											DocumentContexts.Namespace,
-											DocumentContexts.NamespaceCommon,
-											SchemaOrgContexts.Namespace
+											DocumentContexts.Context,
+											DocumentContexts.ContextCommon,
+											SchemaOrgContexts.Context
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
@@ -237,17 +237,17 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									SchemaOrgContexts.Namespace,
-									DocumentContexts.Namespace,
-									DocumentContexts.NamespaceCommon
+									SchemaOrgContexts.Context,
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon
 								],
 								type: SchemaOrgTypes.ItemList,
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											DocumentContexts.Namespace,
-											DocumentContexts.NamespaceCommon,
-											SchemaOrgContexts.Namespace
+											DocumentContexts.Context,
+											DocumentContexts.ContextCommon,
+											SchemaOrgContexts.Context
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
@@ -315,9 +315,9 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									DocumentContexts.Namespace,
-									DocumentContexts.NamespaceCommon,
-									SchemaOrgContexts.Namespace
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon,
+									SchemaOrgContexts.Context
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
@@ -352,9 +352,9 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									DocumentContexts.Namespace,
-									DocumentContexts.NamespaceCommon,
-									SchemaOrgContexts.Namespace
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon,
+									SchemaOrgContexts.Context
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
@@ -453,20 +453,20 @@ export function generateRestRoutesDocumentManagement(
 						id: "DocumentManagementQueryResponseExample",
 						response: {
 							body: {
-								"@context": [SchemaOrgContexts.Namespace, AuditableItemGraphContexts.Namespace],
+								"@context": [SchemaOrgContexts.Context, AuditableItemGraphContexts.Context],
 								type: [SchemaOrgTypes.ItemList, AuditableItemGraphTypes.VertexList],
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											AuditableItemGraphContexts.Namespace,
-											AuditableItemGraphContexts.NamespaceCommon
+											AuditableItemGraphContexts.Context,
+											AuditableItemGraphContexts.ContextCommon
 										],
 										id: "aig:c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7",
 										type: AuditableItemGraphTypes.Vertex,
 										dateCreated: "2024-08-22T04:13:20.000Z",
 										aliases: [
 											{
-												"@context": [AuditableItemGraphContexts.Namespace],
+												"@context": [AuditableItemGraphContexts.Context],
 												id: "test-id-0",
 												type: AuditableItemGraphTypes.Alias,
 												dateCreated: "2024-08-22T04:13:20.000Z"
@@ -474,7 +474,7 @@ export function generateRestRoutesDocumentManagement(
 										],
 										resources: [
 											{
-												"@context": AuditableItemGraphContexts.Namespace,
+												"@context": AuditableItemGraphContexts.Context,
 												type: AuditableItemGraphTypes.Resource,
 												dateCreated: "2024-08-22T04:13:20.000Z",
 												resourceObject: {

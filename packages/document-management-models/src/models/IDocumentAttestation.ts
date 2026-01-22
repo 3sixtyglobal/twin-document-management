@@ -13,9 +13,9 @@ export interface IDocumentAttestation {
 	 * JSON-LD Context.
 	 */
 	"@context": [
-		typeof DocumentContexts.Namespace,
-		typeof DocumentContexts.NamespaceCommon,
-		typeof SchemaOrgContexts.Namespace
+		typeof DocumentContexts.Context,
+		typeof DocumentContexts.ContextCommon,
+		typeof SchemaOrgContexts.Context
 	];
 
 	/**

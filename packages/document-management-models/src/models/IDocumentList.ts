@@ -13,9 +13,9 @@ export interface IDocumentList {
 	 * JSON-LD Context.
 	 */
 	"@context": [
-		typeof SchemaOrgContexts.Namespace,
-		typeof DocumentContexts.Namespace,
-		typeof DocumentContexts.NamespaceCommon,
+		typeof SchemaOrgContexts.Context,
+		typeof DocumentContexts.Context,
+		typeof DocumentContexts.ContextCommon,
 		...IJsonLdContextDefinitionElement[]
 	];
 
