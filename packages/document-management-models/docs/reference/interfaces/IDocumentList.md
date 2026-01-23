@@ -33,11 +33,3 @@ The list of documents.
 > `optional` **edges**: `string`[]
 
 The ids of the other vertices which are connected to the document.
-
-***
-
-### nextItem?
-
-> `optional` **nextItem**: `string`
-
-The cursor to get the next chunk of documents.

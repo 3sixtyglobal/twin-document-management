@@ -190,7 +190,7 @@ Nothing.
 
 ### get()
 
-> **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `limit?`): `Promise`\<`IDocumentList`\>
+> **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `limit?`): `Promise`\<\{ `entries`: `IDocumentList`; `cursor?`: `string`; \}\>
 
 Get a document using it's auditable item graph vertex id and optional revision.
 
@@ -256,7 +256,7 @@ The limit of items to return, defaults to 1 so only most recent is returned.
 
 #### Returns
 
-`Promise`\<`IDocumentList`\>
+`Promise`\<\{ `entries`: `IDocumentList`; `cursor?`: `string`; \}\>
 
 The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
 
@@ -367,7 +367,7 @@ Nothing.
 
 ### query()
 
-> **query**(`documentId`, `cursor?`, `limit?`): `Promise`\<`IAuditableItemGraphVertexList`\>
+> **query**(`documentId`, `cursor?`, `limit?`): `Promise`\<\{ `entries`: `IAuditableItemGraphVertexList`; `cursor?`: `string`; \}\>
 
 Find all the document with a specific id.
 
@@ -393,7 +393,7 @@ The limit to get the next chunk of documents.
 
 #### Returns
 
-`Promise`\<`IAuditableItemGraphVertexList`\>
+`Promise`\<\{ `entries`: `IAuditableItemGraphVertexList`; `cursor?`: `string`; \}\>
 
 The graph vertices that contain documents referencing the specified document id.
 

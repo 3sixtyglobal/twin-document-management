@@ -480,8 +480,8 @@ describe("document-management-service", async () => {
 		);
 
 		const docs = await service.get(documentId, undefined, undefined, 100);
-		expect(docs.itemListElement.length).toEqual(1);
-		expect(docs.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
 
 		await service.update(documentId, undefined, {
 			"@context": "https://schema.org",
@@ -490,8 +490,8 @@ describe("document-management-service", async () => {
 		});
 
 		const docs2 = await service.get(documentId, undefined, undefined, 100);
-		expect(docs2.itemListElement.length).toEqual(1);
-		expect(docs2.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading-2");
+		expect(docs2.entries.itemListElement.length).toEqual(1);
+		expect(docs2.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading-2");
 
 		const aigStore = vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
@@ -564,8 +564,8 @@ describe("document-management-service", async () => {
 		);
 
 		const docs = await service.get(documentId, undefined, undefined, 100);
-		expect(docs.itemListElement.length).toEqual(1);
-		expect(docs.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
 
 		await service.update(documentId, Converter.utf8ToBytes("Hello World2"), {
 			"@context": "https://schema.org",
@@ -574,9 +574,9 @@ describe("document-management-service", async () => {
 		});
 
 		const docs2 = await service.get(documentId, undefined, undefined, 100);
-		expect(docs2.itemListElement.length).toEqual(2);
-		expect(docs2.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading-2");
-		expect(docs2.itemListElement[1].annotationObject?.name).toEqual("bill-of-lading");
+		expect(docs2.entries.itemListElement.length).toEqual(2);
+		expect(docs2.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading-2");
+		expect(docs2.entries.itemListElement[1].annotationObject?.name).toEqual("bill-of-lading");
 	});
 
 	test("can create a document with edges and update them", async () => {
@@ -733,7 +733,7 @@ describe("document-management-service", async () => {
 
 		const docs = await service.get(documentId);
 
-		const existingEdges = docs.edges ?? [];
+		const existingEdges = docs.entries.edges ?? [];
 		existingEdges.splice(1, 1);
 
 		await service.update(documentId, undefined, undefined, [
@@ -899,7 +899,7 @@ describe("document-management-service", async () => {
 		);
 
 		const docs = await service.get(documentId);
-		expect(docs).toEqual({
+		expect(docs.entries).toEqual({
 			"@context": [
 				"https://schema.org",
 				"https://schema.twindev.org/documents/",
@@ -949,7 +949,7 @@ describe("document-management-service", async () => {
 		);
 
 		const docs = await service.get(documentId, { includeBlobStorageMetadata: true });
-		expect(docs).toEqual({
+		expect(docs.entries).toEqual({
 			"@context": [
 				"https://schema.org",
 				"https://schema.twindev.org/documents/",
@@ -1013,7 +1013,7 @@ describe("document-management-service", async () => {
 			includeBlobStorageMetadata: true,
 			includeBlobStorageData: true
 		});
-		expect(doc).toEqual({
+		expect(doc.entries).toEqual({
 			"@context": [
 				"https://schema.org",
 				"https://schema.twindev.org/documents/",
@@ -1079,7 +1079,7 @@ describe("document-management-service", async () => {
 			includeBlobStorageData: true,
 			includeAttestation: true
 		});
-		expect(docs).toEqual({
+		expect(docs.entries).toEqual({
 			"@context": [
 				"https://schema.org",
 				"https://schema.twindev.org/documents/",
@@ -1172,8 +1172,8 @@ describe("document-management-service", async () => {
 		const docs = await service.get(
 			"aig:6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c"
 		);
-		expect(docs.itemListElement.length).toEqual(1);
-		expect(docs.itemListElement[0].documentRevision).toEqual(5);
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(5);
 	});
 
 	test("can get a document from an AIG with multiple revisions", async () => {
@@ -1200,13 +1200,13 @@ describe("document-management-service", async () => {
 		}
 
 		const docs = await service.get(documentId, undefined, undefined, 100);
-		expect(docs.itemListElement.length).toEqual(6);
-		expect(docs.itemListElement[0].documentRevision).toEqual(5);
-		expect(docs.itemListElement[1].documentRevision).toEqual(4);
-		expect(docs.itemListElement[2].documentRevision).toEqual(3);
-		expect(docs.itemListElement[3].documentRevision).toEqual(2);
-		expect(docs.itemListElement[4].documentRevision).toEqual(1);
-		expect(docs.itemListElement[5].documentRevision).toEqual(0);
+		expect(docs.entries.itemListElement.length).toEqual(6);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(5);
+		expect(docs.entries.itemListElement[1].documentRevision).toEqual(4);
+		expect(docs.entries.itemListElement[2].documentRevision).toEqual(3);
+		expect(docs.entries.itemListElement[3].documentRevision).toEqual(2);
+		expect(docs.entries.itemListElement[4].documentRevision).toEqual(1);
+		expect(docs.entries.itemListElement[5].documentRevision).toEqual(0);
 	});
 
 	test("can get a document revision from an AIG with multiple revisions", async () => {
@@ -1262,7 +1262,7 @@ describe("document-management-service", async () => {
 		await service.removeRevision(documentId, 2);
 
 		const docs = await service.get(documentId, undefined, undefined, 20);
-		expect(docs.itemListElement.length).toEqual(5);
+		expect(docs.entries.itemListElement.length).toEqual(5);
 
 		const docWithDeleted = await service.get(
 			documentId,
@@ -1272,7 +1272,7 @@ describe("document-management-service", async () => {
 			undefined,
 			20
 		);
-		expect(docWithDeleted.itemListElement.length).toEqual(6);
+		expect(docWithDeleted.entries.itemListElement.length).toEqual(6);
 	});
 
 	test("can remove a revision an add new revisions keeping revision count incrementing", async () => {
@@ -1293,23 +1293,23 @@ describe("document-management-service", async () => {
 		await service.update(documentId, Converter.utf8ToBytes("Hello World2"));
 
 		const docs = await service.get(documentId, undefined, undefined, 20);
-		expect(docs.itemListElement.length).toEqual(2);
-		expect(docs.itemListElement[0].documentRevision).toEqual(1);
-		expect(docs.itemListElement[1].documentRevision).toEqual(0);
+		expect(docs.entries.itemListElement.length).toEqual(2);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(1);
+		expect(docs.entries.itemListElement[1].documentRevision).toEqual(0);
 
 		await service.removeRevision(documentId, 1);
 
 		const docs2 = await service.get(documentId, undefined, undefined, 20);
-		expect(docs2.itemListElement.length).toEqual(1);
-		expect(docs2.itemListElement[0].documentRevision).toEqual(0);
+		expect(docs2.entries.itemListElement.length).toEqual(1);
+		expect(docs2.entries.itemListElement[0].documentRevision).toEqual(0);
 
 		await service.update(documentId, Converter.utf8ToBytes("Hello World3"));
 
 		const docs3 = await service.get(documentId, undefined, undefined, 20);
 
-		expect(docs3.itemListElement.length).toEqual(2);
-		expect(docs3.itemListElement[0].documentRevision).toEqual(2);
-		expect(docs3.itemListElement[1].documentRevision).toEqual(0);
+		expect(docs3.entries.itemListElement.length).toEqual(2);
+		expect(docs3.entries.itemListElement[0].documentRevision).toEqual(2);
+		expect(docs3.entries.itemListElement[1].documentRevision).toEqual(0);
 
 		const docWithDeleted = await service.get(
 			documentId,
@@ -1319,10 +1319,10 @@ describe("document-management-service", async () => {
 			undefined,
 			20
 		);
-		expect(docWithDeleted.itemListElement.length).toEqual(3);
-		expect(docWithDeleted.itemListElement[0].documentRevision).toEqual(2);
-		expect(docWithDeleted.itemListElement[1].documentRevision).toEqual(1);
-		expect(docWithDeleted.itemListElement[2].documentRevision).toEqual(0);
+		expect(docWithDeleted.entries.itemListElement.length).toEqual(3);
+		expect(docWithDeleted.entries.itemListElement[0].documentRevision).toEqual(2);
+		expect(docWithDeleted.entries.itemListElement[1].documentRevision).toEqual(1);
+		expect(docWithDeleted.entries.itemListElement[2].documentRevision).toEqual(0);
 	});
 
 	test("can query for documents from the aig", async () => {
@@ -1344,7 +1344,7 @@ describe("document-management-service", async () => {
 
 		const vertices = await service.query("test-id");
 
-		expect(vertices.itemListElement.length).toEqual(5);
+		expect(vertices.entries.itemListElement.length).toEqual(5);
 	});
 
 	test("can extract data from a document with no blob data returned", async () => {
@@ -1375,8 +1375,8 @@ describe("document-management-service", async () => {
 
 		const result = await service.get(docId, { extractRuleGroupId: "my-rules" });
 
-		expect(result.itemListElement[0].blobStorageEntry).toBeUndefined();
-		expect(result.itemListElement[0].extractedData).toEqual({
+		expect(result.entries.itemListElement[0].blobStorageEntry).toBeUndefined();
+		expect(result.entries.itemListElement[0].extractedData).toEqual({
 			address: {
 				firstLine: "bar"
 			}
@@ -1414,9 +1414,9 @@ describe("document-management-service", async () => {
 			includeBlobStorageMetadata: true
 		});
 
-		expect(result.itemListElement[0].blobStorageEntry).toBeDefined();
-		expect(result.itemListElement[0].blobStorageEntry?.blob).toBeUndefined();
-		expect(result.itemListElement[0].extractedData).toEqual({
+		expect(result.entries.itemListElement[0].blobStorageEntry).toBeDefined();
+		expect(result.entries.itemListElement[0].blobStorageEntry?.blob).toBeUndefined();
+		expect(result.entries.itemListElement[0].extractedData).toEqual({
 			address: {
 				firstLine: "bar"
 			}
@@ -1455,9 +1455,9 @@ describe("document-management-service", async () => {
 			includeBlobStorageData: true
 		});
 
-		expect(result.itemListElement[0].blobStorageEntry).toBeDefined();
-		expect(result.itemListElement[0].blobStorageEntry?.blob).toBeDefined();
-		expect(result.itemListElement[0].extractedData).toEqual({
+		expect(result.entries.itemListElement[0].blobStorageEntry).toBeDefined();
+		expect(result.entries.itemListElement[0].blobStorageEntry?.blob).toBeDefined();
+		expect(result.entries.itemListElement[0].extractedData).toEqual({
 			address: {
 				firstLine: "bar"
 			}

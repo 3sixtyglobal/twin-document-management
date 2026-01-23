@@ -1163,10 +1163,6 @@
 							"type": "string"
 						},
 						"description": "The ids of the other vertices which are connected to the document."
-					},
-					"nextItem": {
-						"type": "string",
-						"description": "The cursor to get the next chunk of documents."
 					}
 				},
 				"required": [

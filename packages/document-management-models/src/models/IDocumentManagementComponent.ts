@@ -92,7 +92,10 @@ export interface IDocumentManagementComponent extends IComponent {
 		},
 		cursor?: string,
 		limit?: number
-	): Promise<IDocumentList>;
+	): Promise<{
+		entries: IDocumentList;
+		cursor?: string;
+	}>;
 
 	/**
 	 * Get a document revision using it's auditable item graph vertex id.
@@ -138,5 +141,8 @@ export interface IDocumentManagementComponent extends IComponent {
 		documentId: string,
 		cursor?: string,
 		limit?: number
-	): Promise<IAuditableItemGraphVertexList>;
+	): Promise<{
+		entries: IAuditableItemGraphVertexList;
+		cursor?: string;
+	}>;
 }

@@ -278,7 +278,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 
 			const documents = await this.getDocumentsFromVertex(documentVertex);
-			const latestRevision: IDocument | undefined = documents.itemListElement[0];
+			const latestRevision: IDocument | undefined = documents.entries.itemListElement[0];
 
 			documentVertex.resources = documentVertex.resources.filter(r => Is.empty(r.dateDeleted));
 
@@ -297,8 +297,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					);
 				}
 				// Also get the current edges in case some need disconnecting
-				if (Is.arrayValue(documents.edges)) {
-					for (const edgeId of documents.edges) {
+				if (Is.arrayValue(documents.entries.edges)) {
+					for (const edgeId of documents.entries.edges) {
 						// If we haven't retrieved the edge then it must be one that needs removing
 						if (Is.empty(connectedVertices[edgeId])) {
 							connectedVertices[edgeId] = await this._auditableItemGraphComponent.get(edgeId);
@@ -416,7 +416,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		},
 		cursor?: string,
 		limit?: number
-	): Promise<IDocumentList> {
+	): Promise<{
+		entries: IDocumentList;
+		cursor?: string;
+	}> {
 		Urn.guard(
 			DocumentManagementService.CLASS_NAME,
 			nameof(auditableItemGraphDocumentId),
@@ -432,8 +435,14 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			// Populate the document and revisions with the options set
 			const documents = await this.getDocumentsFromVertex(documentVertex, options, cursor, limit);
 
-			const result = await JsonLdProcessor.compact(documents, documents["@context"]);
-			return result;
+			const result = await JsonLdProcessor.compact(
+				documents.entries,
+				documents.entries["@context"]
+			);
+			return {
+				entries: result,
+				cursor: documents.cursor
+			};
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
@@ -498,8 +507,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			const docList = await this.getDocumentsFromVertex(documentVertex, options);
 
 			const result = await JsonLdProcessor.compact(
-				docList.itemListElement[0],
-				docList.itemListElement[0]["@context"]
+				docList.entries.itemListElement[0],
+				docList.entries.itemListElement[0]["@context"]
 			);
 			return result;
 		} catch (error) {
@@ -581,7 +590,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		documentId: string,
 		cursor?: string,
 		limit?: number
-	): Promise<IAuditableItemGraphVertexList> {
+	): Promise<{
+		entries: IAuditableItemGraphVertexList;
+		cursor?: string;
+	}> {
 		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 
 		try {
@@ -815,7 +827,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		},
 		cursor?: string,
 		limit?: number
-	): Promise<IDocumentList> {
+	): Promise<{
+		entries: IDocumentList;
+		cursor?: string;
+	}> {
 		const docList: IDocumentList = {
 			"@context": [
 				SchemaOrgContexts.Context,
@@ -825,6 +840,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			type: SchemaOrgTypes.ItemList,
 			[SchemaOrgTypes.ItemListElement]: []
 		};
+
+		let nextCursor: string | undefined;
 
 		if (Is.arrayValue(documentVertex.resources)) {
 			// Sort by newest revision first
@@ -837,7 +854,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			const startIndex = Coerce.integer(cursor) ?? 0;
 			const endIndex = Math.min(startIndex + (limit ?? 1), documentVertex.resources.length);
 			const slicedResources = documentVertex.resources.slice(startIndex, endIndex);
-			docList[SchemaOrgTypes.NextItem] =
+			nextCursor =
 				documentVertex.resources.length > endIndex ? (endIndex + 1).toString() : undefined;
 
 			const includeBlobStorageMetadata = options?.includeBlobStorageMetadata ?? false;
@@ -908,7 +925,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 		}
 
-		return docList;
+		return {
+			entries: docList,
+			cursor: nextCursor
+		};
 	}
 
 	/**

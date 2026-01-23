@@ -25,6 +25,7 @@ import type {
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import { HeaderHelper, HeaderTypes } from "@twin.org/web";
 
 /**
  * Client for performing document management through to REST endpoints.
@@ -185,7 +186,10 @@ export class DocumentManagementRestClient
 		},
 		cursor?: string,
 		limit?: number
-	): Promise<IDocumentList> {
+	): Promise<{
+		entries: IDocumentList;
+		cursor?: string;
+	}> {
 		Urn.guard(
 			DocumentManagementRestClient.CLASS_NAME,
 			nameof(auditableItemGraphDocumentId),
@@ -211,7 +215,11 @@ export class DocumentManagementRestClient
 			}
 		});
 
-		return response.body;
+		return {
+			entries: response.body,
+			cursor: HeaderHelper.extractLinkHeaderRelation(response.headers?.[HeaderTypes.Link], "next")
+				?.urlQueryParams?.cursor
+		};
 	}
 
 	/**
@@ -305,7 +313,10 @@ export class DocumentManagementRestClient
 		documentId: string,
 		cursor?: string,
 		limit?: number
-	): Promise<IAuditableItemGraphVertexList> {
+	): Promise<{
+		entries: IAuditableItemGraphVertexList;
+		cursor?: string;
+	}> {
 		Guards.stringValue(DocumentManagementRestClient.CLASS_NAME, nameof(documentId), documentId);
 
 		const response = await this.fetch<
@@ -319,6 +330,10 @@ export class DocumentManagementRestClient
 			}
 		});
 
-		return response.body;
+		return {
+			entries: response.body,
+			cursor: HeaderHelper.extractLinkHeaderRelation(response.headers?.[HeaderTypes.Link], "next")
+				?.urlQueryParams?.cursor
+		};
 	}
 }

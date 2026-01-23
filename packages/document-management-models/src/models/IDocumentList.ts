@@ -33,9 +33,4 @@ export interface IDocumentList {
 	 * The ids of the other vertices which are connected to the document.
 	 */
 	edges?: string[];
-
-	/**
-	 * The cursor to get the next chunk of documents.
-	 */
-	[SchemaOrgTypes.NextItem]?: string;
 }
