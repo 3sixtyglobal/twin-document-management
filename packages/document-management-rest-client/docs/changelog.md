@@ -1,5 +1,19 @@
 # @twin.org/document-management-rest-client - Changelog
 
+## [0.0.3-next.7](https://github.com/twinfoundation/document-management/compare/document-management-rest-client-v0.0.3-next.6...document-management-rest-client-v0.0.3-next.7) (2026-01-23)
+
+
+### Features
+
+* replace nextItem property with Link header ([#34](https://github.com/twinfoundation/document-management/issues/34)) ([3f04c3f](https://github.com/twinfoundation/document-management/commit/3f04c3fb5c9ec0c56f213089a15cc247fbfbd59c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.6 to 0.0.3-next.7
+
 ## [0.0.3-next.6](https://github.com/twinfoundation/document-management/compare/document-management-rest-client-v0.0.3-next.5...document-management-rest-client-v0.0.3-next.6) (2026-01-22)
 
 
