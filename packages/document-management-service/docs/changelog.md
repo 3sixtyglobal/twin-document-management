@@ -1,5 +1,19 @@
 # @twin.org/document-management-service - Changelog
 
+## [0.0.3-next.8](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.7...document-management-service-v0.0.3-next.8) (2026-01-26)
+
+
+### Bug Fixes
+
+* pagination indexing off by one ([f0f28bf](https://github.com/twinfoundation/document-management/commit/f0f28bf1aab57ed86b3872923f89f5fa9400ad82))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.7 to 0.0.3-next.8
+
 ## [0.0.3-next.7](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.6...document-management-service-v0.0.3-next.7) (2026-01-23)
 
 

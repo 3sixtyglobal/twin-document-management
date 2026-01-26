@@ -1,5 +1,12 @@
 # @twin.org/document-management-models - Changelog
 
+## [0.0.3-next.8](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.7...document-management-models-v0.0.3-next.8) (2026-01-26)
+
+
+### Miscellaneous Chores
+
+* **document-management-models:** Synchronize repo versions
+
 ## [0.0.3-next.7](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.6...document-management-models-v0.0.3-next.7) (2026-01-23)
 
 

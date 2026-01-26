@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/document-management-rest-client",
-	"version": "0.0.3-next.7",
+	"version": "0.0.3-next.8",
 	"description": "Document management contract implementation which can connect to REST endpoints",
 	"repository": {
 		"type": "git",
@@ -33,7 +33,7 @@
 		"@twin.org/auditable-item-graph-models": "next",
 		"@twin.org/core": "next",
 		"@twin.org/data-json-ld": "next",
-		"@twin.org/document-management-models": "0.0.3-next.7",
+		"@twin.org/document-management-models": "0.0.3-next.8",
 		"@twin.org/entity": "next",
 		"@twin.org/nameof": "next",
 		"@twin.org/standards-unece": "next",
