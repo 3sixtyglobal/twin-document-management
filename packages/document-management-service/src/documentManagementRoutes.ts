@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type {
 	ICreatedResponse,
+	IHostingComponent,
 	IHttpRequestContext,
 	INoContentResponse,
 	INotFoundResponse,
@@ -591,7 +592,9 @@ export async function documentManagementGet(
 		request.pathParams.auditableItemGraphDocumentId
 	);
 
-	const mimeType = request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? "jsonld" : "json";
+	const hostingService = ComponentFactory.get<IHostingComponent>(
+		httpRequestContext.hostingComponentType ?? "hosting"
+	);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
@@ -609,16 +612,14 @@ export async function documentManagementGet(
 		Coerce.integer(request.query?.limit)
 	);
 
-	const headers: {
-		[HeaderTypes.ContentType]: typeof MimeTypes.Json | typeof MimeTypes.JsonLd;
-		[HeaderTypes.Link]?: string | string[];
-	} = {
-		[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
+	const headers: IDocumentManagementGetResponse["headers"] = {
+		[HeaderTypes.ContentType]:
+			request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? MimeTypes.JsonLd : MimeTypes.Json
 	};
 
-	if (Is.stringValue(result.cursor) && Is.stringValue(httpRequestContext.serverRequest?.url)) {
+	if (Is.stringValue(result.cursor)) {
 		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			httpRequestContext.serverRequest.url,
+			await hostingService.buildPublicUrl(httpRequestContext.serverRequest.url),
 			{ cursor: result.cursor },
 			"next"
 		);
@@ -657,8 +658,6 @@ export async function documentManagementGetRevision(
 	const revision = Coerce.integer(request.pathParams.revision);
 	Guards.integer(ROUTES_SOURCE, nameof(revision), revision);
 
-	const mimeType = request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? "jsonld" : "json";
-
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	const result = await component.getRevision(
@@ -675,7 +674,10 @@ export async function documentManagementGetRevision(
 
 	return {
 		headers: {
-			[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
+			[HeaderTypes.ContentType]:
+				request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd
+					? MimeTypes.JsonLd
+					: MimeTypes.Json
 		},
 		body: result
 	};
@@ -774,7 +776,9 @@ export async function documentManagementQuery(
 	);
 	Guards.stringValue(ROUTES_SOURCE, nameof(request.query.documentId), request.query.documentId);
 
-	const mimeType = request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? "jsonld" : "json";
+	const hostingService = ComponentFactory.get<IHostingComponent>(
+		httpRequestContext.hostingComponentType ?? "hosting"
+	);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
@@ -784,16 +788,14 @@ export async function documentManagementQuery(
 		Coerce.integer(request.query?.limit)
 	);
 
-	const headers: {
-		[HeaderTypes.ContentType]: typeof MimeTypes.Json | typeof MimeTypes.JsonLd;
-		[HeaderTypes.Link]?: string | string[];
-	} = {
-		[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
+	const headers: IDocumentManagementQueryResponse["headers"] = {
+		[HeaderTypes.ContentType]:
+			request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? MimeTypes.JsonLd : MimeTypes.Json
 	};
 
-	if (Is.stringValue(result.cursor) && Is.stringValue(httpRequestContext.serverRequest?.url)) {
+	if (Is.stringValue(result.cursor)) {
 		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			httpRequestContext.serverRequest.url,
+			await hostingService.buildPublicUrl(httpRequestContext.serverRequest.url),
 			{ cursor: result.cursor },
 			"next"
 		);
