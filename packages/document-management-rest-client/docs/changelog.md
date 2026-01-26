@@ -1,5 +1,19 @@
 # @twin.org/document-management-rest-client - Changelog
 
+## [0.0.3-next.9](https://github.com/twinfoundation/document-management/compare/document-management-rest-client-v0.0.3-next.8...document-management-rest-client-v0.0.3-next.9) (2026-01-26)
+
+
+### Miscellaneous Chores
+
+* **document-management-rest-client:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.8 to 0.0.3-next.9
+
 ## [0.0.3-next.8](https://github.com/twinfoundation/document-management/compare/document-management-rest-client-v0.0.3-next.7...document-management-rest-client-v0.0.3-next.8) (2026-01-26)
 
 

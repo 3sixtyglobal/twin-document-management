@@ -1,5 +1,19 @@
 # @twin.org/document-management-service - Changelog
 
+## [0.0.3-next.9](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.8...document-management-service-v0.0.3-next.9) (2026-01-26)
+
+
+### Features
+
+* use new hosting url for cursor links ([5cf4220](https://github.com/twinfoundation/document-management/commit/5cf4220e80e727e324193f46017f45bf828f1249))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.8 to 0.0.3-next.9
+
 ## [0.0.3-next.8](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.7...document-management-service-v0.0.3-next.8) (2026-01-26)
 
 
