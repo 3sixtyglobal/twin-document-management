@@ -592,7 +592,7 @@ export async function documentManagementGet(
 		request.pathParams.auditableItemGraphDocumentId
 	);
 
-	const hostingService = ComponentFactory.get<IHostingComponent>(
+	const hostingComponent = ComponentFactory.get<IHostingComponent>(
 		httpRequestContext.hostingComponentType ?? "hosting"
 	);
 
@@ -619,7 +619,7 @@ export async function documentManagementGet(
 
 	if (Is.stringValue(result.cursor)) {
 		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			await hostingService.buildPublicUrl(httpRequestContext.serverRequest.url),
+			await hostingComponent.buildPublicUrl(httpRequestContext.serverRequest.url),
 			{ cursor: result.cursor },
 			"next"
 		);
@@ -776,7 +776,7 @@ export async function documentManagementQuery(
 	);
 	Guards.stringValue(ROUTES_SOURCE, nameof(request.query.documentId), request.query.documentId);
 
-	const hostingService = ComponentFactory.get<IHostingComponent>(
+	const hostingComponent = ComponentFactory.get<IHostingComponent>(
 		httpRequestContext.hostingComponentType ?? "hosting"
 	);
 
@@ -795,7 +795,7 @@ export async function documentManagementQuery(
 
 	if (Is.stringValue(result.cursor)) {
 		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			await hostingService.buildPublicUrl(httpRequestContext.serverRequest.url),
+			await hostingComponent.buildPublicUrl(httpRequestContext.serverRequest.url),
 			{ cursor: result.cursor },
 			"next"
 		);
