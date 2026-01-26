@@ -1209,6 +1209,53 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement[5].documentRevision).toEqual(0);
 	});
 
+	test("can get a document from an AIG with multiple revisions and cursors", async () => {
+		const service = new DocumentManagementService();
+
+		const documentId = await service.create(
+			"test-doc-id:aaa",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Hello World"),
+			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			undefined,
+			{
+				createAttestation: false
+			}
+		);
+
+		for (let i = 0; i < 30; i++) {
+			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
+				"@context": "https://schema.org",
+				type: "DigitalDocument",
+				name: "bill-of-lading"
+			});
+		}
+
+		let docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement.length).toEqual(10);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(30);
+		expect(docs.entries.itemListElement[9].documentRevision).toEqual(21);
+		expect(docs.cursor).toEqual("10");
+
+		docs = await service.get(documentId, undefined, docs.cursor, 10);
+		expect(docs.entries.itemListElement.length).toEqual(10);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(20);
+		expect(docs.entries.itemListElement[9].documentRevision).toEqual(11);
+		expect(docs.cursor).toEqual("20");
+
+		docs = await service.get(documentId, undefined, docs.cursor, 10);
+		expect(docs.entries.itemListElement.length).toEqual(10);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(10);
+		expect(docs.entries.itemListElement[9].documentRevision).toEqual(1);
+		expect(docs.cursor).toEqual("30");
+
+		docs = await service.get(documentId, undefined, docs.cursor, 10);
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
+		expect(docs.cursor).toBeUndefined();
+	});
+
 	test("can get a document revision from an AIG with multiple revisions", async () => {
 		const service = new DocumentManagementService();
 

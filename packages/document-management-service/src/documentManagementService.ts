@@ -854,8 +854,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			const startIndex = Coerce.integer(cursor) ?? 0;
 			const endIndex = Math.min(startIndex + (limit ?? 1), documentVertex.resources.length);
 			const slicedResources = documentVertex.resources.slice(startIndex, endIndex);
-			nextCursor =
-				documentVertex.resources.length > endIndex ? (endIndex + 1).toString() : undefined;
+			nextCursor = documentVertex.resources.length > endIndex ? endIndex.toString() : undefined;
 
 			const includeBlobStorageMetadata = options?.includeBlobStorageMetadata ?? false;
 			const includeBlobStorageData = options?.includeBlobStorageData ?? false;
