@@ -25,6 +25,7 @@ JSON-LD Type.
 > **documentId**: `string`
 
 The id of the document.
+json-ld type:schema:identifier
 
 ***
 
@@ -33,6 +34,7 @@ The id of the document.
 > **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
+json-ld type:schema:identifier
 
 ***
 
@@ -41,6 +43,7 @@ The code for the document type.
 > **documentRevision**: `number`
 
 The revision of the document as a 0 based index.
+json-ld type:schema:Integer
 
 ***
 
@@ -49,6 +52,7 @@ The revision of the document as a 0 based index.
 > **dateCreated**: `string`
 
 The date/time of when the document was created.
+json-ld namespace:schema
 
 ***
 
@@ -57,3 +61,4 @@ The date/time of when the document was created.
 > **blobHash**: `string`
 
 The hash of the document being attested.
+json-ld namespace:twin-common

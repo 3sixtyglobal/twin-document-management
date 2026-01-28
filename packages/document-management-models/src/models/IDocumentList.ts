@@ -26,11 +26,13 @@ export interface IDocumentList {
 
 	/**
 	 * The list of documents.
+	 * json-ld namespace:schema
 	 */
 	[SchemaOrgTypes.ItemListElement]: IDocument[];
 
 	/**
 	 * The ids of the other vertices which are connected to the document.
+	 * json-ld container:set
 	 */
 	edges?: string[];
 }

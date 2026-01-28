@@ -33,6 +33,7 @@ The full id of the document.
 > **documentId**: `string`
 
 The id of the document.
+json-ld type:schema:identifier
 
 ***
 
@@ -41,6 +42,7 @@ The id of the document.
 > `optional` **documentIdFormat**: `string`
 
 The format of the document id.
+json-ld type:schema:Text
 
 ***
 
@@ -49,6 +51,7 @@ The format of the document id.
 > **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
+json-ld type:schema:identifier
 
 ***
 
@@ -57,6 +60,7 @@ The code for the document type.
 > **documentRevision**: `number`
 
 The revision of the document as a 0 based index.
+json-ld type:schema:Integer
 
 ***
 
@@ -65,6 +69,7 @@ The revision of the document as a 0 based index.
 > `optional` **annotationObject**: `IJsonLdNodeObject`
 
 Additional annotation information for the document.
+json-ld namespace:twin-common
 
 ***
 
@@ -73,6 +78,7 @@ Additional annotation information for the document.
 > **blobStorageId**: `string`
 
 The blob storage id for the document.
+json-ld type:schema:identifier
 
 ***
 
@@ -81,6 +87,7 @@ The blob storage id for the document.
 > **blobHash**: `string`
 
 The hash of the blob data.
+json-ld namespace:twin-common
 
 ***
 
@@ -89,6 +96,7 @@ The hash of the blob data.
 > `optional` **blobStorageEntry**: `IBlobStorageEntry`
 
 The additional JSON-LD for blob storage if it was requested.
+json-ld id
 
 ***
 
@@ -97,6 +105,7 @@ The additional JSON-LD for blob storage if it was requested.
 > `optional` **extractedData**: `unknown`
 
 The data extracted from the document using data extraction services.
+json-ld type:json
 
 ***
 
@@ -105,6 +114,7 @@ The data extracted from the document using data extraction services.
 > `optional` **attestationId**: `string`
 
 The attestation for the document if one was created.
+json-ld type:schema:identifier
 
 ***
 
@@ -113,6 +123,7 @@ The attestation for the document if one was created.
 > `optional` **attestationInformation**: `IAttestationInformation`
 
 The additional JSON-LD for attestation storage if it was requested.
+json-ld id
 
 ***
 
@@ -121,6 +132,7 @@ The additional JSON-LD for attestation storage if it was requested.
 > **dateCreated**: `string`
 
 The date/time of when the document was created.
+json-ld namespace:schema
 
 ***
 
@@ -129,6 +141,7 @@ The date/time of when the document was created.
 > `optional` **dateModified**: `string`
 
 The date/time of when the document was modified.
+json-ld namespace:schema
 
 ***
 
@@ -137,6 +150,7 @@ The date/time of when the document was modified.
 > `optional` **dateDeleted**: `string`
 
 The date/time of when the document was deleted, as we never actually remove items.
+json-ld namespace:schema
 
 ***
 
@@ -145,6 +159,7 @@ The date/time of when the document was deleted, as we never actually remove item
 > `optional` **organizationIdentity**: `string`
 
 The organization which added the document to the graph.
+json-ld namespace:twin-common
 
 ***
 
@@ -153,3 +168,4 @@ The organization which added the document to the graph.
 > `optional` **userIdentity**: `string`
 
 The user who added the document to the graph.
+json-ld namespace:twin-common

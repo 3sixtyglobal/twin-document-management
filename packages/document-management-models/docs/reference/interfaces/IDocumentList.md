@@ -25,6 +25,7 @@ JSON-LD Type.
 > **itemListElement**: [`IDocument`](IDocument.md)[]
 
 The list of documents.
+json-ld namespace:schema
 
 ***
 
@@ -33,3 +34,4 @@ The list of documents.
 > `optional` **edges**: `string`[]
 
 The ids of the other vertices which are connected to the document.
+json-ld container:set
