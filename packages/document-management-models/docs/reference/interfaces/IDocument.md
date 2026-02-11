@@ -6,7 +6,7 @@ Interface describing a document.
 
 ### @context
 
-> **@context**: \[`"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `"https://schema.org"`, `...IJsonLdContextDefinitionElement[]`\]
+> **@context**: \[`"https://schema.org"`, `"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `...IJsonLdContextDefinitionElement[]`\]
 
 JSON-LD Context.
 
@@ -82,11 +82,11 @@ json-ld type:schema:identifier
 
 ***
 
-### blobHash
+### integrity
 
-> **blobHash**: `string`
+> **integrity**: `string`
 
-The hash of the blob data.
+The integrity of the blob data.
 json-ld namespace:twin-common
 
 ***

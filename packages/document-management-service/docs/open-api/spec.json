@@ -68,7 +68,7 @@
 								"schema": {
 									"type": "string"
 								},
-								"description": "e.g. aig:123456"
+								"description": "e.g. aig%3A123456"
 							}
 						}
 					},
@@ -240,7 +240,7 @@
 																	"type": "DigitalDocument",
 																	"name": "bill-of-lading"
 																},
-																"blobHash": "sha256:E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
+																"integrity": "sha256-E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
 																"blobStorageId": "blob:memory:1370eeaaba7a6c7a234b1f82cc3b6d013a0088fd5e16408300f05b28b0015463",
 																"dateCreated": "2024-08-22T04:13:20.000Z",
 																"organizationIdentity": "did:entity-storage:0x0101010101010101010101010101010101010101010101010101010101010101",
@@ -552,9 +552,9 @@
 											"itemListElement": [
 												{
 													"@context": [
+														"https://schema.org",
 														"https://schema.twindev.org/documents/",
-														"https://schema.twindev.org/common/",
-														"https://schema.org"
+														"https://schema.twindev.org/common/"
 													],
 													"type": "Document",
 													"id": "2721000:0",
@@ -563,7 +563,7 @@
 													"documentCode": "unece:DocumentCodeList#705",
 													"documentRevision": 0,
 													"blobStorageId": "blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-													"blobHash": "sha256:123456",
+													"integrity": "sha256-123456",
 													"dateCreated": "2024-01-01T00:00:00Z",
 													"annotationObject": {
 														"@context": "https://schema.org",
@@ -594,9 +594,9 @@
 											"itemListElement": [
 												{
 													"@context": [
+														"https://schema.org",
 														"https://schema.twindev.org/documents/",
-														"https://schema.twindev.org/common/",
-														"https://schema.org"
+														"https://schema.twindev.org/common/"
 													],
 													"type": "Document",
 													"id": "2721000:0",
@@ -605,7 +605,7 @@
 													"documentCode": "unece:DocumentCodeList#705",
 													"documentRevision": 0,
 													"blobStorageId": "blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-													"blobHash": "sha256:123456",
+													"integrity": "sha256-123456",
 													"dateCreated": "2024-01-01T00:00:00Z",
 													"annotationObject": {
 														"@context": "https://schema.org",
@@ -751,9 +751,9 @@
 									"DocumentManagementGetRevisionResponseExample": {
 										"value": {
 											"@context": [
+												"https://schema.org",
 												"https://schema.twindev.org/documents/",
-												"https://schema.twindev.org/common/",
-												"https://schema.org"
+												"https://schema.twindev.org/common/"
 											],
 											"type": "Document",
 											"id": "2721000:0",
@@ -762,7 +762,7 @@
 											"documentCode": "unece:DocumentCodeList#705",
 											"documentRevision": 1,
 											"blobStorageId": "blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-											"blobHash": "sha256:123456",
+											"integrity": "sha256-123456",
 											"dateCreated": "2024-01-01T00:00:00Z",
 											"annotationObject": {
 												"@context": "https://schema.org",
@@ -783,9 +783,9 @@
 									"DocumentManagementGetRevisionResponseExample": {
 										"value": {
 											"@context": [
+												"https://schema.org",
 												"https://schema.twindev.org/documents/",
-												"https://schema.twindev.org/common/",
-												"https://schema.org"
+												"https://schema.twindev.org/common/"
 											],
 											"type": "Document",
 											"id": "2721000:0",
@@ -794,7 +794,7 @@
 											"documentCode": "unece:DocumentCodeList#705",
 											"documentRevision": 1,
 											"blobStorageId": "blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-											"blobHash": "sha256:123456",
+											"integrity": "sha256-123456",
 											"dateCreated": "2024-01-01T00:00:00Z",
 											"annotationObject": {
 												"@context": "https://schema.org",
@@ -1022,15 +1022,15 @@
 						"prefixItems": [
 							{
 								"type": "string",
+								"const": "https://schema.org"
+							},
+							{
+								"type": "string",
 								"const": "https://schema.twindev.org/documents/"
 							},
 							{
 								"type": "string",
 								"const": "https://schema.twindev.org/common/"
-							},
-							{
-								"type": "string",
-								"const": "https://schema.org"
 							}
 						],
 						"items": {
@@ -1068,9 +1068,9 @@
 						"type": "string",
 						"description": "The blob storage id for the document. json-ld type:schema:identifier"
 					},
-					"blobHash": {
+					"integrity": {
 						"type": "string",
-						"description": "The hash of the blob data. json-ld namespace:twin-common"
+						"description": "The integrity of the blob data. json-ld namespace:twin-common"
 					},
 					"blobStorageEntry": {
 						"$ref": "https://schema.twindev.org/blob-storage/BlobStorageEntry"
@@ -1114,7 +1114,7 @@
 					"documentCode",
 					"documentRevision",
 					"blobStorageId",
-					"blobHash",
+					"integrity",
 					"dateCreated"
 				],
 				"additionalProperties": false,

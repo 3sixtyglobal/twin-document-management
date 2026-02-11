@@ -13,9 +13,9 @@ export interface IDocumentAttestation {
 	 * JSON-LD Context.
 	 */
 	"@context": [
+		typeof SchemaOrgContexts.Context,
 		typeof DocumentContexts.Context,
-		typeof DocumentContexts.ContextCommon,
-		typeof SchemaOrgContexts.Context
+		typeof DocumentContexts.ContextCommon
 	];
 
 	/**
@@ -48,8 +48,8 @@ export interface IDocumentAttestation {
 	dateCreated: string;
 
 	/**
-	 * The hash of the document being attested.
+	 * The integrity of the document being attested.
 	 * json-ld namespace:twin-common
 	 */
-	blobHash: string;
+	integrity: string;
 }

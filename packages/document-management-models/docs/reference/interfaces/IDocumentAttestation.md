@@ -6,7 +6,7 @@ Interface describing a document attestation.
 
 ### @context
 
-> **@context**: \[`"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `"https://schema.org"`\]
+> **@context**: \[`"https://schema.org"`, `"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`\]
 
 JSON-LD Context.
 
@@ -56,9 +56,9 @@ json-ld namespace:schema
 
 ***
 
-### blobHash
+### integrity
 
-> **blobHash**: `string`
+> **integrity**: `string`
 
-The hash of the document being attested.
+The integrity of the document being attested.
 json-ld namespace:twin-common

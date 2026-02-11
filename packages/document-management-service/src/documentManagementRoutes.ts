@@ -101,7 +101,7 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							statusCode: HttpStatusCode.created,
 							headers: {
-								[HeaderTypes.Location]: "aig:123456"
+								[HeaderTypes.Location]: "aig%3A123456"
 							}
 						}
 					}
@@ -199,9 +199,9 @@ export function generateRestRoutesDocumentManagement(
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
+											SchemaOrgContexts.Context,
 											DocumentContexts.Context,
-											DocumentContexts.ContextCommon,
-											SchemaOrgContexts.Context
+											DocumentContexts.ContextCommon
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
@@ -211,7 +211,7 @@ export function generateRestRoutesDocumentManagement(
 										documentRevision: 0,
 										blobStorageId:
 											"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-										blobHash: "sha256:123456",
+										integrity: "sha256-123456",
 										dateCreated: "2024-01-01T00:00:00Z",
 										annotationObject: {
 											"@context": "https://schema.org",
@@ -246,9 +246,9 @@ export function generateRestRoutesDocumentManagement(
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
+											SchemaOrgContexts.Context,
 											DocumentContexts.Context,
-											DocumentContexts.ContextCommon,
-											SchemaOrgContexts.Context
+											DocumentContexts.ContextCommon
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
@@ -258,7 +258,7 @@ export function generateRestRoutesDocumentManagement(
 										documentRevision: 0,
 										blobStorageId:
 											"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-										blobHash: "sha256:123456",
+										integrity: "sha256-123456",
 										dateCreated: "2024-01-01T00:00:00Z",
 										annotationObject: {
 											"@context": "https://schema.org",
@@ -316,9 +316,9 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
+									SchemaOrgContexts.Context,
 									DocumentContexts.Context,
-									DocumentContexts.ContextCommon,
-									SchemaOrgContexts.Context
+									DocumentContexts.ContextCommon
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
@@ -328,7 +328,7 @@ export function generateRestRoutesDocumentManagement(
 								documentRevision: 1,
 								blobStorageId:
 									"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-								blobHash: "sha256:123456",
+								integrity: "sha256-123456",
 								dateCreated: "2024-01-01T00:00:00Z",
 								annotationObject: {
 									"@context": "https://schema.org",
@@ -353,9 +353,9 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
+									SchemaOrgContexts.Context,
 									DocumentContexts.Context,
-									DocumentContexts.ContextCommon,
-									SchemaOrgContexts.Context
+									DocumentContexts.ContextCommon
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
@@ -365,7 +365,7 @@ export function generateRestRoutesDocumentManagement(
 								documentRevision: 1,
 								blobStorageId:
 									"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-								blobHash: "sha256:123456",
+								integrity: "sha256-123456",
 								dateCreated: "2024-01-01T00:00:00Z",
 								annotationObject: {
 									"@context": "https://schema.org",
@@ -494,7 +494,7 @@ export function generateRestRoutesDocumentManagement(
 														type: "DigitalDocument",
 														name: "bill-of-lading"
 													},
-													blobHash: "sha256:E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
+													integrity: "sha256-E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
 													blobStorageId:
 														"blob:memory:1370eeaaba7a6c7a234b1f82cc3b6d013a0088fd5e16408300f05b28b0015463",
 													dateCreated: "2024-08-22T04:13:20.000Z",

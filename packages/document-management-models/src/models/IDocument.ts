@@ -16,9 +16,9 @@ export interface IDocument {
 	 * JSON-LD Context.
 	 */
 	"@context": [
+		typeof SchemaOrgContexts.Context,
 		typeof DocumentContexts.Context,
 		typeof DocumentContexts.ContextCommon,
-		typeof SchemaOrgContexts.Context,
 		...IJsonLdContextDefinitionElement[]
 	];
 
@@ -69,10 +69,10 @@ export interface IDocument {
 	blobStorageId: string;
 
 	/**
-	 * The hash of the blob data.
+	 * The integrity of the blob data.
 	 * json-ld namespace:twin-common
 	 */
-	blobHash: string;
+	integrity: string;
 
 	/**
 	 * The additional JSON-LD for blob storage if it was requested.

@@ -1,7 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import type { IAttestationComponent } from "@twin.org/attestation-models";
-import { AttestationContexts } from "@twin.org/attestation-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes,
@@ -26,7 +25,7 @@ import {
 	ObjectHelper,
 	Urn
 } from "@twin.org/core";
-import { Sha256 } from "@twin.org/crypto";
+import { IntegrityAlgorithm, IntegrityHelper, Sha256 } from "@twin.org/crypto";
 import { JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { IDataProcessingComponent } from "@twin.org/data-processing-models";
 import {
@@ -181,9 +180,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			const currentRevision: IDocument & IJsonLdNodeObject = {
 				"@context": [
+					SchemaOrgContexts.Context,
 					DocumentContexts.Context,
-					DocumentContexts.ContextCommon,
-					SchemaOrgContexts.Context
+					DocumentContexts.ContextCommon
 				],
 				type: DocumentTypes.Document,
 				id: this.createDocumentId(documentId, 0),
@@ -192,7 +191,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				documentCode,
 				documentRevision: 0,
 				annotationObject,
-				blobHash: this.generateBlobHash(blob),
+				integrity: IntegrityHelper.generate(IntegrityAlgorithm.Sha256, blob),
 				blobStorageId,
 				dateCreated: new Date(Date.now()).toISOString(),
 				organizationIdentity: contextIds?.[ContextIdKeys.Organization],
@@ -311,9 +310,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			// If the blob is set and its hash has changed then we create a new revision
 			if (Is.uint8Array(blob)) {
-				const newBlobHash = this.generateBlobHash(blob);
+				const newIntegrity = IntegrityHelper.generate(IntegrityAlgorithm.Sha256, blob);
 
-				if (latestRevision.blobHash !== newBlobHash) {
+				if (latestRevision.integrity !== newIntegrity) {
 					// Add the blob to blob storage
 					const blobStorageId = await this._blobStorageComponent.create(
 						Converter.bytesToBase64(blob)
@@ -326,7 +325,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 						newRevision.documentId,
 						newRevision.documentRevision
 					);
-					newRevision.blobHash = newBlobHash;
+					newRevision.integrity = newIntegrity;
 					newRevision.blobStorageId = blobStorageId;
 					newRevision.annotationObject = annotationObject;
 
@@ -793,16 +792,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	}
 
 	/**
-	 * Generate a hash for the blob data.
-	 * @param blob The blob data to hash.
-	 * @returns The hash.
-	 * @internal
-	 */
-	private generateBlobHash(blob: Uint8Array): string {
-		return `sha256:${Converter.bytesToBase64(Sha256.sum256(blob))}`;
-	}
-
-	/**
 	 * Get the documents from the auditable item graph vertex.
 	 * @param documentVertex The vertex containing the documents.
 	 * @param options Additional options for the get operation.
@@ -876,6 +865,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 						if (blobRequired) {
 							document.blobStorageEntry = blobEntry;
+							if (Is.object(document.blobStorageEntry)) {
+								ObjectHelper.propertyDelete(document.blobStorageEntry, "@context");
+							}
 
 							if (!docList["@context"].includes(BlobStorageContexts.Context)) {
 								docList["@context"].push(BlobStorageContexts.Context);
@@ -906,8 +898,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 							document.attestationId
 						);
 						document.attestationInformation = attestationInformation;
-						if (!docList["@context"].includes(AttestationContexts.Context)) {
-							docList["@context"].push(AttestationContexts.Context);
+						if (Is.object(document.attestationInformation)) {
+							ObjectHelper.propertyDelete(document.attestationInformation, "@context");
 						}
 					}
 				}
@@ -938,9 +930,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	private async createAttestation(document: IDocument): Promise<string> {
 		const documentAttestation: IDocumentAttestation & IJsonLdNodeObject = {
 			"@context": [
+				SchemaOrgContexts.Context,
 				DocumentContexts.Context,
-				DocumentContexts.ContextCommon,
-				SchemaOrgContexts.Context
+				DocumentContexts.ContextCommon
 			],
 			type: DocumentTypes.DocumentAttestation,
 			id: document.id,
@@ -948,7 +940,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			documentCode: document.documentCode,
 			documentRevision: document.documentRevision,
 			dateCreated: document.dateCreated,
-			blobHash: document.blobHash
+			integrity: document.integrity
 		};
 		return this._attestationComponent.create(documentAttestation);
 	}

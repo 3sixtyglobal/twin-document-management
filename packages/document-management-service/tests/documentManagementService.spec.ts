@@ -28,7 +28,7 @@ import {
 	ContextIdStore,
 	type IContextIds
 } from "@twin.org/context";
-import { ComponentFactory, Converter } from "@twin.org/core";
+import { ComponentFactory, Converter, RandomHelper } from "@twin.org/core";
 import { JsonConverterConnector } from "@twin.org/data-processing-converters";
 import { JsonPathExtractorConnector } from "@twin.org/data-processing-extractors";
 import {
@@ -210,6 +210,12 @@ describe("document-management-service", async () => {
 		const BASE_TICK = 1724300000000;
 		Date.now = vi.fn().mockImplementation(() => BASE_TICK);
 
+		// Reset RandomHelper counter for deterministic IDs
+		let randCounter = 1;
+		RandomHelper.generate = vi
+			.fn()
+			.mockImplementation(length => new Uint8Array(length).fill(randCounter++));
+
 		ContextIdHandlerFactory.register(ContextIdKeys.Node, () => new DidContextIdHandler());
 		ContextIdHandlerFactory.register(ContextIdKeys.Tenant, () => new TenantIdContextIdHandler());
 		ContextIdHandlerFactory.register(ContextIdKeys.Organization, () => new DidContextIdHandler());
@@ -241,9 +247,7 @@ describe("document-management-service", async () => {
 				addAlias: false
 			}
 		);
-		expect(documentId).toEqual(
-			"aig:0606060606060606060606060606060606060606060606060606060606060606"
-		);
+		expect(documentId).toEqual("aig:01917849fb0071018101010101010101");
 
 		const nftStore = nftEntityStorage.getStore();
 		expect(nftStore).toEqual([]);
@@ -252,7 +256,7 @@ describe("document-management-service", async () => {
 		expect(blobStore).toEqual([
 			{
 				blobSize: 11,
-				blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+				integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				encodingFormat: "text/plain",
 				fileExtension: "txt",
@@ -264,28 +268,33 @@ describe("document-management-service", async () => {
 		const aigStore = vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
-				id: "0606060606060606060606060606060606060606060606060606060606060606",
+				id: "01917849fb0071018101010101010101",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				resourceTypeIndex: "||document||",
+				aliasIndex: undefined,
+				annotationObject: undefined,
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
+						id: undefined,
 						resourceObject: {
 							"@context": [
+								"https://schema.org",
 								"https://schema.twindev.org/documents/",
-								"https://schema.twindev.org/common/",
-								"https://schema.org"
+								"https://schema.twindev.org/common/"
 							],
 							type: "Document",
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
 							documentId: "test-doc-id:aaa",
+							documentIdFormat: undefined,
 							documentCode: "unece:DocumentCodeList#705",
 							documentRevision: 0,
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
-							blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							dateCreated: "2024-08-22T04:13:20.000Z",
+							annotationObject: undefined,
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -325,17 +334,15 @@ describe("document-management-service", async () => {
 				createAttestation: true
 			}
 		);
-		expect(documentId).toEqual(
-			"aig:1313131313131313131313131313131313131313131313131313131313131313"
-		);
+		expect(documentId).toEqual("aig:01917849fb007a0a8a0a0a0a0a0a0a0a");
 
 		const nftStore = nftEntityStorage.getStore();
 		expect(nftStore).toEqual([
 			{
-				id: "1212121212121212121212121212121212121212121212121212121212121212",
+				id: "0909090909090909090909090909090909090909090909090909090909090909",
 				immutableMetadata: {
 					proof:
-						"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIiwiaHR0cHM6Ly9zY2hlbWEub3JnIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJEb2N1bWVudEF0dGVzdGF0aW9uIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRvY3VtZW50SWQiOiJ0ZXN0LWRvYy1pZDphYWEiLCJkb2N1bWVudENvZGUiOiJ1bmVjZTpEb2N1bWVudENvZGVMaXN0IzcwNSIsImRvY3VtZW50UmV2aXNpb24iOjAsImRhdGVDcmVhdGVkIjoiMjAyNC0wOC0yMlQwNDoxMzoyMC4wMDBaIiwiYmxvYkhhc2giOiJzaGEyNTY6cFpHbTFBdjBJRUJLQVJjeno3ZXhrTllzWmI4THphTXJWN0ozMmEyZkZHND0ifX19.VDohWlas1kwYXsLEqrI9n0jG-4lxwWLj-doaQsj1GkowJSKDTHCxGLFM8zeVBOxuqusdyKPJKgVbdd-OFXERDQ",
+						"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJEb2N1bWVudEF0dGVzdGF0aW9uIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRvY3VtZW50SWQiOiJ0ZXN0LWRvYy1pZDphYWEiLCJkb2N1bWVudENvZGUiOiJ1bmVjZTpEb2N1bWVudENvZGVMaXN0IzcwNSIsImRvY3VtZW50UmV2aXNpb24iOjAsImRhdGVDcmVhdGVkIjoiMjAyNC0wOC0yMlQwNDoxMzoyMC4wMDBaIiwiaW50ZWdyaXR5Ijoic2hhMjU2LXBaR20xQXYwSUVCS0FSY3p6N2V4a05Zc1piOEx6YU1yVjdKMzJhMmZGRzQ9In19fQ.rCW8-hiVHIjWbdBwexZsPTzUt4W_d1BqGzVytzzI9nMn8ELgqX4U07X4pafMZp78ozpY-4ZveTjAubZY1LK9DA",
 					version: "1"
 				},
 				issuer: TEST_ORGANIZATION_IDENTITY,
@@ -349,7 +356,7 @@ describe("document-management-service", async () => {
 		expect(blobStore).toEqual([
 			{
 				blobSize: 11,
-				blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+				integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				encodingFormat: "text/plain",
 				fileExtension: "txt",
@@ -361,7 +368,7 @@ describe("document-management-service", async () => {
 		const aigStore = vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
-				id: "0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a",
+				id: "01917849fb0071018101010101010101",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -379,44 +386,57 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "1919191919191919191919191919191919191919191919191919191919191919",
-						targetId: "aig:1313131313131313131313131313131313131313131313131313131313131313",
+						id: "01917849fb0070109010101010101010",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			},
 			{
-				id: "0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e",
+				id: "01917849fb0075058505050505050505",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
 				edges: [
 					{
-						id: "1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d",
-						targetId: "aig:1313131313131313131313131313131313131313131313131313131313131313",
+						id: "01917849fb0074149414141414141414",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
-				]
+				],
+				aliasIndex: undefined,
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			},
 			{
-				id: "1313131313131313131313131313131313131313131313131313131313131313",
+				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				resourceTypeIndex: "||document||",
 				aliases: [
-					{ id: "test-doc-id:aaa", aliasFormat: "foo", dateCreated: "2024-08-22T04:13:20.000Z" }
+					{
+						id: "test-doc-id:aaa",
+						aliasFormat: "foo",
+						dateCreated: "2024-08-22T04:13:20.000Z",
+						annotationObject: undefined
+					}
 				],
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
+						id: undefined,
 						resourceObject: {
 							"@context": [
+								"https://schema.org",
 								"https://schema.twindev.org/documents/",
-								"https://schema.twindev.org/common/",
-								"https://schema.org"
+								"https://schema.twindev.org/common/"
 							],
 							type: "Document",
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
@@ -424,7 +444,7 @@ describe("document-management-service", async () => {
 							documentIdFormat: "foo",
 							documentCode: "unece:DocumentCodeList#705",
 							documentRevision: 0,
-							blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							annotationObject: {
@@ -434,7 +454,7 @@ describe("document-management-service", async () => {
 							},
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTI=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -442,19 +462,22 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "1414141414141414141414141414141414141414141414141414141414141414",
-						targetId: "aig:0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a",
+						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
+						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					},
 					{
-						id: "1515151515151515151515151515151515151515151515151515151515151515",
-						targetId: "aig:0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e",
+						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined
 			}
 		]);
 	});
@@ -496,7 +519,7 @@ describe("document-management-service", async () => {
 		const aigStore = vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
-				id: "2222222222222222222222222222222222222222222222222222222222222222",
+				id: "01917849fb0072028202020202020202",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				resourceTypeIndex: "||document||",
@@ -504,6 +527,7 @@ describe("document-management-service", async () => {
 					{
 						id: "test-doc-id:aaa",
 						dateCreated: "2024-08-22T04:13:20.000Z",
+						aliasFormat: undefined,
 						annotationObject: {
 							"@context": ["https://schema.org"],
 							type: "DigitalDocument",
@@ -514,11 +538,12 @@ describe("document-management-service", async () => {
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
+						id: undefined,
 						resourceObject: {
 							"@context": [
+								"https://schema.org",
 								"https://schema.twindev.org/documents/",
-								"https://schema.twindev.org/common/",
-								"https://schema.org"
+								"https://schema.twindev.org/common/"
 							],
 							type: "Document",
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
@@ -530,13 +555,14 @@ describe("document-management-service", async () => {
 								type: "DigitalDocument",
 								name: "bill-of-lading-2"
 							},
-							blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjEyMTIxMjE=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
 							dateModified: "2024-08-22T04:13:20.000Z",
+							dateDeleted: undefined,
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						},
@@ -544,7 +570,8 @@ describe("document-management-service", async () => {
 					}
 				],
 				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined
 			}
 		]);
 	});
@@ -619,9 +646,10 @@ describe("document-management-service", async () => {
 		const aigStore = vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
-				id: "3232323232323232323232323232323232323232323232323232323232323232",
+				id: "01917849fb0071018101010101010101",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				dateModified: "2024-08-22T04:13:20.000Z",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -636,19 +664,22 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "4141414141414141414141414141414141414141414141414141414141414141",
-						targetId: "aig:3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+						id: "01917849fb0070109010101010101010",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			},
 			{
-				id: "3636363636363636363636363636363636363636363636363636363636363636",
+				id: "01917849fb0075058505050505050505",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				dateModified: "2024-08-22T04:13:20.000Z",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -663,30 +694,39 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "4545454545454545454545454545454545454545454545454545454545454545",
-						targetId: "aig:3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+						id: "01917849fb0074149414141414141414",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			},
 			{
-				id: "3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				resourceTypeIndex: "||document||",
 				aliases: [
-					{ id: "test-doc-id:aaa", aliasFormat: "foo", dateCreated: "2024-08-22T04:13:20.000Z" }
+					{
+						id: "test-doc-id:aaa",
+						aliasFormat: "foo",
+						dateCreated: "2024-08-22T04:13:20.000Z",
+						annotationObject: undefined
+					}
 				],
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
+						id: undefined,
 						resourceObject: {
 							"@context": [
+								"https://schema.org",
 								"https://schema.twindev.org/documents/",
-								"https://schema.twindev.org/common/",
-								"https://schema.org"
+								"https://schema.twindev.org/common/"
 							],
 							type: "Document",
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
@@ -699,12 +739,12 @@ describe("document-management-service", async () => {
 								type: "DigitalDocument",
 								name: "bill-of-lading"
 							},
-							blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2E=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -712,20 +752,22 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c",
-						targetId: "aig:3232323232323232323232323232323232323232323232323232323232323232",
+						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
+						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					},
 					{
-						id: "3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d",
-						targetId: "aig:3636363636363636363636363636363636363636363636363636363636363636",
+						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				resourceTypeIndex: "||document||"
+				annotationObject: undefined
 			}
 		]);
 
@@ -746,9 +788,10 @@ describe("document-management-service", async () => {
 		const aigStore2 = vertexEntityStorage.getStore();
 		expect(aigStore2).toEqual([
 			{
-				id: "3232323232323232323232323232323232323232323232323232323232323232",
+				id: "01917849fb0071018101010101010101",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				dateModified: "2024-08-22T04:13:20.000Z",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -763,19 +806,22 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "4141414141414141414141414141414141414141414141414141414141414141",
-						targetId: "aig:3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+						id: "01917849fb0070109010101010101010",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			},
 			{
-				id: "3636363636363636363636363636363636363636363636363636363636363636",
+				id: "01917849fb0075058505050505050505",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				dateModified: "2024-08-22T04:13:20.000Z",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -791,30 +837,41 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "4545454545454545454545454545454545454545454545454545454545454545",
-						targetId: "aig:3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+						id: "01917849fb0074149414141414141414",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
-						dateDeleted: "2024-08-22T04:13:20.000Z"
+						dateDeleted: "2024-08-22T04:13:20.000Z",
+						annotationObject: undefined
 					}
 				],
-				dateModified: "2024-08-22T04:13:20.000Z"
+				aliasIndex: undefined,
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			},
 			{
-				id: "3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				dateModified: "2024-08-22T04:13:20.000Z",
+				resourceTypeIndex: "||document||",
 				aliases: [
-					{ id: "test-doc-id:aaa", aliasFormat: "foo", dateCreated: "2024-08-22T04:13:20.000Z" }
+					{
+						id: "test-doc-id:aaa",
+						aliasFormat: "foo",
+						dateCreated: "2024-08-22T04:13:20.000Z",
+						annotationObject: undefined
+					}
 				],
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
+						id: undefined,
 						resourceObject: {
 							"@context": [
+								"https://schema.org",
 								"https://schema.twindev.org/documents/",
-								"https://schema.twindev.org/common/",
-								"https://schema.org"
+								"https://schema.twindev.org/common/"
 							],
 							type: "Document",
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
@@ -822,13 +879,15 @@ describe("document-management-service", async () => {
 							documentIdFormat: "foo",
 							documentCode: "unece:DocumentCodeList#705",
 							documentRevision: 0,
-							blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
+							annotationObject: undefined,
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2EzYTNhM2E=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							dateModified: "2024-08-22T04:13:20.000Z",
+							dateDeleted: undefined,
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						},
@@ -837,46 +896,56 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c",
-						targetId: "aig:3232323232323232323232323232323232323232323232323232323232323232",
-						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
-					},
-					{
-						id: "3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d",
-						targetId: "aig:3636363636363636363636363636363636363636363636363636363636363636",
+						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
+						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
-						dateDeleted: "2024-08-22T04:13:20.000Z"
+						annotationObject: undefined
 					},
 					{
-						id: "4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d4d",
-						targetId: "aig:4949494949494949494949494949494949494949494949494949494949494949",
+						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						dateDeleted: "2024-08-22T04:13:20.000Z",
+						annotationObject: undefined
+					},
+					{
+						id: "01917849fb007c1c9c1c1c1c1c1c1c1c",
+						targetId: "aig:01917849fb0078189818181818181818",
+						dateCreated: "2024-08-22T04:13:20.000Z",
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				resourceTypeIndex: "||document||",
-				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined
 			},
 			{
-				id: "4949494949494949494949494949494949494949494949494949494949494949",
+				id: "01917849fb0078189818181818181818",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
+				dateModified: "2024-08-22T04:13:20.000Z",
 				aliases: [
-					{ id: "test-doc-id:aaa", aliasFormat: "foo", dateCreated: "2024-08-22T04:13:20.000Z" }
+					{
+						id: "test-doc-id:aaa",
+						aliasFormat: "foo",
+						dateCreated: "2024-08-22T04:13:20.000Z",
+						annotationObject: undefined
+					}
 				],
 				edges: [
 					{
-						id: "5151515151515151515151515151515151515151515151515151515151515151",
-						targetId: "aig:3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b",
+						id: "01917849fb007020a020202020202020",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"]
+						edgeRelationships: ["document"],
+						annotationObject: undefined
 					}
 				],
-				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||"
+				aliasIndex: "||test-doc-id:aaa||",
+				annotationObject: undefined,
+				resourceTypeIndex: undefined
 			}
 		]);
 	});
@@ -894,9 +963,7 @@ describe("document-management-service", async () => {
 				createAttestation: true
 			}
 		);
-		expect(documentId).toEqual(
-			"aig:5959595959595959595959595959595959595959595959595959595959595959"
-		);
+		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
 
 		const docs = await service.get(documentId);
 		expect(docs.entries).toEqual({
@@ -917,11 +984,11 @@ describe("document-management-service", async () => {
 						type: "DigitalDocument",
 						name: "bill-of-lading"
 					},
-					blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+					integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 					organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 					userIdentity: TEST_USER_IDENTITY,
 					attestationId:
-						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg1ODU4NTg=",
+						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
 					blobStorageId:
 						"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 					documentCode: "unece:DocumentCodeList#705",
@@ -944,9 +1011,7 @@ describe("document-management-service", async () => {
 				createAttestation: true
 			}
 		);
-		expect(documentId).toEqual(
-			"aig:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e"
-		);
+		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
 
 		const docs = await service.get(documentId, { includeBlobStorageMetadata: true });
 		expect(docs.entries).toEqual({
@@ -968,8 +1033,8 @@ describe("document-management-service", async () => {
 						name: "bill-of-lading"
 					},
 					attestationId:
-						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ1ZDVkNWQ=",
-					blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
+					integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 					blobStorageId:
 						"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 					documentCode: "unece:DocumentCodeList#705",
@@ -981,7 +1046,7 @@ describe("document-management-service", async () => {
 						type: "BlobStorageEntry",
 						id: "blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 						blobSize: 11,
-						blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+						integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						encodingFormat: "text/plain",
 						fileExtension: "txt",
@@ -999,15 +1064,13 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: true
 			}
 		);
-		expect(documentId).toEqual(
-			"aig:6363636363636363636363636363636363636363636363636363636363636363"
-		);
+		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
 
 		const doc = await service.get(documentId, {
 			includeBlobStorageMetadata: true,
@@ -1027,13 +1090,12 @@ describe("document-management-service", async () => {
 					documentId: "test-doc-id:aaa",
 					type: "Document",
 					annotationObject: {
-						"@context": "https://schema.org",
 						type: "DigitalDocument",
 						name: "bill-of-lading"
 					},
 					attestationId:
-						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI2MjYyNjI=",
-					blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
+					integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 					blobStorageId:
 						"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 					documentCode: "unece:DocumentCodeList#705",
@@ -1045,7 +1107,7 @@ describe("document-management-service", async () => {
 						type: "BlobStorageEntry",
 						id: "blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 						blobSize: 11,
-						blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+						integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						encodingFormat: "text/plain",
 						fileExtension: "txt",
@@ -1064,15 +1126,13 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: true
 			}
 		);
-		expect(documentId).toEqual(
-			"aig:6868686868686868686868686868686868686868686868686868686868686868"
-		);
+		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
 
 		const docs = await service.get(documentId, {
 			includeBlobStorageMetadata: true,
@@ -1084,8 +1144,7 @@ describe("document-management-service", async () => {
 				"https://schema.org",
 				"https://schema.twindev.org/documents/",
 				"https://schema.twindev.org/common/",
-				"https://schema.twindev.org/blob-storage/",
-				"https://schema.twindev.org/attestation/"
+				"https://schema.twindev.org/blob-storage/"
 			],
 			type: "ItemList",
 			itemListElement: [
@@ -1095,17 +1154,16 @@ describe("document-management-service", async () => {
 					dateCreated: "2024-08-22T04:13:20.000Z",
 					documentId: "test-doc-id:aaa",
 					annotationObject: {
-						"@context": "https://schema.org",
 						type: "DigitalDocument",
 						name: "bill-of-lading"
 					},
-					blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+					integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 					organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 					userIdentity: TEST_USER_IDENTITY,
 					attestationId:
-						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc=",
+						"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
 					attestationInformation: {
-						id: "attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc2NzY3Njc=",
+						id: "attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
 						type: "Information",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						holderIdentity: TEST_ORGANIZATION_IDENTITY,
@@ -1113,14 +1171,14 @@ describe("document-management-service", async () => {
 						proof: {
 							type: "JwtProof",
 							value:
-								"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIiwiaHR0cHM6Ly9zY2hlbWEub3JnIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJEb2N1bWVudEF0dGVzdGF0aW9uIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRvY3VtZW50SWQiOiJ0ZXN0LWRvYy1pZDphYWEiLCJkb2N1bWVudENvZGUiOiJ1bmVjZTpEb2N1bWVudENvZGVMaXN0IzcwNSIsImRvY3VtZW50UmV2aXNpb24iOjAsImRhdGVDcmVhdGVkIjoiMjAyNC0wOC0yMlQwNDoxMzoyMC4wMDBaIiwiYmxvYkhhc2giOiJzaGEyNTY6cFpHbTFBdjBJRUJLQVJjeno3ZXhrTllzWmI4THphTXJWN0ozMmEyZkZHND0ifX19.VDohWlas1kwYXsLEqrI9n0jG-4lxwWLj-doaQsj1GkowJSKDTHCxGLFM8zeVBOxuqusdyKPJKgVbdd-OFXERDQ"
+								"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJEb2N1bWVudEF0dGVzdGF0aW9uIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRvY3VtZW50SWQiOiJ0ZXN0LWRvYy1pZDphYWEiLCJkb2N1bWVudENvZGUiOiJ1bmVjZTpEb2N1bWVudENvZGVMaXN0IzcwNSIsImRvY3VtZW50UmV2aXNpb24iOjAsImRhdGVDcmVhdGVkIjoiMjAyNC0wOC0yMlQwNDoxMzoyMC4wMDBaIiwiaW50ZWdyaXR5Ijoic2hhMjU2LXBaR20xQXYwSUVCS0FSY3p6N2V4a05Zc1piOEx6YU1yVjdKMzJhMmZGRzQ9In19fQ.rCW8-hiVHIjWbdBwexZsPTzUt4W_d1BqGzVytzzI9nMn8ELgqX4U07X4pafMZp78ozpY-4ZveTjAubZY1LK9DA"
 						},
 						attestationObject: {
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
 							type: "DocumentAttestation",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							documentId: "test-doc-id:aaa",
-							blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							documentCode: "unece:DocumentCodeList#705",
 							documentRevision: 0
 						},
@@ -1134,7 +1192,7 @@ describe("document-management-service", async () => {
 						encodingFormat: "text/plain",
 						blobSize: 11,
 						fileExtension: "txt",
-						blobHash: "sha256:pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+						integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 						isEncrypted: false
 					},
 					blobStorageId:
@@ -1148,13 +1206,12 @@ describe("document-management-service", async () => {
 
 	test("can get the most recent document from an AIG with multiple revisions", async () => {
 		const service = new DocumentManagementService();
-
 		const documentId = await service.create(
 			"test-doc-id:aaa",
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1163,15 +1220,12 @@ describe("document-management-service", async () => {
 
 		for (let i = 0; i < 5; i++) {
 			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				"@context": "https://schema.org",
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
 		}
 
-		const docs = await service.get(
-			"aig:6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c"
-		);
+		const docs = await service.get(documentId);
 		expect(docs.entries.itemListElement.length).toEqual(1);
 		expect(docs.entries.itemListElement[0].documentRevision).toEqual(5);
 	});
@@ -1184,7 +1238,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1193,7 +1247,6 @@ describe("document-management-service", async () => {
 
 		for (let i = 0; i < 5; i++) {
 			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				"@context": "https://schema.org",
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1217,7 +1270,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1226,7 +1279,6 @@ describe("document-management-service", async () => {
 
 		for (let i = 0; i < 30; i++) {
 			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				"@context": "https://schema.org",
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1264,7 +1316,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1273,7 +1325,6 @@ describe("document-management-service", async () => {
 
 		for (let i = 0; i < 5; i++) {
 			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				"@context": "https://schema.org",
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1291,7 +1342,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1300,7 +1351,6 @@ describe("document-management-service", async () => {
 
 		for (let i = 0; i < 5; i++) {
 			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				"@context": "https://schema.org",
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1330,7 +1380,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1381,7 +1431,7 @@ describe("document-management-service", async () => {
 				undefined,
 				UneceDocumentCodeList.BillOfLading,
 				Converter.utf8ToBytes(`Hello World${i}`),
-				{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+				{ type: "DigitalDocument", name: "bill-of-lading" },
 				undefined,
 				{
 					createAttestation: false
@@ -1402,7 +1452,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1438,7 +1488,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1478,7 +1528,7 @@ describe("document-management-service", async () => {
 			undefined,
 			UneceDocumentCodeList.BillOfLading,
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
+			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
 				createAttestation: false
@@ -1509,5 +1559,258 @@ describe("document-management-service", async () => {
 				firstLine: "bar"
 			}
 		});
+	});
+
+	test("can create a document with custom document ID format", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"DOC-2024-12345",
+			"custom-doc-format",
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Invoice data"),
+			{ type: "Invoice", name: "test-invoice" }
+		);
+		expect(documentId).toBeDefined();
+		expect(documentId).toMatch(/^aig:/);
+
+		const docs = await service.get(documentId);
+		expect(docs.entries.itemListElement[0].documentId).toEqual("DOC-2024-12345");
+		expect(docs.entries.itemListElement[0].documentIdFormat).toEqual("custom-doc-format");
+	});
+
+	test("can update a document that creates multiple revisions", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"multi-rev-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Version 1")
+		);
+
+		// Update with new blob data - creates revision 1
+		await service.update(documentId, Converter.utf8ToBytes("Version 2"));
+
+		// Update with new blob data - creates revision 2
+		await service.update(documentId, Converter.utf8ToBytes("Version 3"));
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(3);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(2);
+		expect(docs.entries.itemListElement[1].documentRevision).toEqual(1);
+		expect(docs.entries.itemListElement[2].documentRevision).toEqual(0);
+	});
+
+	test("can get a document with removed flag when includeRemoved is true", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"remove-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Original"),
+			undefined,
+			undefined,
+			{ createAttestation: false }
+		);
+
+		// Create a second revision
+		await service.update(documentId, Converter.utf8ToBytes("Updated"));
+
+		// Remove the first revision
+		await service.removeRevision(documentId, 0);
+
+		// Get without includeRemoved - should only get revision 1
+		const docsWithout = await service.get(documentId, undefined, undefined, 10);
+		expect(docsWithout.entries.itemListElement).toHaveLength(1);
+		expect(docsWithout.entries.itemListElement[0].documentRevision).toEqual(1);
+
+		// Get with includeRemoved - should get both revisions
+		const docsWith = await service.get(documentId, { includeRemoved: true }, undefined, 10);
+		expect(docsWith.entries.itemListElement).toHaveLength(2);
+		expect(docsWith.entries.itemListElement[0].dateDeleted).toBeUndefined();
+		expect(docsWith.entries.itemListElement[1].dateDeleted).toBeDefined();
+	});
+
+	test("can query for multiple documents with the same document id", async () => {
+		const service = new DocumentManagementService();
+
+		// Create first document with shared ID
+		const doc1Id = await service.create(
+			"shared-doc-id",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Document 1")
+		);
+
+		// Create second document with same ID
+		const doc2Id = await service.create(
+			"shared-doc-id",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Document 2")
+		);
+
+		expect(doc1Id).not.toEqual(doc2Id);
+
+		const result = await service.query("shared-doc-id");
+		expect(result.entries.itemListElement).toHaveLength(2);
+	});
+
+	test("can handle documents with large annotation objects", async () => {
+		const service = new DocumentManagementService();
+		const largeAnnotation = {
+			type: "DigitalDocument",
+			name: "complex-document",
+			metadata: {
+				tags: Array.from({ length: 100 }, (_, i) => `tag-${i}`),
+				properties: Object.fromEntries(
+					Array.from({ length: 50 }, (_, i) => [`prop${i}`, `value${i}`])
+				),
+				nestedData: {
+					level1: {
+						level2: {
+							level3: {
+								data: "deep nested value"
+							}
+						}
+					}
+				}
+			}
+		};
+
+		const documentId = await service.create(
+			"large-annotation-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Test data"),
+			largeAnnotation
+		);
+
+		const docs = await service.get(documentId);
+		expect(docs.entries.itemListElement[0].annotationObject).toEqual(largeAnnotation);
+	});
+
+	test("verifies blob storage entry context is removed after retrieval", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"context-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Test")
+		);
+
+		const docs = await service.get(documentId, { includeBlobStorageMetadata: true });
+
+		// Verify blobStorageEntry exists but doesn't have @context
+		expect(docs.entries.itemListElement[0].blobStorageEntry).toBeDefined();
+		expect(docs.entries.itemListElement[0].blobStorageEntry?.["@context"]).toBeUndefined();
+
+		// Verify the BlobStorageContexts.Context is in the top-level
+		expect(docs.entries["@context"]).toContain("https://schema.twindev.org/blob-storage/");
+	});
+
+	test("verifies attestation information context is removed after retrieval", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"attestation-context-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Test"),
+			undefined,
+			undefined,
+			{ createAttestation: true }
+		);
+
+		const docs = await service.get(documentId, { includeAttestation: true });
+
+		// Verify attestationInformation exists but doesn't have @context
+		expect(docs.entries.itemListElement[0].attestationInformation).toBeDefined();
+		expect(docs.entries.itemListElement[0].attestationInformation?.["@context"]).toBeUndefined();
+	});
+
+	test("can update edges by removing all connections", async () => {
+		const service = new DocumentManagementService();
+
+		// Create target vertices
+		const targetId1 = await service.create(
+			"target-doc-1",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Target 1")
+		);
+
+		const targetId2 = await service.create(
+			"target-doc-2",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Target 2")
+		);
+
+		// Create document with edges
+		const documentId = await service.create(
+			"source-doc",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Source"),
+			undefined,
+			[{ targetId: targetId1 }, { targetId: targetId2 }]
+		);
+
+		// Verify edges exist
+		let docs = await service.get(documentId);
+		expect(docs.entries.edges).toHaveLength(2);
+
+		// Remove all edges by passing empty array
+		await service.update(documentId, undefined, undefined, []);
+
+		// Verify edges are removed
+		docs = await service.get(documentId);
+		expect(docs.entries.edges).toBeUndefined();
+	});
+
+	test("maintains revision counter after removing middle revision", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"revision-counter-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Rev 0")
+		);
+
+		// Create revisions 1 and 2
+		await service.update(documentId, Converter.utf8ToBytes("Rev 1"));
+		await service.update(documentId, Converter.utf8ToBytes("Rev 2"));
+
+		// Remove middle revision
+		await service.removeRevision(documentId, 1);
+
+		// Create new revision - should be revision 3, not 2
+		await service.update(documentId, Converter.utf8ToBytes("Rev 3"));
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		const revisions = docs.entries.itemListElement.map(doc => doc.documentRevision).sort();
+		expect(revisions).toEqual([0, 2, 3]);
+	});
+
+	test("can create and retrieve multiple documents with different document IDs", async () => {
+		const service = new DocumentManagementService();
+		const docIds = ["doc-001", "doc-002", "doc-003", "doc-004"];
+
+		const documentIds = [];
+		for (const docId of docIds) {
+			const id = await service.create(
+				docId,
+				undefined,
+				UneceDocumentCodeList.BillOfLading,
+				Converter.utf8ToBytes(`Document with ID ${docId}`)
+			);
+			documentIds.push(id);
+		}
+
+		// Verify each document has correct ID
+		for (let i = 0; i < documentIds.length; i++) {
+			const docs = await service.get(documentIds[i]);
+			expect(docs.entries.itemListElement[0].documentId).toEqual(docIds[i]);
+			expect(docs.entries.itemListElement[0].documentCode).toContain("705");
+		}
 	});
 });
