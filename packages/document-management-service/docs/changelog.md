@@ -1,5 +1,21 @@
 # @twin.org/document-management-service - Changelog
 
+## [0.0.3-next.10](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.9...document-management-service-v0.0.3-next.10) (2026-02-11)
+
+
+### Features
+
+* add ts-to-jsonld-context tool ([da11115](https://github.com/twinfoundation/document-management/commit/da111155614dc7f7789480c8b0d2f03c66a16ae4))
+* blobHash to integrity ([#38](https://github.com/twinfoundation/document-management/issues/38)) ([2d45756](https://github.com/twinfoundation/document-management/commit/2d457565ba61d260ace12a762e592b6b1a65788d))
+* update naming ([409990b](https://github.com/twinfoundation/document-management/commit/409990b025bc3a0619969643bb1bfe634140696f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.9 to 0.0.3-next.10
+
 ## [0.0.3-next.9](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.8...document-management-service-v0.0.3-next.9) (2026-01-26)
 
 

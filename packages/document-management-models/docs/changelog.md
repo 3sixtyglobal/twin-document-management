@@ -1,5 +1,13 @@
 # @twin.org/document-management-models - Changelog
 
+## [0.0.3-next.10](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.9...document-management-models-v0.0.3-next.10) (2026-02-11)
+
+
+### Features
+
+* add ts-to-jsonld-context tool ([da11115](https://github.com/twinfoundation/document-management/commit/da111155614dc7f7789480c8b0d2f03c66a16ae4))
+* blobHash to integrity ([#38](https://github.com/twinfoundation/document-management/issues/38)) ([2d45756](https://github.com/twinfoundation/document-management/commit/2d457565ba61d260ace12a762e592b6b1a65788d))
+
 ## [0.0.3-next.9](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.8...document-management-models-v0.0.3-next.9) (2026-01-26)
 
 
