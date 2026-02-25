@@ -1,5 +1,12 @@
 # @twin.org/document-management-models - Changelog
 
+## [0.0.3-next.11](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.10...document-management-models-v0.0.3-next.11) (2026-02-25)
+
+
+### Features
+
+* update schemas ([310261d](https://github.com/twinfoundation/document-management/commit/310261d620254d9c00dfa8fbb470948af9101778))
+
 ## [0.0.3-next.10](https://github.com/twinfoundation/document-management/compare/document-management-models-v0.0.3-next.9...document-management-models-v0.0.3-next.10) (2026-02-11)
 
 
