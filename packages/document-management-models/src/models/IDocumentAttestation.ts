@@ -25,31 +25,31 @@ export interface IDocumentAttestation {
 
 	/**
 	 * The id of the document.
-	 * json-ld type:schema:identifier
+	 * @json-ld type:schema:identifier
 	 */
 	documentId: string;
 
 	/**
 	 * The code for the document type.
-	 * json-ld type:schema:identifier
+	 * @json-ld type:schema:identifier
 	 */
 	documentCode: UneceDocumentCodeList;
 
 	/**
 	 * The revision of the document as a 0 based index.
-	 * json-ld type:schema:Integer
+	 * @json-ld type:schema:Integer
 	 */
 	documentRevision: number;
 
 	/**
 	 * The date/time of when the document was created.
-	 * json-ld namespace:schema
+	 * @json-ld namespace:schema
 	 */
 	dateCreated: string;
 
 	/**
 	 * The integrity of the document being attested.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	integrity: string;
 }

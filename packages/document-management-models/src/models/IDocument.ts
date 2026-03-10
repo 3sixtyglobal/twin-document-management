@@ -34,97 +34,97 @@ export interface IDocument {
 
 	/**
 	 * The id of the document.
-	 * json-ld type:schema:identifier
+	 * @json-ld type:schema:identifier
 	 */
 	documentId: string;
 
 	/**
 	 * The format of the document id.
-	 * json-ld type:schema:Text
+	 * @json-ld type:schema:Text
 	 */
 	documentIdFormat?: string;
 
 	/**
 	 * The code for the document type.
-	 * json-ld type:schema:identifier
+	 * @json-ld type:schema:identifier
 	 */
 	documentCode: UneceDocumentCodeList;
 
 	/**
 	 * The revision of the document as a 0 based index.
-	 * json-ld type:schema:Integer
+	 * @json-ld type:schema:Integer
 	 */
 	documentRevision: number;
 
 	/**
 	 * Additional annotation information for the document.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	annotationObject?: IJsonLdNodeObject;
 
 	/**
 	 * The blob storage id for the document.
-	 * json-ld type:schema:identifier
+	 * @json-ld type:schema:identifier
 	 */
 	blobStorageId: string;
 
 	/**
 	 * The integrity of the blob data.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	integrity: string;
 
 	/**
 	 * The additional JSON-LD for blob storage if it was requested.
-	 * json-ld id
+	 * @json-ld id
 	 */
 	blobStorageEntry?: IBlobStorageEntry;
 
 	/**
 	 * The data extracted from the document using data extraction services.
-	 * json-ld type:json
+	 * @json-ld type:json
 	 */
 	extractedData?: unknown;
 
 	/**
 	 * The attestation for the document if one was created.
-	 * json-ld type:schema:identifier
+	 * @json-ld type:schema:identifier
 	 */
 	attestationId?: string;
 
 	/**
 	 * The additional JSON-LD for attestation storage if it was requested.
-	 * json-ld id
+	 * @json-ld id
 	 */
 	attestationInformation?: IAttestationInformation;
 
 	/**
 	 * The date/time of when the document was created.
-	 * json-ld namespace:schema
+	 * @json-ld namespace:schema
 	 */
 	dateCreated: string;
 
 	/**
 	 * The date/time of when the document was modified.
-	 * json-ld namespace:schema
+	 * @json-ld namespace:schema
 	 */
 	dateModified?: string;
 
 	/**
 	 * The date/time of when the document was deleted, as we never actually remove items.
-	 * json-ld namespace:schema
+	 * @json-ld namespace:schema
 	 */
 	dateDeleted?: string;
 
 	/**
 	 * The organization which added the document to the graph.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	organizationIdentity?: string;
 
 	/**
 	 * The user who added the document to the graph.
-	 * json-ld namespace:twin-common
+	 * @json-ld namespace:twin-common
 	 */
 	userIdentity?: string;
 }
