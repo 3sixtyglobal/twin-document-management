@@ -1,6 +1,6 @@
 # TWIN Document Management Service
 
-Document management contract implementation and REST endpoint definitions.
+This package delivers the service-side implementation for document lifecycle operations, including create, update, revision access, and search behaviour. It also exposes REST route generation so APIs can present a consistent contract for document handling.
 
 ## Installation
 

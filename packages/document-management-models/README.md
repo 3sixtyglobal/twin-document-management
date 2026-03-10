@@ -1,6 +1,6 @@
 # TWIN Document Management Models
 
-Models which define the structure of the document management contracts and connectors.
+This package defines the core document data structures, JSON-LD contexts, and schema-aligned model contracts used across the repository. It provides a single source of truth for payload shape and semantic consistency between services and client integrations.
 
 ## Installation
 

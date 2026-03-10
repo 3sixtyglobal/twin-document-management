@@ -1,7 +1,7 @@
 {
 	"name": "@twin.org/document-management-service",
 	"version": "0.0.3-next.11",
-	"description": "Document management contract implementation and REST endpoint definitions",
+	"description": "Service-side document lifecycle operations and REST route generation for server integrations.",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/twinfoundation/document-management.git",

@@ -1,6 +1,6 @@
 # TWIN Document Management REST Client
 
-Document management processing contract implementation which can connect to REST endpoints.
+This package provides a client for invoking document lifecycle endpoints over HTTP with a stable, contract-led API. It is intended for consumers that need to create, update, fetch revisions, remove revisions, and query document records from remote services.
 
 ## Installation
 

@@ -1,7 +1,7 @@
 {
 	"name": "@twin.org/document-management-models",
 	"version": "0.0.3-next.11",
-	"description": "Models which define the structure of the document management connectors and services",
+	"description": "Shared data models, schemas, and context definitions for document lifecycle records.",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/twinfoundation/document-management.git",
