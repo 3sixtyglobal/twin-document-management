@@ -1,4 +1,4 @@
-# @twin.org/document-management-service - Changelog
+# Changelog
 
 ## [0.0.3-next.11](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.10...document-management-service-v0.0.3-next.11) (2026-02-25)
 
