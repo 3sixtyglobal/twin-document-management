@@ -28,7 +28,7 @@ The options for the service.
 
 ## Properties
 
-### CLASS\_NAME
+### CLASS\_NAME {#class_name}
 
 > `readonly` `static` **CLASS\_NAME**: `string`
 
@@ -36,7 +36,7 @@ Runtime name for the class.
 
 ## Methods
 
-### className()
+### className() {#classname}
 
 > **className**(): `string`
 
@@ -54,7 +54,7 @@ The class name of the component.
 
 ***
 
-### create()
+### create() {#create}
 
 > **create**(`documentId`, `documentIdFormat`, `documentCode`, `blob`, `annotationObject?`, `auditableItemGraphEdges?`, `options?`): `Promise`\<`string`\>
 
@@ -134,7 +134,7 @@ The auditable item graph vertex created for the document including its revision.
 
 ***
 
-### update()
+### update() {#update}
 
 > **update**(`auditableItemGraphDocumentId`, `blob?`, `annotationObject?`, `auditableItemGraphEdges?`): `Promise`\<`void`\>
 
@@ -180,7 +180,7 @@ Nothing.
 
 ***
 
-### get()
+### get() {#get}
 
 > **get**(`auditableItemGraphDocumentId`, `options?`, `cursor?`, `limit?`): `Promise`\<\{ `entries`: `IDocumentList`; `cursor?`: `string`; \}\>
 
@@ -258,7 +258,7 @@ The documents and revisions if requested, ordered by revision descending, cursor
 
 ***
 
-### getRevision()
+### getRevision() {#getrevision}
 
 > **getRevision**(`auditableItemGraphDocumentId`, `revision`, `options?`): `Promise`\<`IDocument`\>
 
@@ -324,7 +324,7 @@ The documents and revisions if requested, ordered by revision descending, cursor
 
 ***
 
-### removeRevision()
+### removeRevision() {#removerevision}
 
 > **removeRevision**(`auditableItemGraphDocumentId`, `revision`): `Promise`\<`void`\>
 
@@ -357,7 +357,7 @@ Nothing.
 
 ***
 
-### query()
+### query() {#query}
 
 > **query**(`documentId`, `cursor?`, `limit?`): `Promise`\<\{ `entries`: `IAuditableItemGraphVertexList`; `cursor?`: `string`; \}\>
 

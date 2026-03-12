@@ -4,7 +4,7 @@ Interface describing a document.
 
 ## Properties
 
-### @context
+### @context {#context}
 
 > **@context**: \[`"https://schema.org"`, `"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `...IJsonLdContextDefinitionElement[]`\]
 
@@ -12,7 +12,7 @@ JSON-LD Context.
 
 ***
 
-### type
+### type {#type}
 
 > **type**: `"Document"`
 
@@ -20,7 +20,7 @@ JSON-LD Type.
 
 ***
 
-### id
+### id {#id}
 
 > **id**: `string`
 
@@ -28,144 +28,128 @@ The full id of the document.
 
 ***
 
-### documentId
+### documentId {#documentid}
 
 > **documentId**: `string`
 
 The id of the document.
-json-ld type:schema:identifier
 
 ***
 
-### documentIdFormat?
+### documentIdFormat? {#documentidformat}
 
 > `optional` **documentIdFormat**: `string`
 
 The format of the document id.
-json-ld type:schema:Text
 
 ***
 
-### documentCode
+### documentCode {#documentcode}
 
 > **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
-json-ld type:schema:identifier
 
 ***
 
-### documentRevision
+### documentRevision {#documentrevision}
 
 > **documentRevision**: `number`
 
 The revision of the document as a 0 based index.
-json-ld type:schema:Integer
 
 ***
 
-### annotationObject?
+### annotationObject? {#annotationobject}
 
 > `optional` **annotationObject**: `IJsonLdNodeObject`
 
 Additional annotation information for the document.
-json-ld namespace:twin-common
 
 ***
 
-### blobStorageId
+### blobStorageId {#blobstorageid}
 
 > **blobStorageId**: `string`
 
 The blob storage id for the document.
-json-ld type:schema:identifier
 
 ***
 
-### integrity
+### integrity {#integrity}
 
 > **integrity**: `string`
 
 The integrity of the blob data.
-json-ld namespace:twin-common
 
 ***
 
-### blobStorageEntry?
+### blobStorageEntry? {#blobstorageentry}
 
 > `optional` **blobStorageEntry**: `IBlobStorageEntry`
 
 The additional JSON-LD for blob storage if it was requested.
-json-ld id
 
 ***
 
-### extractedData?
+### extractedData? {#extracteddata}
 
 > `optional` **extractedData**: `unknown`
 
 The data extracted from the document using data extraction services.
-json-ld type:json
 
 ***
 
-### attestationId?
+### attestationId? {#attestationid}
 
 > `optional` **attestationId**: `string`
 
 The attestation for the document if one was created.
-json-ld type:schema:identifier
 
 ***
 
-### attestationInformation?
+### attestationInformation? {#attestationinformation}
 
 > `optional` **attestationInformation**: `IAttestationInformation`
 
 The additional JSON-LD for attestation storage if it was requested.
-json-ld id
 
 ***
 
-### dateCreated
+### dateCreated {#datecreated}
 
 > **dateCreated**: `string`
 
 The date/time of when the document was created.
-json-ld namespace:schema
 
 ***
 
-### dateModified?
+### dateModified? {#datemodified}
 
 > `optional` **dateModified**: `string`
 
 The date/time of when the document was modified.
-json-ld namespace:schema
 
 ***
 
-### dateDeleted?
+### dateDeleted? {#datedeleted}
 
 > `optional` **dateDeleted**: `string`
 
 The date/time of when the document was deleted, as we never actually remove items.
-json-ld namespace:schema
 
 ***
 
-### organizationIdentity?
+### organizationIdentity? {#organizationidentity}
 
 > `optional` **organizationIdentity**: `string`
 
 The organization which added the document to the graph.
-json-ld namespace:twin-common
 
 ***
 
-### userIdentity?
+### userIdentity? {#useridentity}
 
 > `optional` **userIdentity**: `string`
 
 The user who added the document to the graph.
-json-ld namespace:twin-common

@@ -14,7 +14,7 @@ Handle all the data types for document management.
 
 ## Methods
 
-### registerTypes()
+### registerTypes() {#registertypes}
 
 > `static` **registerTypes**(): `void`
 

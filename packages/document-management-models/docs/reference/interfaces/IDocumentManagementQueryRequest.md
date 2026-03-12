@@ -4,7 +4,7 @@ Request to get a list of document from an auditable item graph vertex.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
 > `optional` **headers**: `object`
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### query
+### query {#query}
 
 > **query**: `object`
 

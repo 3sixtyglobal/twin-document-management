@@ -4,7 +4,7 @@ Request to create a document as an auditable item graph vertex.
 
 ## Properties
 
-### body
+### body {#body}
 
 > **body**: `object`
 

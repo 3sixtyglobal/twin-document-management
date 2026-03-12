@@ -4,7 +4,7 @@ Request to get a document from an auditable item graph vertex.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
 > `optional` **headers**: `object`
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### pathParams
+### pathParams {#pathparams}
 
 > **pathParams**: `object`
 
@@ -30,7 +30,7 @@ The full id of the document to get.
 
 ***
 
-### query?
+### query? {#query}
 
 > `optional` **query**: `object`
 
@@ -42,23 +42,11 @@ The query parameters.
 
 Include the blob storage metadata in the response.
 
-##### Default
-
-```ts
-false
-```
-
 #### includeBlobStorageData?
 
 > `optional` **includeBlobStorageData**: `string`
 
 Include the blob storage data in the response.
-
-##### Default
-
-```ts
-false
-```
 
 #### includeAttestation?
 
@@ -66,23 +54,11 @@ false
 
 Include the attestation information in the response.
 
-##### Default
-
-```ts
-false
-```
-
 #### includeRemoved?
 
 > `optional` **includeRemoved**: `string`
 
 Include deleted documents in the response.
-
-##### Default
-
-```ts
-false
-```
 
 #### extractRuleGroupId?
 
@@ -101,12 +77,6 @@ By default extraction will auto detect the mime type of the document, this can b
 > `optional` **limit**: `string`
 
 PLimit the number of items to return, defaults to 1 so only most recent is returned.
-
-##### Default
-
-```ts
-1
-```
 
 #### cursor?
 

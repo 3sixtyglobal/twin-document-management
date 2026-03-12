@@ -4,7 +4,7 @@ Request to update a document as an auditable item graph vertex.
 
 ## Properties
 
-### pathParams
+### pathParams {#pathparams}
 
 > **pathParams**: `object`
 
@@ -18,7 +18,7 @@ The full id of the document to get.
 
 ***
 
-### body
+### body {#body}
 
 > **body**: `object`
 

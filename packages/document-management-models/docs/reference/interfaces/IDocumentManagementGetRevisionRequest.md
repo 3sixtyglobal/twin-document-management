@@ -4,7 +4,7 @@ Request to get a document revision from an auditable item graph vertex.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
 > `optional` **headers**: `object`
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### pathParams
+### pathParams {#pathparams}
 
 > **pathParams**: `object`
 
@@ -36,7 +36,7 @@ The revision of the document to get.
 
 ***
 
-### query?
+### query? {#query}
 
 > `optional` **query**: `object`
 
@@ -48,35 +48,17 @@ The query parameters.
 
 Include the blob storage metadata in the response.
 
-##### Default
-
-```ts
-false
-```
-
 #### includeBlobStorageData?
 
 > `optional` **includeBlobStorageData**: `string`
 
 Include the blob storage data in the response.
 
-##### Default
-
-```ts
-false
-```
-
 #### includeAttestation?
 
 > `optional` **includeAttestation**: `string`
 
 Include the attestation information in the response.
-
-##### Default
-
-```ts
-false
-```
 
 #### extractRuleGroupId?
 

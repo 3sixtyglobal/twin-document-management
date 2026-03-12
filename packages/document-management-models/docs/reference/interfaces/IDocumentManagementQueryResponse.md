@@ -4,7 +4,7 @@ Response to query the documents from an auditable item graph vertex.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
 > `optional` **headers**: `object`
 
@@ -20,7 +20,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### body
+### body {#body}
 
 > **body**: `IAuditableItemGraphVertexList`
 
