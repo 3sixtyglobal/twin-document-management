@@ -38,7 +38,7 @@ The id of the document.
 
 ### documentIdFormat? {#documentidformat}
 
-> `optional` **documentIdFormat**: `string`
+> `optional` **documentIdFormat?**: `string`
 
 The format of the document id.
 
@@ -62,7 +62,7 @@ The revision of the document as a 0 based index.
 
 ### annotationObject? {#annotationobject}
 
-> `optional` **annotationObject**: `IJsonLdNodeObject`
+> `optional` **annotationObject?**: `IJsonLdNodeObject`
 
 Additional annotation information for the document.
 
@@ -86,7 +86,7 @@ The integrity of the blob data.
 
 ### blobStorageEntry? {#blobstorageentry}
 
-> `optional` **blobStorageEntry**: `IBlobStorageEntry`
+> `optional` **blobStorageEntry?**: `IBlobStorageEntry`
 
 The additional JSON-LD for blob storage if it was requested.
 
@@ -94,7 +94,7 @@ The additional JSON-LD for blob storage if it was requested.
 
 ### extractedData? {#extracteddata}
 
-> `optional` **extractedData**: `unknown`
+> `optional` **extractedData?**: `unknown`
 
 The data extracted from the document using data extraction services.
 
@@ -102,7 +102,7 @@ The data extracted from the document using data extraction services.
 
 ### attestationId? {#attestationid}
 
-> `optional` **attestationId**: `string`
+> `optional` **attestationId?**: `string`
 
 The attestation for the document if one was created.
 
@@ -110,7 +110,7 @@ The attestation for the document if one was created.
 
 ### attestationInformation? {#attestationinformation}
 
-> `optional` **attestationInformation**: `IAttestationInformation`
+> `optional` **attestationInformation?**: `IAttestationInformation`
 
 The additional JSON-LD for attestation storage if it was requested.
 
@@ -126,7 +126,7 @@ The date/time of when the document was created.
 
 ### dateModified? {#datemodified}
 
-> `optional` **dateModified**: `string`
+> `optional` **dateModified?**: `string`
 
 The date/time of when the document was modified.
 
@@ -134,7 +134,7 @@ The date/time of when the document was modified.
 
 ### dateDeleted? {#datedeleted}
 
-> `optional` **dateDeleted**: `string`
+> `optional` **dateDeleted?**: `string`
 
 The date/time of when the document was deleted, as we never actually remove items.
 
@@ -142,7 +142,7 @@ The date/time of when the document was deleted, as we never actually remove item
 
 ### organizationIdentity? {#organizationidentity}
 
-> `optional` **organizationIdentity**: `string`
+> `optional` **organizationIdentity?**: `string`
 
 The organization which added the document to the graph.
 
@@ -150,6 +150,6 @@ The organization which added the document to the graph.
 
 ### userIdentity? {#useridentity}
 
-> `optional` **userIdentity**: `string`
+> `optional` **userIdentity?**: `string`
 
 The user who added the document to the graph.

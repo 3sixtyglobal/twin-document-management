@@ -6,9 +6,9 @@
 		"./src/models/IDocumentList.ts"
 	],
 	"externalReferences": {
-		"IJsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
-		"IAttestation(.*)": "https://schema.twindev.org/attestation/Attestation$1",
-		"IBlob(.*)": "https://schema.twindev.org/blob-storage/Blob$1",
+		"JsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
+		"Attestation(.*)": "https://schema.twindev.org/attestation/Attestation$1",
+		"Blob(.*)": "https://schema.twindev.org/blob-storage/Blob$1",
 		"Unece(.*)": "https://schema.twindev.org/unece/Unece$1"
 	}
 }

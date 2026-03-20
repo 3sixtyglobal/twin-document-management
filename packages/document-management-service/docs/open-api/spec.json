@@ -1013,32 +1013,29 @@
 	"components": {
 		"schemas": {
 			"Document": {
+				"description": "Interface describing a document.",
 				"type": "object",
 				"properties": {
 					"@context": {
 						"type": "array",
-						"minItems": 3,
-						"description": "JSON-LD Context.",
 						"prefixItems": [
 							{
-								"type": "string",
 								"const": "https://schema.org"
 							},
 							{
-								"type": "string",
 								"const": "https://schema.twindev.org/documents/"
 							},
 							{
-								"type": "string",
 								"const": "https://schema.twindev.org/common/"
 							}
 						],
 						"items": {
 							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
-						}
+						},
+						"minItems": 3,
+						"description": "JSON-LD Context."
 					},
 					"type": {
-						"type": "string",
 						"const": "Document",
 						"description": "JSON-LD Type."
 					},
@@ -1116,36 +1113,32 @@
 					"blobStorageId",
 					"integrity",
 					"dateCreated"
-				],
-				"description": "Interface describing a document."
+				]
 			},
 			"DocumentList": {
+				"description": "Interface describing a list of document entries.",
 				"type": "object",
 				"properties": {
 					"@context": {
 						"type": "array",
-						"minItems": 3,
-						"description": "JSON-LD Context.",
 						"prefixItems": [
 							{
-								"type": "string",
 								"const": "https://schema.org"
 							},
 							{
-								"type": "string",
 								"const": "https://schema.twindev.org/documents/"
 							},
 							{
-								"type": "string",
 								"const": "https://schema.twindev.org/common/"
 							}
 						],
 						"items": {
 							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
-						}
+						},
+						"minItems": 3,
+						"description": "JSON-LD Context."
 					},
 					"type": {
-						"type": "string",
 						"const": "ItemList",
 						"description": "JSON-LD Type."
 					},
@@ -1168,8 +1161,7 @@
 					"@context",
 					"type",
 					"itemListElement"
-				],
-				"description": "Interface describing a list of document entries."
+				]
 			},
 			"DocumentManagementCreateRequest": {
 				"type": "object",
@@ -1209,8 +1201,7 @@
 							},
 							"required": [
 								"targetId"
-							],
-							"additionalProperties": false
+							]
 						},
 						"description": "The auditable item graph vertices to connect the document to."
 					},
@@ -1228,6 +1219,7 @@
 				},
 				"required": [
 					"documentId",
+					"documentIdFormat",
 					"documentCode",
 					"blob"
 				],
@@ -1260,8 +1252,7 @@
 							},
 							"required": [
 								"targetId"
-							],
-							"additionalProperties": false
+							]
 						},
 						"description": "The auditable item graph vertices to connect the document to."
 					}
@@ -1269,6 +1260,7 @@
 				"description": "The body parameters."
 			},
 			"Error": {
+				"description": "Model to describe serialized error.",
 				"type": "object",
 				"properties": {
 					"name": {
@@ -1299,8 +1291,7 @@
 				"required": [
 					"name",
 					"message"
-				],
-				"description": "Model to describe serialized error."
+				]
 			},
 			"NotFoundResponse": {
 				"type": "object",
@@ -1308,35 +1299,12 @@
 					"notFoundId": {
 						"type": "string",
 						"description": "The id if the item that was not found."
-					},
-					"name": {
-						"type": "string",
-						"description": "The name for the error."
-					},
-					"message": {
-						"type": "string",
-						"description": "The message for the error."
-					},
-					"source": {
-						"type": "string",
-						"description": "The source of the error."
-					},
-					"properties": {
-						"type": "object",
-						"additionalProperties": {},
-						"description": "Any additional information for the error."
-					},
-					"stack": {
-						"type": "string",
-						"description": "The stack trace for the error."
-					},
-					"cause": {
-						"$ref": "#/components/schemas/Error"
 					}
 				},
-				"required": [
-					"message",
-					"name"
+				"allOf": [
+					{
+						"$ref": "#/components/schemas/Error"
+					}
 				],
 				"description": "The body which contains the error."
 			}

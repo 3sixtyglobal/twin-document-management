@@ -36,30 +36,30 @@ The data to create the document with, in base64.
 
 #### annotationObject?
 
-> `optional` **annotationObject**: `IJsonLdNodeObject`
+> `optional` **annotationObject?**: `IJsonLdNodeObject`
 
 Additional information to associate with the document.
 
 #### auditableItemGraphEdges?
 
-> `optional` **auditableItemGraphEdges**: `object`[]
+> `optional` **auditableItemGraphEdges?**: `object`[]
 
 The auditable item graph vertices to connect the document to.
 
 #### createAttestation?
 
-> `optional` **createAttestation**: `boolean`
+> `optional` **createAttestation?**: `boolean`
 
 Flag to create an attestation for the document, defaults to false.
 
 #### addAlias?
 
-> `optional` **addAlias**: `boolean`
+> `optional` **addAlias?**: `boolean`
 
 Flag to add the document id as an alias to the aig vertex, defaults to true.
 
 #### aliasAnnotationObject?
 
-> `optional` **aliasAnnotationObject**: `IJsonLdNodeObject`
+> `optional` **aliasAnnotationObject?**: `IJsonLdNodeObject`
 
 Annotation object for the alias.

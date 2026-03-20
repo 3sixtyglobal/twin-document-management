@@ -26,9 +26,9 @@ The document id to create.
 
 ##### documentIdFormat
 
-The format of the document identifier.
+`string` \| `undefined`
 
-`string` | `undefined`
+The format of the document identifier.
 
 ##### documentCode
 

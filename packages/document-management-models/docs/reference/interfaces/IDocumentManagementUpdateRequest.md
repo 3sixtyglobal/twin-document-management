@@ -26,18 +26,18 @@ The body parameters.
 
 #### blob?
 
-> `optional` **blob**: `string`
+> `optional` **blob?**: `string`
 
 The data to create the document with, in base64.
 
 #### annotationObject?
 
-> `optional` **annotationObject**: `IJsonLdNodeObject`
+> `optional` **annotationObject?**: `IJsonLdNodeObject`
 
 Additional information to associate with the document.
 
 #### auditableItemGraphEdges?
 
-> `optional` **auditableItemGraphEdges**: `object`[]
+> `optional` **auditableItemGraphEdges?**: `object`[]
 
 The auditable item graph vertices to connect the document to.

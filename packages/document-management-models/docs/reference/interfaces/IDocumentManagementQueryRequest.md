@@ -6,7 +6,7 @@ Request to get a list of document from an auditable item graph vertex.
 
 ### headers? {#headers}
 
-> `optional` **headers**: `object`
+> `optional` **headers?**: `object`
 
 The headers which can be used to determine the response data type.
 
@@ -30,12 +30,12 @@ The id of the document id we are trying to find.
 
 #### cursor?
 
-> `optional` **cursor**: `string`
+> `optional` **cursor?**: `string`
 
 The cursor to get the next chunk of documents.
 
 #### limit?
 
-> `optional` **limit**: `string`
+> `optional` **limit?**: `string`
 
 The number of documents to return.

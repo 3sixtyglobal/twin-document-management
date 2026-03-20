@@ -30,6 +30,6 @@ The list of documents.
 
 ### edges? {#edges}
 
-> `optional` **edges**: `string`[]
+> `optional` **edges?**: `string`[]
 
 The ids of the other vertices which are connected to the document.

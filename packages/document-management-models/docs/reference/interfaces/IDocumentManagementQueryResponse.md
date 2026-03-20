@@ -6,7 +6,7 @@ Response to query the documents from an auditable item graph vertex.
 
 ### headers? {#headers}
 
-> `optional` **headers**: `object`
+> `optional` **headers?**: `object`
 
 The headers which can be used to determine the response data type.
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 #### link?
 
-> `optional` **link**: `string` \| `string`[]
+> `optional` **link?**: `string` \| `string`[]
 
 ***
 
