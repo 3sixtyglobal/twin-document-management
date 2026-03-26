@@ -162,7 +162,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				}
 			}
 
-			const documentVertex: Omit<IAuditableItemGraphVertex, "@context" | "id" | "type"> = {};
+			const documentVertex: Omit<IAuditableItemGraphVertex, "id"> = {
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			};
 
 			if (options?.addAlias ?? true) {
 				documentVertex.aliases ??= [];
@@ -214,7 +217,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			this.updateEdges(documentVertex, auditableItemGraphEdges);
 
 			// And create the vertex
-			const vertexId = await this._auditableItemGraphComponent.create(documentVertex);
+			const vertexId = await this._auditableItemGraphComponent.create(
+				ObjectHelper.removeEmptyProperties(documentVertex)
+			);
 
 			// Now add the edges to the connected vertices
 			await this.updateConnectedEdges(
@@ -363,7 +368,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 
 			if (updatedVertex) {
-				await this._auditableItemGraphComponent.update(documentVertex);
+				await this._auditableItemGraphComponent.update(
+					ObjectHelper.removeEmptyProperties(documentVertex)
+				);
 			}
 
 			if (edgesUpdated) {

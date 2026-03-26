@@ -5,6 +5,10 @@ import { NftAttestationConnector } from "@twin.org/attestation-connector-nft";
 import { AttestationConnectorFactory } from "@twin.org/attestation-models";
 import { AttestationService } from "@twin.org/attestation-service";
 import {
+	AuditableItemGraphContexts,
+	AuditableItemGraphTypes
+} from "@twin.org/auditable-item-graph-models";
+import {
 	type AuditableItemGraphChangeset,
 	AuditableItemGraphService,
 	type AuditableItemGraphVertex,
@@ -305,9 +309,15 @@ describe("document-management-service", async () => {
 	});
 
 	test("can create a document as an AIG vertex with alias, annotation, attestation and edges", async () => {
-		const aigId1 = await auditableItemGraphComponent.create({});
+		const aigId1 = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
 
-		const aigId2 = await auditableItemGraphComponent.create({});
+		const aigId2 = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
 
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
@@ -607,9 +617,15 @@ describe("document-management-service", async () => {
 	});
 
 	test("can create a document with edges and update them", async () => {
-		const aigId1 = await auditableItemGraphComponent.create({});
+		const aigId1 = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
 
-		const aigId2 = await auditableItemGraphComponent.create({});
+		const aigId2 = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
 
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
@@ -771,7 +787,10 @@ describe("document-management-service", async () => {
 			}
 		]);
 
-		const aigId3 = await auditableItemGraphComponent.create({});
+		const aigId3 = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
 
 		const docs = await service.get(documentId);
 
