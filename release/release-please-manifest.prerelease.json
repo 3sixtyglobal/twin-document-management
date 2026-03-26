@@ -1,5 +1,5 @@
 {
-	"packages/document-management-models": "0.0.3-next.11",
-	"packages/document-management-service": "0.0.3-next.11",
-	"packages/document-management-rest-client": "0.0.3-next.11"
+	"packages/document-management-models": "0.0.3-next.12",
+	"packages/document-management-service": "0.0.3-next.12",
+	"packages/document-management-rest-client": "0.0.3-next.12"
 }
