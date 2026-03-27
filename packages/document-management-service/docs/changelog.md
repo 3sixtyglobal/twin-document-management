@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.3-next.12](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.11...document-management-service-v0.0.3-next.12) (2026-03-26)
+
+
+### Features
+
+* update to latest aig method shapes ([497e895](https://github.com/twinfoundation/document-management/commit/497e8954f24774db628e057ebb9d158a1fd9d92a))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.11 to 0.0.3-next.12
+
 ## [0.0.3-next.11](https://github.com/twinfoundation/document-management/compare/document-management-service-v0.0.3-next.10...document-management-service-v0.0.3-next.11) (2026-02-25)
 
 
