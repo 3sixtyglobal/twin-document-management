@@ -4,7 +4,7 @@
 	"description": "Document Management",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/twinfoundation/document-management.git"
+		"url": "git+https://github.com/iotaledger/document-management.git"
 	},
 	"author": "martyn.janes@iota.org",
 	"license": "Apache-2.0",
@@ -60,7 +60,7 @@
 	],
 	"type": "module",
 	"bugs": {
-		"url": "git+https://github.com/twinfoundation/document-management/issues"
+		"url": "git+https://github.com/iotaledger/document-management/issues"
 	},
 	"homepage": "https://twindev.org"
 }
