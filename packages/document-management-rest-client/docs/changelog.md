@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.3-next.13](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.0.3-next.12...document-management-rest-client-v0.0.3-next.13) (2026-05-12)
+
+
+### Features
+
+* typescript 6 update ([35631d8](https://github.com/iotaledger/twin-document-management/commit/35631d88551380933009443d77b1a844b631a98e))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.12 to 0.0.3-next.13
+
 ## [0.0.3-next.12](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.0.3-next.11...document-management-rest-client-v0.0.3-next.12) (2026-03-26)
 
 
