@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { DataTypeHandlerFactory, type IJsonSchema } from "@twin.org/data-core";
+import { DataTypeHandlerFactory } from "@twin.org/data-core";
 import { DocumentContexts } from "../models/documentContexts.js";
 import { DocumentTypes } from "../models/documentTypes.js";
 import DocumentSchema from "../schemas/Document.json" with { type: "json" };
@@ -19,7 +19,7 @@ export class DocumentManagementDataTypes {
 				namespace: DocumentContexts.Namespace,
 				type: DocumentTypes.Document,
 				defaultValue: {},
-				jsonSchema: async () => DocumentSchema as IJsonSchema
+				jsonSchema: async () => DocumentSchema
 			})
 		);
 
@@ -29,7 +29,7 @@ export class DocumentManagementDataTypes {
 				namespace: DocumentContexts.Namespace,
 				type: DocumentTypes.DocumentAttestation,
 				defaultValue: {},
-				jsonSchema: async () => DocumentSchema as IJsonSchema
+				jsonSchema: async () => DocumentSchema
 			})
 		);
 	}
