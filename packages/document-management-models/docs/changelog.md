@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3-next.14](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.0.3-next.13...document-management-models-v0.0.3-next.14) (2026-05-20)
+
+
+### Miscellaneous Chores
+
+* **document-management-models:** Synchronize repo versions
+
 ## [0.0.3-next.13](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.0.3-next.12...document-management-models-v0.0.3-next.13) (2026-05-12)
 
 

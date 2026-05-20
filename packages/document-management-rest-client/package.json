@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/document-management-rest-client",
-	"version": "0.0.3-next.13",
+	"version": "0.0.3-next.14",
 	"description": "REST client operations for creating, updating, retrieving, and querying managed documents.",
 	"repository": {
 		"type": "git",
@@ -33,7 +33,7 @@
 		"@twin.org/auditable-item-graph-models": "next",
 		"@twin.org/core": "next",
 		"@twin.org/data-json-ld": "next",
-		"@twin.org/document-management-models": "0.0.3-next.13",
+		"@twin.org/document-management-models": "0.0.3-next.14",
 		"@twin.org/entity": "next",
 		"@twin.org/nameof": "next",
 		"@twin.org/standards-unece": "next",
