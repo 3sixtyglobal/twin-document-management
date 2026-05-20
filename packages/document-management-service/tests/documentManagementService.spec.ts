@@ -276,12 +276,9 @@ describe("document-management-service", async () => {
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				resourceTypeIndex: "||document||",
-				aliasIndex: undefined,
-				annotationObject: undefined,
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						id: undefined,
 						resourceObject: {
 							"@context": [
 								"https://schema.org",
@@ -291,19 +288,18 @@ describe("document-management-service", async () => {
 							type: "Document",
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
 							documentId: "test-doc-id:aaa",
-							documentIdFormat: undefined,
 							documentCode: "unece:DocumentCodeList#705",
 							documentRevision: 0,
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							dateCreated: "2024-08-22T04:13:20.000Z",
-							annotationObject: undefined,
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
 					}
-				]
+				],
+				version: 0
 			}
 		]);
 	});
@@ -399,13 +395,11 @@ describe("document-management-service", async () => {
 						id: "01917849fb0070109010101010101010",
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 1
 			},
 			{
 				id: "01917849fb0075058505050505050505",
@@ -417,13 +411,10 @@ describe("document-management-service", async () => {
 						id: "01917849fb0074149414141414141414",
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: undefined,
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 1
 			},
 			{
 				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
@@ -434,14 +425,12 @@ describe("document-management-service", async () => {
 					{
 						id: "test-doc-id:aaa",
 						aliasFormat: "foo",
-						dateCreated: "2024-08-22T04:13:20.000Z",
-						annotationObject: undefined
+						dateCreated: "2024-08-22T04:13:20.000Z"
 					}
 				],
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						id: undefined,
 						resourceObject: {
 							"@context": [
 								"https://schema.org",
@@ -475,19 +464,17 @@ describe("document-management-service", async () => {
 						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					},
 					{
 						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
 						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined
+				version: 0
 			}
 		]);
 	});
@@ -537,7 +524,6 @@ describe("document-management-service", async () => {
 					{
 						id: "test-doc-id:aaa",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						aliasFormat: undefined,
 						annotationObject: {
 							"@context": ["https://schema.org"],
 							type: "DigitalDocument",
@@ -548,7 +534,6 @@ describe("document-management-service", async () => {
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						id: undefined,
 						resourceObject: {
 							"@context": [
 								"https://schema.org",
@@ -572,7 +557,6 @@ describe("document-management-service", async () => {
 							attestationId:
 								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
 							dateModified: "2024-08-22T04:13:20.000Z",
-							dateDeleted: undefined,
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						},
@@ -581,7 +565,7 @@ describe("document-management-service", async () => {
 				],
 				dateModified: "2024-08-22T04:13:20.000Z",
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined
+				version: 1
 			}
 		]);
 	});
@@ -683,13 +667,11 @@ describe("document-management-service", async () => {
 						id: "01917849fb0070109010101010101010",
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 1
 			},
 			{
 				id: "01917849fb0075058505050505050505",
@@ -713,13 +695,11 @@ describe("document-management-service", async () => {
 						id: "01917849fb0074149414141414141414",
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 1
 			},
 			{
 				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
@@ -730,14 +710,12 @@ describe("document-management-service", async () => {
 					{
 						id: "test-doc-id:aaa",
 						aliasFormat: "foo",
-						dateCreated: "2024-08-22T04:13:20.000Z",
-						annotationObject: undefined
+						dateCreated: "2024-08-22T04:13:20.000Z"
 					}
 				],
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						id: undefined,
 						resourceObject: {
 							"@context": [
 								"https://schema.org",
@@ -771,19 +749,17 @@ describe("document-management-service", async () => {
 						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					},
 					{
 						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
 						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined
+				version: 0
 			}
 		]);
 
@@ -828,13 +804,11 @@ describe("document-management-service", async () => {
 						id: "01917849fb0070109010101010101010",
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 1
 			},
 			{
 				id: "01917849fb0075058505050505050505",
@@ -860,13 +834,10 @@ describe("document-management-service", async () => {
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
-						dateDeleted: "2024-08-22T04:13:20.000Z",
-						annotationObject: undefined
+						dateDeleted: "2024-08-22T04:13:20.000Z"
 					}
 				],
-				aliasIndex: undefined,
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 2
 			},
 			{
 				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
@@ -878,14 +849,12 @@ describe("document-management-service", async () => {
 					{
 						id: "test-doc-id:aaa",
 						aliasFormat: "foo",
-						dateCreated: "2024-08-22T04:13:20.000Z",
-						annotationObject: undefined
+						dateCreated: "2024-08-22T04:13:20.000Z"
 					}
 				],
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						id: undefined,
 						resourceObject: {
 							"@context": [
 								"https://schema.org",
@@ -902,11 +871,9 @@ describe("document-management-service", async () => {
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
-							annotationObject: undefined,
 							attestationId:
 								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							dateModified: "2024-08-22T04:13:20.000Z",
-							dateDeleted: undefined,
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						},
@@ -918,27 +885,24 @@ describe("document-management-service", async () => {
 						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					},
 					{
 						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
 						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
-						dateDeleted: "2024-08-22T04:13:20.000Z",
-						annotationObject: undefined
+						dateDeleted: "2024-08-22T04:13:20.000Z"
 					},
 					{
 						id: "01917849fb007c1c9c1c1c1c1c1c1c1c",
 						targetId: "aig:01917849fb0078189818181818181818",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined
+				version: 1
 			},
 			{
 				id: "01917849fb0078189818181818181818",
@@ -949,8 +913,7 @@ describe("document-management-service", async () => {
 					{
 						id: "test-doc-id:aaa",
 						aliasFormat: "foo",
-						dateCreated: "2024-08-22T04:13:20.000Z",
-						annotationObject: undefined
+						dateCreated: "2024-08-22T04:13:20.000Z"
 					}
 				],
 				edges: [
@@ -958,13 +921,11 @@ describe("document-management-service", async () => {
 						id: "01917849fb007020a020202020202020",
 						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						edgeRelationships: ["document"],
-						annotationObject: undefined
+						edgeRelationships: ["document"]
 					}
 				],
 				aliasIndex: "||test-doc-id:aaa||",
-				annotationObject: undefined,
-				resourceTypeIndex: undefined
+				version: 1
 			}
 		]);
 	});
