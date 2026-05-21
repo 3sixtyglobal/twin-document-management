@@ -1641,9 +1641,9 @@ describe("document-management-service", async () => {
 			type: "DigitalDocument",
 			name: "complex-document",
 			metadata: {
-				tags: Array.from({ length: 100 }, (_, i) => `tag-${i}`),
+				tags: Array.from({ length: 100 }, (v, i) => `tag-${i}`),
 				properties: Object.fromEntries(
-					Array.from({ length: 50 }, (_, i) => [`prop${i}`, `value${i}`])
+					Array.from({ length: 50 }, (v, i) => [`prop${i}`, `value${i}`])
 				),
 				nestedData: {
 					level1: {
