@@ -16,3 +16,5 @@ export * from "./models/IDocument.js";
 export * from "./models/IDocumentAttestation.js";
 export * from "./models/IDocumentList.js";
 export * from "./models/IDocumentManagementComponent.js";
+export * from "./models/documentManagementMetricIds.js";
+export * from "./models/documentManagementMetrics.js";

@@ -30,6 +30,8 @@ import { JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld"
 import type { IDataProcessingComponent } from "@twin.org/data-processing-models";
 import {
 	DocumentContexts,
+	DocumentManagementMetricIds,
+	DocumentManagementMetrics,
 	DocumentTypes,
 	type IDocument,
 	type IDocumentAttestation,
@@ -43,6 +45,7 @@ import {
 	SchemaOrgTypes
 } from "@twin.org/standards-schema-org";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
 import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions.js";
 
 /**
@@ -79,6 +82,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	private readonly _dataProcessingComponent: IDataProcessingComponent;
 
 	/**
+	 * The optional telemetry component used for event metrics.
+	 * @internal
+	 */
+	private readonly _telemetryComponent?: ITelemetryComponent;
+
+	/**
 	 * Create a new instance of DocumentManagementService.
 	 * @param options The options for the service.
 	 */
@@ -95,6 +104,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		this._dataProcessingComponent = ComponentFactory.get<IDataProcessingComponent>(
 			options?.dataProcessingComponentType ?? "data-processing"
 		);
+		this._telemetryComponent = ComponentFactory.getIfExists<ITelemetryComponent>(
+			options?.telemetryComponentType
+		);
 
 		SchemaOrgDataTypes.registerRedirects();
 	}
@@ -105,6 +117,16 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 */
 	public className(): string {
 		return DocumentManagementService.CLASS_NAME;
+	}
+
+	/**
+	 * Register all document management metrics with the telemetry component.
+	 */
+	public async start(): Promise<void> {
+		if (Is.undefined(this._telemetryComponent)) {
+			return;
+		}
+		await MetricHelper.createMetrics(this._telemetryComponent, DocumentManagementMetrics);
 	}
 
 	/**
@@ -231,6 +253,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				documentIdFormat
 			);
 
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				DocumentManagementMetricIds.DocumentsCreated,
+				{ hasAttestation: Is.stringValue(currentRevision.attestationId) }
+			);
+
 			return vertexId;
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
@@ -312,6 +340,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			}
 
 			let updatedVertex = false;
+			let blobRevisionCreated = false;
+			let newRevisionHasAttestation = false;
 
 			// If the blob is set and its hash has changed then we create a new revision
 			if (Is.uint8Array(blob)) {
@@ -344,6 +374,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 						resourceObject: newRevision as unknown as IJsonLdNodeObject
 					});
 
+					newRevisionHasAttestation = Is.stringValue(newRevision.attestationId);
+					blobRevisionCreated = true;
 					updatedVertex = true;
 				}
 			}
@@ -381,6 +413,21 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					auditableItemGraphEdges,
 					latestRevision.documentId,
 					latestRevision.documentIdFormat
+				);
+			}
+
+			if (blobRevisionCreated) {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					DocumentManagementMetricIds.RevisionsCreated,
+					{ hasAttestation: newRevisionHasAttestation }
+				);
+			}
+			if (updatedVertex) {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					DocumentManagementMetricIds.DocumentsUpdated,
+					{ hasNewRevision: blobRevisionCreated }
 				);
 			}
 		} catch (error) {
@@ -572,6 +619,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			documentVertex.resources.splice(docRevisionIndex, 1);
 
 			await this._auditableItemGraphComponent.update(documentVertex);
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				DocumentManagementMetricIds.RevisionsRemoved
+			);
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
@@ -949,7 +1000,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			dateCreated: document.dateCreated,
 			integrity: document.integrity
 		};
-		return this._attestationComponent.create(documentAttestation);
+		const attestationId = await this._attestationComponent.create(documentAttestation);
+		await MetricHelper.metricIncrement(
+			this._telemetryComponent,
+			DocumentManagementMetricIds.AttestationsCreated
+		);
+		return attestationId;
 	}
 
 	/**

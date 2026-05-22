@@ -39,6 +39,7 @@
 		"@twin.org/data-json-ld": "next",
 		"@twin.org/standards-schema-org": "next",
 		"@twin.org/standards-unece": "next",
+		"@twin.org/telemetry-models": "next",
 		"@twin.org/nameof": "next"
 	},
 	"devDependencies": {

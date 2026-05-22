@@ -31,6 +31,11 @@ export interface IDocumentManagementServiceConstructorOptions {
 	dataProcessingComponentType?: string;
 
 	/**
+	 * The type of the telemetry component used for event metrics.
+	 */
+	telemetryComponentType?: string;
+
+	/**
 	 * The configuration for the service.
 	 */
 	config?: IDocumentManagementServiceConfig;
