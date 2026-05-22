@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3-next.15](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.0.3-next.14...document-management-models-v0.0.3-next.15) (2026-05-22)
+
+
+### Features
+
+* add event-driven telemetry metrics ([#46](https://github.com/iotaledger/twin-document-management/issues/46)) ([2cc4933](https://github.com/iotaledger/twin-document-management/commit/2cc49338a05972279ee8e68027506a796e96766e))
+
 ## [0.0.3-next.14](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.0.3-next.13...document-management-models-v0.0.3-next.14) (2026-05-20)
 
 
