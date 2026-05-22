@@ -1146,7 +1146,6 @@ describe("document-management-service", async () => {
 						id: "attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDEwMTAxMDE=",
 						type: "Information",
 						dateCreated: "2024-08-22T04:13:20.000Z",
-						holderIdentity: TEST_ORGANIZATION_IDENTITY,
 						ownerIdentity: TEST_ORGANIZATION_IDENTITY,
 						proof: {
 							type: "JwtProof",
