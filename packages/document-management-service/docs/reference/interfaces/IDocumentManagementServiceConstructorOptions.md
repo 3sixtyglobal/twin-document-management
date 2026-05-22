@@ -60,6 +60,14 @@ data-processing
 
 ***
 
+### telemetryComponentType? {#telemetrycomponenttype}
+
+> `optional` **telemetryComponentType?**: `string`
+
+The type of the telemetry component used for event metrics.
+
+***
+
 ### config? {#config}
 
 > `optional` **config?**: [`IDocumentManagementServiceConfig`](IDocumentManagementServiceConfig.md)

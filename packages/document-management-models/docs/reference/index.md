@@ -23,9 +23,12 @@
 ## Type Aliases
 
 - [DocumentContexts](type-aliases/DocumentContexts.md)
+- [DocumentManagementMetricIds](type-aliases/DocumentManagementMetricIds.md)
 - [DocumentTypes](type-aliases/DocumentTypes.md)
 
 ## Variables
 
 - [DocumentContexts](variables/DocumentContexts.md)
+- [DocumentManagementMetricIds](variables/DocumentManagementMetricIds.md)
+- [DocumentManagementMetrics](variables/DocumentManagementMetrics.md)
 - [DocumentTypes](variables/DocumentTypes.md)
