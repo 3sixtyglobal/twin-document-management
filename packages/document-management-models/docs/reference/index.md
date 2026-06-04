@@ -10,6 +10,7 @@
 - [IDocumentAttestation](interfaces/IDocumentAttestation.md)
 - [IDocumentList](interfaces/IDocumentList.md)
 - [IDocumentManagementComponent](interfaces/IDocumentManagementComponent.md)
+- [IDocumentManagementEdgeEntry](interfaces/IDocumentManagementEdgeEntry.md)
 - [IDocumentManagementCreateRequest](interfaces/IDocumentManagementCreateRequest.md)
 - [IDocumentManagementGetRequest](interfaces/IDocumentManagementGetRequest.md)
 - [IDocumentManagementGetResponse](interfaces/IDocumentManagementGetResponse.md)
@@ -18,7 +19,7 @@
 - [IDocumentManagementQueryRequest](interfaces/IDocumentManagementQueryRequest.md)
 - [IDocumentManagementQueryResponse](interfaces/IDocumentManagementQueryResponse.md)
 - [IDocumentManagementRemoveRequest](interfaces/IDocumentManagementRemoveRequest.md)
-- [IDocumentManagementUpdateRequest](interfaces/IDocumentManagementUpdateRequest.md)
+- [IDocumentManagementUpdatePartialRequest](interfaces/IDocumentManagementUpdatePartialRequest.md)
 
 ## Type Aliases
 

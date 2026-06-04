@@ -42,7 +42,7 @@ Additional information to associate with the document.
 
 #### auditableItemGraphEdges?
 
-> `optional` **auditableItemGraphEdges?**: `object`[]
+> `optional` **auditableItemGraphEdges?**: [`IDocumentManagementEdgeEntry`](IDocumentManagementEdgeEntry.md)[]
 
 The auditable item graph vertices to connect the document to.
 

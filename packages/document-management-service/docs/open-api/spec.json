@@ -317,16 +317,16 @@
 			}
 		},
 		"/document-management/{auditableItemGraphDocumentId}": {
-			"put": {
-				"operationId": "DocumentManagementUpdate",
-				"summary": "Update a document in an auditable item graph vertex and add its content to blob storage.",
+			"patch": {
+				"operationId": "DocumentManagementUpdatePartial",
+				"summary": "Partially update a document in an auditable item graph vertex and add its content to blob storage.",
 				"tags": [
 					"Document Management"
 				],
 				"parameters": [
 					{
 						"name": "auditableItemGraphDocumentId",
-						"description": "The full id of the document to get.",
+						"description": "The full id of the document to update.",
 						"in": "path",
 						"required": true,
 						"schema": {
@@ -342,15 +342,15 @@
 					}
 				],
 				"requestBody": {
-					"description": "Request to update a document as an auditable item graph vertex.",
+					"description": "Request to partially update a document as an auditable item graph vertex.",
 					"required": true,
 					"content": {
 						"application/json": {
 							"schema": {
-								"$ref": "#/components/schemas/DocumentManagementUpdateRequest"
+								"$ref": "#/components/schemas/DocumentManagementUpdatePartialRequest"
 							},
 							"examples": {
-								"DocumentManagementUpdateRequestExample": {
+								"DocumentManagementUpdatePartialRequestExample": {
 									"value": {
 										"blob": "SGVsbG8gV29ybGQ=",
 										"annotationObject": {
@@ -475,6 +475,15 @@
 					{
 						"name": "includeRemoved",
 						"description": "Include deleted documents in the response.",
+						"in": "query",
+						"required": false,
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "includeDeletedEdges",
+						"description": "Include soft-deleted edges in the response.",
 						"in": "query",
 						"required": false,
 						"schema": {
@@ -1187,21 +1196,7 @@
 					"auditableItemGraphEdges": {
 						"type": "array",
 						"items": {
-							"type": "object",
-							"properties": {
-								"targetId": {
-									"type": "string"
-								},
-								"addAlias": {
-									"type": "boolean"
-								},
-								"aliasAnnotationObject": {
-									"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
-								}
-							},
-							"required": [
-								"targetId"
-							]
+							"$ref": "#/components/schemas/DocumentManagementEdgeEntry"
 						},
 						"description": "The auditable item graph vertices to connect the document to."
 					},
@@ -1225,36 +1220,55 @@
 				],
 				"description": "The body parameters."
 			},
-			"DocumentManagementUpdateRequest": {
+			"DocumentManagementEdgeEntry": {
+				"description": "A single edge entry used when connecting a document to an AIG vertex.",
+				"type": "object",
+				"properties": {
+					"targetId": {
+						"type": "string",
+						"description": "The target AIG vertex id to connect to."
+					},
+					"addAlias": {
+						"type": "boolean",
+						"description": "Whether to add the document id as an alias on the connected vertex, defaults to false."
+					},
+					"aliasAnnotationObject": {
+						"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+					}
+				},
+				"required": [
+					"targetId"
+				]
+			},
+			"DocumentManagementUpdatePartialRequest": {
 				"type": "object",
 				"properties": {
 					"blob": {
 						"type": "string",
-						"description": "The data to create the document with, in base64."
+						"description": "The data to update the document with, in base64."
 					},
 					"annotationObject": {
 						"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
 					},
 					"auditableItemGraphEdges": {
-						"type": "array",
-						"items": {
-							"type": "object",
-							"properties": {
-								"targetId": {
+						"type": "object",
+						"properties": {
+							"add": {
+								"type": "array",
+								"items": {
+									"$ref": "#/components/schemas/DocumentManagementEdgeEntry"
+								},
+								"description": "Connections to add; each entry creates a back-edge on the connected vertex."
+							},
+							"remove": {
+								"type": "array",
+								"items": {
 									"type": "string"
 								},
-								"addAlias": {
-									"type": "boolean"
-								},
-								"aliasAnnotationObject": {
-									"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
-								}
-							},
-							"required": [
-								"targetId"
-							]
+								"description": "Target vertex IDs to disconnect; their back-edges are removed."
+							}
 						},
-						"description": "The auditable item graph vertices to connect the document to."
+						"description": "Explicit edge delta to apply. Use `add` to create new connections and `remove` to\ndisconnect existing ones by their target vertex id."
 					}
 				},
 				"description": "The body parameters."

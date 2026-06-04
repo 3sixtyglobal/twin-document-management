@@ -84,6 +84,18 @@ Include deleted documents in the response.
 false
 ```
 
+#### includeDeletedEdges?
+
+> `optional` **includeDeletedEdges?**: `string`
+
+Include soft-deleted edges in the response.
+
+##### Default
+
+```ts
+false
+```
+
 #### extractRuleGroupId?
 
 > `optional` **extractRuleGroupId?**: `string`

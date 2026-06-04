@@ -1,6 +1,6 @@
-# Function: documentManagementUpdate()
+# Function: documentManagementUpdatePartial()
 
-> **documentManagementUpdate**(`httpRequestContext`, `componentName`, `request`): `Promise`\<`INoContentResponse`\>
+> **documentManagementUpdatePartial**(`httpRequestContext`, `componentName`, `request`): `Promise`\<`INoContentResponse`\>
 
 Update the document from the auditable item graph vertex.
 
@@ -20,7 +20,7 @@ The name of the component to use in the routes.
 
 ### request
 
-`IDocumentManagementUpdateRequest`
+`IDocumentManagementUpdatePartialRequest`
 
 The request.
 

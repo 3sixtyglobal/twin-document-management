@@ -104,7 +104,7 @@ Additional information to associate with the document.
 
 ##### auditableItemGraphEdges?
 
-`object`[]
+`IDocumentManagementEdgeEntry`[]
 
 The auditable item graph vertices to connect the document to.
 
@@ -142,9 +142,9 @@ The auditable item graph vertex created for the document including its revision.
 
 ***
 
-### update() {#update}
+### updatePartial() {#updatepartial}
 
-> **update**(`auditableItemGraphDocumentId`, `blob?`, `annotationObject?`, `auditableItemGraphEdges?`): `Promise`\<`void`\>
+> **updatePartial**(`auditableItemGraphDocumentId`, `blob?`, `annotationObject?`, `auditableItemGraphEdges?`): `Promise`\<`void`\>
 
 Update a document as an auditable item graph vertex and add its content to blob storage.
 If the blob data is different a new revision will be created.
@@ -172,9 +172,23 @@ Additional information to associate with the document.
 
 ##### auditableItemGraphEdges?
 
-`object`[]
+Explicit edge delta to apply. If undefined, existing connections
+are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
+ones by their target vertex id. To update alias metadata on an already-connected vertex, include
+it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+alias is updated in place without creating a duplicate back-edge.
 
-The auditable item graph vertices to connect the document to, if undefined retains current connections.
+###### add?
+
+`IDocumentManagementEdgeEntry`[]
+
+Connections to add; each creates a back-edge on the connected vertex.
+
+###### remove?
+
+`string`[]
+
+Target vertex IDs to disconnect; their back-edges are removed.
 
 #### Returns
 
@@ -184,7 +198,7 @@ Nothing.
 
 #### Implementation of
 
-`IDocumentManagementComponent.update`
+`IDocumentManagementComponent.updatePartial`
 
 ***
 
@@ -229,6 +243,12 @@ Flag to include the attestation information for the document, defaults to false.
 `boolean`
 
 Flag to include deleted documents, defaults to false.
+
+###### includeDeletedEdges?
+
+`boolean`
+
+Flag to include soft-deleted edges in the response, defaults to false.
 
 ###### extractRuleGroupId?
 
