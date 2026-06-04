@@ -1077,6 +1077,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * Create an attestation for the document.
 	 * @param document The document to create the attestation for.
 	 * @returns The attestation identifier.
+	 * @internal
 	 */
 	private async createAttestation(document: IDocument): Promise<string> {
 		const documentAttestation: IDocumentAttestation & IJsonLdNodeObject = {
