@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.3-next.16](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.0.3-next.15...document-management-rest-client-v0.0.3-next.16) (2026-06-04)
+
+
+### Bug Fixes
+
+* replace destructive update() with updatePartial() for edge linking ([#50](https://github.com/iotaledger/twin-document-management/issues/50)) ([c1d2c33](https://github.com/iotaledger/twin-document-management/commit/c1d2c337c371bdcc1f23cac482393468ef84f0d7))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.15 to 0.0.3-next.16
+
 ## [0.0.3-next.15](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.0.3-next.14...document-management-rest-client-v0.0.3-next.15) (2026-05-22)
 
 
