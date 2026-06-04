@@ -14,6 +14,7 @@ import type {
 	IDocumentList,
 	IDocumentManagementComponent,
 	IDocumentManagementCreateRequest,
+	IDocumentManagementEdgeEntry,
 	IDocumentManagementGetRequest,
 	IDocumentManagementGetResponse,
 	IDocumentManagementGetRevisionRequest,
@@ -21,7 +22,7 @@ import type {
 	IDocumentManagementQueryRequest,
 	IDocumentManagementQueryResponse,
 	IDocumentManagementRemoveRequest,
-	IDocumentManagementUpdateRequest
+	IDocumentManagementUpdatePartialRequest
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
@@ -77,11 +78,7 @@ export class DocumentManagementRestClient
 		documentCode: UneceDocumentCodeList,
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
-		auditableItemGraphEdges?: {
-			targetId: string;
-			addAlias?: boolean;
-			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[],
+		auditableItemGraphEdges?: IDocumentManagementEdgeEntry[],
 		options?: {
 			createAttestation?: boolean;
 			addAlias?: boolean;
@@ -125,18 +122,23 @@ export class DocumentManagementRestClient
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
 	 * @param blob The data to update the document with.
 	 * @param annotationObject Additional information to associate with the document.
-	 * @param auditableItemGraphEdges The auditable item graph vertices to connect the document to, if undefined retains current connections.
+	 * @param auditableItemGraphEdges Explicit edge delta to apply. If undefined, existing connections
+	 * are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
+	 * ones by their target vertex id. To update alias metadata on an already-connected vertex, include
+	 * it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+	 * alias is updated in place without creating a duplicate back-edge.
+	 * @param auditableItemGraphEdges.add Connections to add; each creates a back-edge on the connected vertex.
+	 * @param auditableItemGraphEdges.remove Target vertex IDs to disconnect; their back-edges are removed.
 	 * @returns Nothing.
 	 */
-	public async update(
+	public async updatePartial(
 		auditableItemGraphDocumentId: string,
 		blob?: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			targetId: string;
-			addAlias?: boolean;
-			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[]
+			add?: IDocumentManagementEdgeEntry[];
+			remove?: string[];
+		}
 	): Promise<void> {
 		Urn.guard(
 			DocumentManagementRestClient.CLASS_NAME,
@@ -144,9 +146,9 @@ export class DocumentManagementRestClient
 			auditableItemGraphDocumentId
 		);
 
-		await this.fetch<IDocumentManagementUpdateRequest, INoContentResponse>(
+		await this.fetch<IDocumentManagementUpdatePartialRequest, INoContentResponse>(
 			"/:auditableItemGraphDocumentId",
-			"PUT",
+			"PATCH",
 			{
 				pathParams: {
 					auditableItemGraphDocumentId
@@ -168,6 +170,7 @@ export class DocumentManagementRestClient
 	 * @param options.includeBlobStorageData Flag to include the blob storage data for the document, defaults to false.
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
 	 * @param options.includeRemoved Flag to include deleted documents, defaults to false.
+	 * @param options.includeDeletedEdges Flag to include soft-deleted edges in the response, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
@@ -181,6 +184,7 @@ export class DocumentManagementRestClient
 			includeBlobStorageData?: boolean;
 			includeAttestation?: boolean;
 			includeRemoved?: boolean;
+			includeDeletedEdges?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
 		},
@@ -208,6 +212,7 @@ export class DocumentManagementRestClient
 				includeBlobStorageData: Coerce.string(options?.includeBlobStorageData),
 				includeAttestation: Coerce.string(options?.includeAttestation),
 				includeRemoved: Coerce.string(options?.includeRemoved),
+				includeDeletedEdges: Coerce.string(options?.includeDeletedEdges),
 				extractRuleGroupId: options?.extractRuleGroupId,
 				extractMimeType: options?.extractMimeType,
 				cursor,
@@ -288,7 +293,7 @@ export class DocumentManagementRestClient
 			nameof(auditableItemGraphDocumentId),
 			auditableItemGraphDocumentId
 		);
-		Guards.number(DocumentManagementRestClient.CLASS_NAME, nameof(revision), revision);
+		Guards.integer(DocumentManagementRestClient.CLASS_NAME, nameof(revision), revision);
 
 		await this.fetch<IDocumentManagementRemoveRequest, INoContentResponse>(
 			"/:auditableItemGraphDocumentId/:revision",

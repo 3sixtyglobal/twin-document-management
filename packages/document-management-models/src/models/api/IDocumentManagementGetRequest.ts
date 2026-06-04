@@ -52,6 +52,12 @@ export interface IDocumentManagementGetRequest {
 		includeRemoved?: string;
 
 		/**
+		 * Include soft-deleted edges in the response.
+		 * @default false
+		 */
+		includeDeletedEdges?: string;
+
+		/**
 		 * If provided will extract data from the document using the specified rule group id.
 		 */
 		extractRuleGroupId?: string;

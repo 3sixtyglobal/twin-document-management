@@ -57,6 +57,12 @@ import {
 	type Nft
 } from "@twin.org/nft-connector-entity-storage";
 import { NftConnectorFactory } from "@twin.org/nft-models";
+import {
+	EntityStorageNotarizationConnector,
+	initSchema as initSchemaNotarization,
+	type Notarization
+} from "@twin.org/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
 import {
 	MetricType,
@@ -122,6 +128,7 @@ describe("DocumentManagementService — metrics", () => {
 
 		initSchemaVerifiableStorage();
 		initSchemaImmutableProof();
+		initSchemaNotarization();
 		initSchemaBackgroundTask();
 		initSchemaAuditableItemGraph();
 		initSchemaNft();
@@ -174,6 +181,15 @@ describe("DocumentManagementService — metrics", () => {
 			entitySchema: "ImmutableProof"
 		});
 		EntityStorageConnectorFactory.register("immutable-proof", () => immutableProofStorage);
+
+		const notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
+			entitySchema: nameof<Notarization>()
+		});
+		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
+		NotarizationConnectorFactory.register(
+			"notarization",
+			() => new EntityStorageNotarizationConnector()
+		);
 
 		const immutableProofService = new ImmutableProofService();
 		ComponentFactory.register("immutable-proof", () => immutableProofService);
@@ -338,7 +354,7 @@ describe("DocumentManagementService — metrics", () => {
 
 		values.length = 0;
 
-		await service.update(vertexId, BLOB_V1);
+		await service.updatePartial(vertexId, BLOB_V1);
 
 		const revisions = values.filter(v => v.id === DocumentManagementMetricIds.RevisionsCreated);
 		expect(revisions).toHaveLength(1);
@@ -372,7 +388,7 @@ describe("DocumentManagementService — metrics", () => {
 
 		values.length = 0;
 
-		await service.update(vertexId, BLOB_V1);
+		await service.updatePartial(vertexId, BLOB_V1);
 
 		const revisions = values.filter(v => v.id === DocumentManagementMetricIds.RevisionsCreated);
 		expect(revisions).toHaveLength(1);
@@ -408,7 +424,7 @@ describe("DocumentManagementService — metrics", () => {
 
 		values.length = 0;
 
-		await service.update(vertexId, undefined, {
+		await service.updatePartial(vertexId, undefined, {
 			"@context": "https://schema.org",
 			"@type": "Thing",
 			name: "updated-annotation"
@@ -424,7 +440,7 @@ describe("DocumentManagementService — metrics", () => {
 		expect(updated[0].customData?.hasNewRevision).toBe(false);
 	});
 
-	test("update() no-op (same blob hash, same annotation, no edges) emits no counters", async () => {
+	test("updatePartial() no-op (same blob hash, same annotation, no edges) emits no counters", async () => {
 		const { component, values } = makeMockTelemetry();
 		ComponentFactory.register("test-telemetry", () => component);
 
@@ -444,7 +460,7 @@ describe("DocumentManagementService — metrics", () => {
 
 		values.length = 0;
 
-		await service.update(vertexId, undefined, undefined, undefined);
+		await service.updatePartial(vertexId, undefined, undefined, undefined);
 
 		expect(values).toHaveLength(0);
 	});
@@ -519,9 +535,9 @@ describe("DocumentManagementService — metrics", () => {
 		);
 		expect(vertexId).toBeDefined();
 
-		await service.update(vertexId, BLOB_V1);
+		await service.updatePartial(vertexId, BLOB_V1);
 
-		await service.update(vertexId, undefined, {
+		await service.updatePartial(vertexId, undefined, {
 			"@context": "https://schema.org",
 			"@type": "Thing",
 			name: "no-telemetry-annotation"

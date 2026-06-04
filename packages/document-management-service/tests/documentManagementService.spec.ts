@@ -32,7 +32,7 @@ import {
 	ContextIdStore,
 	type IContextIds
 } from "@twin.org/context";
-import { ComponentFactory, Converter, RandomHelper } from "@twin.org/core";
+import { ComponentFactory, Converter, RandomHelper, SharedStore } from "@twin.org/core";
 import { JsonConverterConnector } from "@twin.org/data-processing-converters";
 import { JsonPathExtractorConnector } from "@twin.org/data-processing-extractors";
 import {
@@ -60,6 +60,12 @@ import {
 	type Nft
 } from "@twin.org/nft-connector-entity-storage";
 import { NftConnectorFactory } from "@twin.org/nft-models";
+import {
+	EntityStorageNotarizationConnector,
+	initSchema as initSchemaNotarization,
+	type Notarization
+} from "@twin.org/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
 import {
 	EntityStorageVerifiableStorageConnector,
@@ -95,6 +101,7 @@ let vertexEntityStorage: MemoryEntityStorageConnector<AuditableItemGraphVertex>;
 let changesetEntityStorage: MemoryEntityStorageConnector<AuditableItemGraphChangeset>;
 let extractionRuleGroupEntityStorage: MemoryEntityStorageConnector<ExtractionRuleGroup>;
 let dataProcessingComponent: DataProcessingService;
+let notarizationStorage: MemoryEntityStorageConnector<Notarization>;
 
 describe("document-management-service", async () => {
 	beforeAll(async () => {
@@ -104,6 +111,7 @@ describe("document-management-service", async () => {
 	beforeEach(async () => {
 		initSchemaVerifiableStorage();
 		initSchemaImmutableProof();
+		initSchemaNotarization();
 		initSchemaBackgroundTask();
 		initSchemaAuditableItemGraph();
 		initSchemaNft();
@@ -134,6 +142,15 @@ describe("document-management-service", async () => {
 			entitySchema: "ImmutableProof"
 		});
 		EntityStorageConnectorFactory.register("immutable-proof", () => immutableProofEntityStorage);
+
+		notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
+			entitySchema: nameof<Notarization>()
+		});
+		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
+		NotarizationConnectorFactory.register(
+			"notarization",
+			() => new EntityStorageNotarizationConnector()
+		);
 
 		immutableProofComponent = new ImmutableProofService();
 		ComponentFactory.register("immutable-proof", () => immutableProofComponent);
@@ -348,7 +365,7 @@ describe("document-management-service", async () => {
 				id: "0909090909090909090909090909090909090909090909090909090909090909",
 				immutableMetadata: {
 					proof:
-						"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJEb2N1bWVudEF0dGVzdGF0aW9uIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRvY3VtZW50SWQiOiJ0ZXN0LWRvYy1pZDphYWEiLCJkb2N1bWVudENvZGUiOiJ1bmVjZTpEb2N1bWVudENvZGVMaXN0IzcwNSIsImRvY3VtZW50UmV2aXNpb24iOjAsImRhdGVDcmVhdGVkIjoiMjAyNC0wOC0yMlQwNDoxMzoyMC4wMDBaIiwiaW50ZWdyaXR5Ijoic2hhMjU2LXBaR20xQXYwSUVCS0FSY3p6N2V4a05Zc1piOEx6YU1yVjdKMzJhMmZGRzQ9In19fQ.rCW8-hiVHIjWbdBwexZsPTzUt4W_d1BqGzVytzzI9nMn8ELgqX4U07X4pafMZp78ozpY-4ZveTjAubZY1LK9DA",
+						"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOiJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJEb2N1bWVudEF0dGVzdGF0aW9uIiwiZG9jdW1lbnRJZCI6InRlc3QtZG9jLWlkOmFhYSIsImRvY3VtZW50Q29kZSI6InVuZWNlOkRvY3VtZW50Q29kZUxpc3QjNzA1IiwiZG9jdW1lbnRSZXZpc2lvbiI6MCwiZGF0ZUNyZWF0ZWQiOiIyMDI0LTA4LTIyVDA0OjEzOjIwLjAwMFoiLCJpbnRlZ3JpdHkiOiJzaGEyNTYtcFpHbTFBdjBJRUJLQVJjeno3ZXhrTllzWmI4THphTXJWN0ozMmEyZkZHND0ifX19.IGBqgKp8OJeQHSgpWRdUGpgKOoHlvMqLDDcVpnqPnm9bSxkq9mHxsiV9MmHRBmzyGz1n9g0El9fGrwDVFeEQAw",
 					version: "1"
 				},
 				issuer: TEST_ORGANIZATION_IDENTITY,
@@ -503,7 +520,7 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement.length).toEqual(1);
 		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
 
-		await service.update(documentId, undefined, {
+		await service.updatePartial(documentId, undefined, {
 			"@context": "https://schema.org",
 			type: "DigitalDocument",
 			name: "bill-of-lading-2"
@@ -588,7 +605,7 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement.length).toEqual(1);
 		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
 
-		await service.update(documentId, Converter.utf8ToBytes("Hello World2"), {
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Hello World2"), {
 			"@context": "https://schema.org",
 			type: "DigitalDocument",
 			name: "bill-of-lading-2"
@@ -770,16 +787,13 @@ describe("document-management-service", async () => {
 
 		const docs = await service.get(documentId);
 
-		const existingEdges = docs.entries.edges ?? [];
-		existingEdges.splice(1, 1);
+		const allEdges = docs.entries.edges ?? [];
+		const removedEdge = allEdges.splice(1, 1)[0];
 
-		await service.update(documentId, undefined, undefined, [
-			...existingEdges.map(edge => ({ targetId: edge })),
-			{
-				targetId: aigId3,
-				addAlias: true
-			}
-		]);
+		await service.updatePartial(documentId, undefined, undefined, {
+			add: [{ targetId: aigId3, addAlias: true }],
+			remove: [removedEdge]
+		});
 		const aigStore2 = vertexEntityStorage.getStore();
 		expect(aigStore2).toEqual([
 			{
@@ -867,17 +881,20 @@ describe("document-management-service", async () => {
 							documentIdFormat: "foo",
 							documentCode: "unece:DocumentCodeList#705",
 							documentRevision: 0,
+							annotationObject: {
+								"@context": "https://schema.org",
+								type: "DigitalDocument",
+								name: "bill-of-lading"
+							},
 							integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
 							blobStorageId:
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
 								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
-							dateModified: "2024-08-22T04:13:20.000Z",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
-						},
-						dateModified: "2024-08-22T04:13:20.000Z"
+						}
 					}
 				],
 				edges: [
@@ -1150,7 +1167,7 @@ describe("document-management-service", async () => {
 						proof: {
 							type: "JwtProof",
 							value:
-								"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJEb2N1bWVudEF0dGVzdGF0aW9uIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImRvY3VtZW50SWQiOiJ0ZXN0LWRvYy1pZDphYWEiLCJkb2N1bWVudENvZGUiOiJ1bmVjZTpEb2N1bWVudENvZGVMaXN0IzcwNSIsImRvY3VtZW50UmV2aXNpb24iOjAsImRhdGVDcmVhdGVkIjoiMjAyNC0wOC0yMlQwNDoxMzoyMC4wMDBaIiwiaW50ZWdyaXR5Ijoic2hhMjU2LXBaR20xQXYwSUVCS0FSY3p6N2V4a05Zc1piOEx6YU1yVjdKMzJhMmZGRzQ9In19fQ.rCW8-hiVHIjWbdBwexZsPTzUt4W_d1BqGzVytzzI9nMn8ELgqX4U07X4pafMZp78ozpY-4ZveTjAubZY1LK9DA"
+								"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOiJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJEb2N1bWVudEF0dGVzdGF0aW9uIiwiZG9jdW1lbnRJZCI6InRlc3QtZG9jLWlkOmFhYSIsImRvY3VtZW50Q29kZSI6InVuZWNlOkRvY3VtZW50Q29kZUxpc3QjNzA1IiwiZG9jdW1lbnRSZXZpc2lvbiI6MCwiZGF0ZUNyZWF0ZWQiOiIyMDI0LTA4LTIyVDA0OjEzOjIwLjAwMFoiLCJpbnRlZ3JpdHkiOiJzaGEyNTYtcFpHbTFBdjBJRUJLQVJjeno3ZXhrTllzWmI4THphTXJWN0ozMmEyZkZHND0ifX19.IGBqgKp8OJeQHSgpWRdUGpgKOoHlvMqLDDcVpnqPnm9bSxkq9mHxsiV9MmHRBmzyGz1n9g0El9fGrwDVFeEQAw"
 						},
 						attestationObject: {
 							id: "document:rwQUrz_aLtvmYWjIolLU1PNHDTXd24RUVJH14JDe5K8:0",
@@ -1198,7 +1215,7 @@ describe("document-management-service", async () => {
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
+			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1225,7 +1242,7 @@ describe("document-management-service", async () => {
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
+			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1257,7 +1274,7 @@ describe("document-management-service", async () => {
 		);
 
 		for (let i = 0; i < 30; i++) {
-			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
+			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1303,7 +1320,7 @@ describe("document-management-service", async () => {
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
+			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1329,7 +1346,7 @@ describe("document-management-service", async () => {
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.update(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
+			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
 				type: "DigitalDocument",
 				name: "bill-of-lading"
 			});
@@ -1366,7 +1383,7 @@ describe("document-management-service", async () => {
 			}
 		);
 
-		await service.update(documentId, Converter.utf8ToBytes("Hello World2"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Hello World2"));
 
 		const docs = await service.get(documentId, undefined, undefined, 20);
 		expect(docs.entries.itemListElement.length).toEqual(2);
@@ -1379,7 +1396,7 @@ describe("document-management-service", async () => {
 		expect(docs2.entries.itemListElement.length).toEqual(1);
 		expect(docs2.entries.itemListElement[0].documentRevision).toEqual(0);
 
-		await service.update(documentId, Converter.utf8ToBytes("Hello World3"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Hello World3"));
 
 		const docs3 = await service.get(documentId, undefined, undefined, 20);
 
@@ -1567,10 +1584,10 @@ describe("document-management-service", async () => {
 		);
 
 		// Update with new blob data - creates revision 1
-		await service.update(documentId, Converter.utf8ToBytes("Version 2"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 2"));
 
 		// Update with new blob data - creates revision 2
-		await service.update(documentId, Converter.utf8ToBytes("Version 3"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 3"));
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
 		expect(docs.entries.itemListElement).toHaveLength(3);
@@ -1592,7 +1609,7 @@ describe("document-management-service", async () => {
 		);
 
 		// Create a second revision
-		await service.update(documentId, Converter.utf8ToBytes("Updated"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Updated"));
 
 		// Remove the first revision
 		await service.removeRevision(documentId, 0);
@@ -1738,8 +1755,10 @@ describe("document-management-service", async () => {
 		let docs = await service.get(documentId);
 		expect(docs.entries.edges).toHaveLength(2);
 
-		// Remove all edges by passing empty array
-		await service.update(documentId, undefined, undefined, []);
+		// Remove all edges by explicitly listing them in the remove delta
+		await service.updatePartial(documentId, undefined, undefined, {
+			remove: docs.entries.edges ?? []
+		});
 
 		// Verify edges are removed
 		docs = await service.get(documentId);
@@ -1756,14 +1775,14 @@ describe("document-management-service", async () => {
 		);
 
 		// Create revisions 1 and 2
-		await service.update(documentId, Converter.utf8ToBytes("Rev 1"));
-		await service.update(documentId, Converter.utf8ToBytes("Rev 2"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Rev 1"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Rev 2"));
 
 		// Remove middle revision
 		await service.removeRevision(documentId, 1);
 
 		// Create new revision - should be revision 3, not 2
-		await service.update(documentId, Converter.utf8ToBytes("Rev 3"));
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Rev 3"));
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
 		const revisions = docs.entries.itemListElement.map(doc => doc.documentRevision).sort();
@@ -1791,5 +1810,470 @@ describe("document-management-service", async () => {
 			expect(docs.entries.itemListElement[0].documentId).toEqual(docIds[i]);
 			expect(docs.entries.itemListElement[0].documentCode).toContain("705");
 		}
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 1 – create() cleans up blob + vertex resource on edge failure  //
+	// ------------------------------------------------------------------ //
+
+	describe("create() cleans up on edge write failure", () => {
+		beforeEach(() => {
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("blob is removed from storage when create fails due to missing target vertex", async () => {
+			const service = new DocumentManagementService();
+
+			await expect(
+				service.create(
+					"cleanup-blob-test",
+					undefined,
+					UneceDocumentCodeList.BillOfLading,
+					Converter.utf8ToBytes("Cleanup blob test"),
+					undefined,
+					[{ targetId: "aig:does-not-exist-blob-cleanup" }]
+				)
+			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+
+			// The blob created during the attempt must have been removed.
+			expect(blobEntryEntityStorage.getStore()).toHaveLength(0);
+		});
+
+		test("document vertex resource is soft-deleted when create fails due to missing target vertex", async () => {
+			const service = new DocumentManagementService();
+
+			await expect(
+				service.create(
+					"cleanup-resource-test",
+					undefined,
+					UneceDocumentCodeList.BillOfLading,
+					Converter.utf8ToBytes("Cleanup resource test"),
+					undefined,
+					[{ targetId: "aig:does-not-exist-resource-cleanup" }]
+				)
+			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+
+			// The created document vertex must exist but its resource must be soft-deleted.
+			const aigStore = vertexEntityStorage.getStore();
+			const docVertex = aigStore.find(v => v.resourceTypeIndex?.includes("document"));
+			expect(docVertex).toBeDefined();
+			expect(docVertex?.resources?.[0]?.dateDeleted).toBeDefined();
+		});
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 2 – restore soft-deleted revision when blob integrity matches   //
+	// ------------------------------------------------------------------ //
+
+	test("updating with the same blob as a soft-deleted revision restores it instead of creating a new one", async () => {
+		const service = new DocumentManagementService();
+		const blobV1 = Converter.utf8ToBytes("Restore content");
+
+		const documentId = await service.create(
+			"restore-rev-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			blobV1,
+			{ "@context": "https://schema.org", type: "DigitalDocument", name: "v1" },
+			undefined,
+			{ createAttestation: false }
+		);
+
+		// Create a second revision.
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Different content"), {
+			"@context": "https://schema.org",
+			type: "DigitalDocument",
+			name: "v2"
+		});
+
+		// Soft-delete revision 1.
+		await service.removeRevision(documentId, 1);
+
+		let docs = await service.get(documentId, undefined, undefined, 100);
+		expect(docs.entries.itemListElement).toHaveLength(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
+
+		// Push blob matching the deleted revision 1 → should restore it, not create revision 2.
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Different content"), {
+			"@context": "https://schema.org",
+			type: "DigitalDocument",
+			name: "restored"
+		});
+
+		docs = await service.get(documentId, undefined, undefined, 100);
+		expect(docs.entries.itemListElement).toHaveLength(2);
+		// Restored revision 1 is first (highest revision number).
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(1);
+		expect(docs.entries.itemListElement[0].dateDeleted).toBeUndefined();
+		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("restored");
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 3 – update path back-edge writes are best-effort               //
+	// ------------------------------------------------------------------ //
+
+	describe("update path back-edge writes are best-effort", () => {
+		beforeEach(() => {
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("updatePartial does not throw when a back-edge write to a non-existent vertex fails", async () => {
+			const service = new DocumentManagementService();
+
+			const validTarget = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+
+			const documentId = await service.create(
+				"best-effort-edge-test",
+				undefined,
+				UneceDocumentCodeList.BillOfLading,
+				Converter.utf8ToBytes("Best-effort edge test")
+			);
+
+			// Adding one valid and one non-existent target — the failed back-edge is swallowed.
+			await expect(
+				service.updatePartial(documentId, undefined, undefined, {
+					add: [{ targetId: validTarget }, { targetId: "aig:does-not-exist-best-effort" }]
+				})
+			).resolves.toBeUndefined();
+
+			// The valid vertex must have received its back-edge.
+			const connected = await auditableItemGraphComponent.get(validTarget);
+			const activeEdges = (connected.edges ?? []).filter(e => !e.dateDeleted);
+			expect(activeEdges.some(e => e.targetId === documentId)).toBe(true);
+		});
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 4 – blob update without annotationObject preserves annotation  //
+	// ------------------------------------------------------------------ //
+
+	test("updating blob without annotationObject preserves the existing annotation on the new revision", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"annotation-preserve-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Version 1"),
+			{ "@context": "https://schema.org", type: "DigitalDocument", name: "keep-this" },
+			undefined,
+			{ createAttestation: false }
+		);
+
+		// Update blob only — annotationObject is undefined (no change intended).
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 2"));
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(2);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(1);
+		// The annotation from revision 0 must be carried forward to revision 1.
+		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("keep-this");
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 7 – includeDeletedEdges option                                  //
+	// ------------------------------------------------------------------ //
+
+	test("get excludes soft-deleted edges by default and returns them with includeDeletedEdges", async () => {
+		const service = new DocumentManagementService();
+
+		const targetId = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
+
+		const documentId = await service.create(
+			"include-deleted-edges-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Include deleted edges test"),
+			undefined,
+			[{ targetId }]
+		);
+
+		// Edge is visible before removal.
+		let docs = await service.get(documentId);
+		expect(docs.entries.edges).toHaveLength(1);
+
+		// Soft-delete the edge.
+		await service.updatePartial(documentId, undefined, undefined, { remove: [targetId] });
+
+		// Default: soft-deleted edges are excluded.
+		docs = await service.get(documentId);
+		expect(docs.entries.edges).toBeUndefined();
+
+		// With includeDeletedEdges: soft-deleted edge is returned.
+		docs = await service.get(documentId, { includeDeletedEdges: true });
+		expect(docs.entries.edges).toHaveLength(1);
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 8 – alias removal is conditional on alias existence             //
+	// ------------------------------------------------------------------ //
+
+	test("removing an edge to a vertex that was connected without addAlias succeeds without error", async () => {
+		const service = new DocumentManagementService();
+
+		// Create a target vertex — it will NOT receive an alias when connected.
+		const targetId = await auditableItemGraphComponent.create({
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			type: AuditableItemGraphTypes.Vertex
+		});
+
+		const documentId = await service.create(
+			"no-alias-remove-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("No alias remove test"),
+			undefined,
+			[{ targetId }] // addAlias is not set — no alias on targetId
+		);
+
+		// Removing the edge must not throw even though there is no alias to remove.
+		await expect(
+			service.updatePartial(documentId, undefined, undefined, { remove: [targetId] })
+		).resolves.toBeUndefined();
+
+		const docs = await service.get(documentId);
+		expect(docs.entries.edges).toBeUndefined();
+	});
+
+	// ------------------------------------------------------------------ //
+	// Fix 9 – Guards.integer for revision parameters                      //
+	// ------------------------------------------------------------------ //
+
+	test("removeRevision throws a GuardError when revision is not an integer", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			"integer-guard-test",
+			undefined,
+			UneceDocumentCodeList.BillOfLading,
+			Converter.utf8ToBytes("Integer guard test"),
+			undefined,
+			undefined,
+			{ createAttestation: false }
+		);
+
+		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 2"));
+
+		await expect(service.removeRevision(documentId, 1.5)).rejects.toSatisfy(
+			(e: Error) => e.name === "GuardError"
+		);
+	});
+
+	// ------------------------------------------------------------------ //
+	// N parallel create() calls sharing the same connected vertex must   //
+	// all succeed and persist their back-edges without lost-updates.     //
+	// ------------------------------------------------------------------ //
+
+	describe("edge re-linking after soft-delete", () => {
+		beforeEach(() => {
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("re-linking a previously removed edge persists on both document and connected vertex", async () => {
+			const service = new DocumentManagementService();
+
+			const consignmentVertexId = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+
+			// Step 1: create document linked to consignment
+			const documentVertexId = await service.create(
+				"relink-test-doc",
+				undefined,
+				UneceDocumentCodeList.BillOfLading,
+				Converter.utf8ToBytes("Relink test"),
+				undefined,
+				[{ targetId: consignmentVertexId }]
+			);
+
+			// Step 2: update removing the edge (soft-delete)
+			await service.updatePartial(documentVertexId, undefined, undefined, {
+				remove: [consignmentVertexId]
+			});
+
+			// Step 3: update re-adding the same edge
+			await service.updatePartial(documentVertexId, undefined, undefined, {
+				add: [{ targetId: consignmentVertexId }]
+			});
+
+			// Step 4: check the document vertex has an active edge to consignment
+			const docVertex = await auditableItemGraphComponent.get(documentVertexId);
+			const activeDocEdges = (docVertex.edges ?? []).filter(e => !e.dateDeleted);
+			expect(activeDocEdges.some(e => e.targetId === consignmentVertexId)).toBe(true);
+
+			// Step 5: check the consignment vertex has an active back-edge to the document
+			const consignment = await auditableItemGraphComponent.get(consignmentVertexId);
+			const activeBackEdges = (consignment.edges ?? []).filter(e => !e.dateDeleted);
+			expect(activeBackEdges.some(e => e.targetId === documentVertexId)).toBe(true);
+		});
+	});
+
+	describe("update() keeps unchanged edges without duplicating back-edges", () => {
+		beforeEach(() => {
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("connected vertex has exactly one back-edge after update() that keeps it connected", async () => {
+			const service = new DocumentManagementService();
+
+			const consignmentVertexId = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+
+			const warehouseVertexId = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+
+			// Step 1: create document linked to both vertices
+			const documentVertexId = await service.create(
+				"no-dup-test-doc",
+				undefined,
+				UneceDocumentCodeList.BillOfLading,
+				Converter.utf8ToBytes("No-dup test"),
+				undefined,
+				[{ targetId: consignmentVertexId }, { targetId: warehouseVertexId }]
+			);
+
+			// Step 2: update keeping only consignment (drop warehouse)
+			await service.updatePartial(documentVertexId, undefined, undefined, {
+				remove: [warehouseVertexId]
+			});
+
+			// Step 3: consignment should have exactly ONE active back-edge to the document
+			const consignment = await auditableItemGraphComponent.get(consignmentVertexId);
+			const consignmentBackEdges = (consignment.edges ?? []).filter(
+				e => !e.dateDeleted && e.targetId === documentVertexId
+			);
+			expect(consignmentBackEdges).toHaveLength(1);
+
+			// Step 4: warehouse should have no active back-edge to the document
+			const warehouse = await auditableItemGraphComponent.get(warehouseVertexId);
+			const warehouseBackEdges = (warehouse.edges ?? []).filter(
+				e => !e.dateDeleted && e.targetId === documentVertexId
+			);
+			expect(warehouseBackEdges).toHaveLength(0);
+		});
+	});
+
+	describe("create() with a non-existent connected vertex rolls back and throws", () => {
+		beforeEach(() => {
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("throws NotFoundError when a target vertex does not exist", async () => {
+			const service = new DocumentManagementService();
+			const nonExistentVertexId = "aig:does-not-exist-00000000000000000000";
+
+			await expect(
+				service.create(
+					"rollback-test-doc",
+					undefined,
+					UneceDocumentCodeList.BillOfLading,
+					Converter.utf8ToBytes("Rollback test"),
+					undefined,
+					[{ targetId: nonExistentVertexId }]
+				)
+			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+		});
+
+		test("rolls back back-edges on already-written vertices when a later target is missing", async () => {
+			const service = new DocumentManagementService();
+
+			const goodVertexId = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+			const badVertexId = "aig:does-not-exist-00000000000000000001";
+
+			await expect(
+				service.create(
+					"rollback-test-multi",
+					undefined,
+					UneceDocumentCodeList.BillOfLading,
+					Converter.utf8ToBytes("Multi rollback"),
+					undefined,
+					[{ targetId: goodVertexId }, { targetId: badVertexId }]
+				)
+			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+
+			// The back-edge on the good vertex must have been rolled back.
+			const goodVertex = await auditableItemGraphComponent.get(goodVertexId);
+			const activeEdges = (goodVertex.edges ?? []).filter(e => !e.dateDeleted);
+			expect(activeEdges).toHaveLength(0);
+		});
+	});
+
+	describe("concurrent document create — shared connected vertex", () => {
+		const PARALLEL_CREATE_COUNT = 10;
+
+		beforeEach(() => {
+			// Force a fresh mutex key for each test so the TOCTOU window in
+			// Mutex.getOrFetchLock is exercised — mirroring the AIG regression tests.
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("all parallel create() calls resolve without throwing", async () => {
+			const service = new DocumentManagementService();
+
+			const consignmentVertexId = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+
+			const results = await Promise.allSettled(
+				Array.from({ length: PARALLEL_CREATE_COUNT }, async (unused, i) =>
+					service.create(
+						`concurrent-doc-${i}`,
+						undefined,
+						UneceDocumentCodeList.BillOfLading,
+						Converter.utf8ToBytes(`Document ${i}`),
+						undefined,
+						[{ targetId: consignmentVertexId }]
+					)
+				)
+			);
+
+			const failures = results.filter(r => r.status === "rejected");
+			expect(failures).toHaveLength(0);
+		});
+
+		test("all parallel create() calls persist their back-edge on the shared connected vertex", async () => {
+			const service = new DocumentManagementService();
+
+			const consignmentVertexId = await auditableItemGraphComponent.create({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			});
+
+			const documentVertexIds = await Promise.all(
+				Array.from({ length: PARALLEL_CREATE_COUNT }, async (unused, i) =>
+					service.create(
+						`concurrent-doc-edge-${i}`,
+						undefined,
+						UneceDocumentCodeList.BillOfLading,
+						Converter.utf8ToBytes(`Document ${i}`),
+						undefined,
+						[{ targetId: consignmentVertexId }]
+					)
+				)
+			);
+
+			const consignment = await auditableItemGraphComponent.get(consignmentVertexId);
+			const activeEdges = (consignment.edges ?? []).filter(e => !e.dateDeleted);
+
+			expect(activeEdges).toHaveLength(PARALLEL_CREATE_COUNT);
+
+			const edgeTargetIds = new Set(activeEdges.map(e => e.targetId));
+			for (const docVertexId of documentVertexIds) {
+				expect(edgeTargetIds.has(docVertexId)).toBe(true);
+			}
+		});
 	});
 });

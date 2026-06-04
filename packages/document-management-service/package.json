@@ -67,6 +67,8 @@
 		"@twin.org/modules": "next",
 		"@twin.org/nft-connector-entity-storage": "next",
 		"@twin.org/nft-models": "next",
+		"@twin.org/notarization-connector-entity-storage": "next",
+		"@twin.org/notarization-models": "next",
 		"@twin.org/nameof-transformer": "next",
 		"@twin.org/nameof-vitest-plugin": "next",
 		"@twin.org/validate-locales": "next",

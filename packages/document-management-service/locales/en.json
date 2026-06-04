@@ -2,12 +2,14 @@
 	"error": {
 		"documentManagementService": {
 			"createFailed": "Failed to create document",
+			"connectedVertexNotFound": "The connected vertex \"{notFoundId}\" does not exist",
 			"updateFailed": "Failed to update document",
 			"getFailed": "Failed to get document",
 			"getRevisionFailed": "Failed to get document revision",
 			"queryFailed": "Failed to query document",
 			"documentRevisionNone": "There are no revisions in the document",
 			"documentRevisionNotFound": "There is no revision number \"{notFoundId}\" in the document",
+			"documentRevisionMissingId": "Revision {revision} was found but has no resolvable resource id — possible data integrity issue",
 			"removeRevisionFailed": "Failed to remove document revision"
 		}
 	}

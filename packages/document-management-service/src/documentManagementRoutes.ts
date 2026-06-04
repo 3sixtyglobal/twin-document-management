@@ -26,7 +26,7 @@ import {
 	type IDocumentManagementQueryRequest,
 	type IDocumentManagementQueryResponse,
 	type IDocumentManagementRemoveRequest,
-	type IDocumentManagementUpdateRequest
+	type IDocumentManagementUpdatePartialRequest
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
 import { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
@@ -110,23 +110,23 @@ export function generateRestRoutesDocumentManagement(
 		]
 	};
 
-	const documentManagementUpdateRoute: IRestRoute<
-		IDocumentManagementUpdateRequest,
+	const documentManagementUpdatePartialRoute: IRestRoute<
+		IDocumentManagementUpdatePartialRequest,
 		INoContentResponse
 	> = {
-		operationId: "DocumentManagementUpdate",
+		operationId: "DocumentManagementUpdatePartial",
 		summary:
-			"Update a document in an auditable item graph vertex and add its content to blob storage.",
+			"Partially update a document in an auditable item graph vertex and add its content to blob storage.",
 		tag: tagsDocumentManagement[0].name,
-		method: "PUT",
+		method: "PATCH",
 		path: `${baseRouteName}/:auditableItemGraphDocumentId`,
 		handler: async (httpRequestContext, request) =>
-			documentManagementUpdate(httpRequestContext, componentName, request),
+			documentManagementUpdatePartial(httpRequestContext, componentName, request),
 		requestType: {
-			type: nameof<IDocumentManagementUpdateRequest>(),
+			type: nameof<IDocumentManagementUpdatePartialRequest>(),
 			examples: [
 				{
-					id: "DocumentManagementUpdateRequestExample",
+					id: "DocumentManagementUpdatePartialRequestExample",
 					request: {
 						pathParams: {
 							auditableItemGraphDocumentId: "aig:123456"
@@ -148,7 +148,7 @@ export function generateRestRoutesDocumentManagement(
 				type: nameof<INoContentResponse>(),
 				examples: [
 					{
-						id: "DocumentManagementCreateResponseExample",
+						id: "DocumentManagementUpdatePartialResponseExample",
 						response: {
 							statusCode: HttpStatusCode.noContent
 						}
@@ -517,7 +517,7 @@ export function generateRestRoutesDocumentManagement(
 
 	return [
 		documentManagementCreateRoute,
-		documentManagementUpdateRoute,
+		documentManagementUpdatePartialRoute,
 		documentManagementGetRoute,
 		documentManagementGetRevisionRoute,
 		documentManagementRemoveRevisionRoute,
@@ -605,6 +605,7 @@ export async function documentManagementGet(
 			includeBlobStorageData: Coerce.boolean(request.query?.includeBlobStorageData),
 			includeAttestation: Coerce.boolean(request.query?.includeAttestation),
 			includeRemoved: Coerce.boolean(request.query?.includeRemoved),
+			includeDeletedEdges: Coerce.boolean(request.query?.includeDeletedEdges),
 			extractRuleGroupId: request.query?.extractRuleGroupId,
 			extractMimeType: request.query?.extractMimeType
 		},
@@ -690,13 +691,13 @@ export async function documentManagementGetRevision(
  * @param request The request.
  * @returns The response object with additional http response properties.
  */
-export async function documentManagementUpdate(
+export async function documentManagementUpdatePartial(
 	httpRequestContext: IHttpRequestContext,
 	componentName: string,
-	request: IDocumentManagementUpdateRequest
+	request: IDocumentManagementUpdatePartialRequest
 ): Promise<INoContentResponse> {
-	Guards.object<IDocumentManagementUpdateRequest>(ROUTES_SOURCE, nameof(request), request);
-	Guards.object<IDocumentManagementUpdateRequest["pathParams"]>(
+	Guards.object<IDocumentManagementUpdatePartialRequest>(ROUTES_SOURCE, nameof(request), request);
+	Guards.object<IDocumentManagementUpdatePartialRequest["pathParams"]>(
 		ROUTES_SOURCE,
 		nameof(request.pathParams),
 		request.pathParams
@@ -709,7 +710,7 @@ export async function documentManagementUpdate(
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
-	await component.update(
+	await component.updatePartial(
 		request.pathParams.auditableItemGraphDocumentId,
 		Is.stringValue(request.body.blob) ? Converter.base64ToBytes(request.body.blob) : undefined,
 		request.body.annotationObject,
@@ -744,8 +745,8 @@ export async function documentManagementRemove(
 		nameof(request.pathParams.auditableItemGraphDocumentId),
 		request.pathParams.auditableItemGraphDocumentId
 	);
-	const revision = Coerce.number(request.pathParams.revision);
-	Guards.integer(ROUTES_SOURCE, nameof(request.pathParams.revision), revision);
+	const revision = Coerce.integer(request.pathParams.revision);
+	Guards.integer(ROUTES_SOURCE, nameof(revision), revision);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 

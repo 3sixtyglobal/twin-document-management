@@ -5,9 +5,10 @@ import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes,
 	type IAuditableItemGraphVertexList,
-	type IAuditableItemGraphAlias,
 	type IAuditableItemGraphComponent,
 	type IAuditableItemGraphEdge,
+	type IAuditableItemGraphPartialVertex,
+	type IAuditableItemGraphResource,
 	type IAuditableItemGraphVertex
 } from "@twin.org/auditable-item-graph-models";
 import type { IBlobStorageComponent } from "@twin.org/blob-storage-models";
@@ -21,18 +22,20 @@ import {
 	GeneralError,
 	Guards,
 	Is,
+	Mutex,
 	NotFoundError,
 	ObjectHelper,
 	Urn
 } from "@twin.org/core";
 import { IntegrityAlgorithm, IntegrityHelper, Sha256 } from "@twin.org/crypto";
-import { JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
+import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { IDataProcessingComponent } from "@twin.org/data-processing-models";
 import {
 	DocumentContexts,
 	DocumentManagementMetricIds,
 	DocumentManagementMetrics,
 	DocumentTypes,
+	type IDocumentManagementEdgeEntry,
 	type IDocument,
 	type IDocumentAttestation,
 	type IDocumentList,
@@ -151,11 +154,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		documentCode: UneceDocumentCodeList,
 		blob: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
-		auditableItemGraphEdges?: {
-			targetId: string;
-			addAlias?: boolean;
-			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[],
+		auditableItemGraphEdges?: IDocumentManagementEdgeEntry[],
 		options?: {
 			createAttestation?: boolean;
 			addAlias?: boolean;
@@ -174,16 +173,6 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		const contextIds = await ContextIdStore.getContextIds();
 
 		try {
-			// Get the connected vertices first, if one fails we abort the create
-			const connectedVertices: { [id: string]: IAuditableItemGraphVertex } = {};
-			if (Is.arrayValue(auditableItemGraphEdges)) {
-				for (const edge of auditableItemGraphEdges) {
-					connectedVertices[edge.targetId] = await this._auditableItemGraphComponent.get(
-						edge.targetId
-					);
-				}
-			}
-
 			const documentVertex: Omit<IAuditableItemGraphVertex, "id"> = {
 				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
 				type: AuditableItemGraphTypes.Vertex
@@ -235,23 +224,58 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				resourceObject: currentRevision
 			});
 
-			// Add the edges from the document to the items
-			this.updateEdges(documentVertex, auditableItemGraphEdges);
+			// Add the outgoing edges from the document vertex to each connected item
+			if (Is.arrayValue(auditableItemGraphEdges)) {
+				documentVertex.edges ??= [];
+				for (const aigEdge of auditableItemGraphEdges) {
+					documentVertex.edges.push({
+						"@context": AuditableItemGraphContexts.Context,
+						type: AuditableItemGraphTypes.Edge,
+						targetId: aigEdge.targetId,
+						edgeRelationships: ["document"]
+					});
+				}
+			}
 
 			// And create the vertex
 			const vertexId = await this._auditableItemGraphComponent.create(
 				ObjectHelper.removeEmptyProperties(documentVertex)
 			);
 
-			// Now add the edges to the connected vertices
-			await this.updateConnectedEdges(
-				connectedVertices,
+			// Now add the edges to the connected vertices.
+			// isCreatePath = true enables fail-fast + rollback if a target vertex is missing.
+			const failingVertexId = await this.updateConnectedEdges(
 				vertexId,
+				auditableItemGraphEdges ?? [],
 				[],
-				auditableItemGraphEdges,
 				documentId,
-				documentIdFormat
+				documentIdFormat,
+				true
 			);
+
+			if (Is.stringValue(failingVertexId)) {
+				// At least one connected vertex was missing. Back-edges already written have been
+				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the orphaned
+				// blob and soft-delete the document resource so the vertex is left empty.
+				try {
+					await this._blobStorageComponent.remove(blobStorageId);
+				} catch {}
+				try {
+					await this._auditableItemGraphComponent.updatePartial({
+						"@context": [
+							AuditableItemGraphContexts.Context,
+							AuditableItemGraphContexts.ContextCommon
+						],
+						id: vertexId,
+						resourcePatches: { remove: [currentRevision.id] }
+					});
+				} catch {}
+				throw new NotFoundError(
+					DocumentManagementService.CLASS_NAME,
+					"connectedVertexNotFound",
+					failingVertexId
+				);
+			}
 
 			await MetricHelper.metricIncrement(
 				this._telemetryComponent,
@@ -280,18 +304,23 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
 	 * @param blob The data to update the document with.
 	 * @param annotationObject Additional information to associate with the document.
-	 * @param auditableItemGraphEdges The auditable item graph vertices to connect the document to, if undefined retains current connections.
+	 * @param auditableItemGraphEdges Explicit edge delta to apply. If undefined, existing connections
+	 * are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
+	 * ones by their target vertex id. To update alias metadata on an already-connected vertex, include
+	 * it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+	 * alias is updated in place without creating a duplicate back-edge.
+	 * @param auditableItemGraphEdges.add Connections to add; each creates a back-edge on the connected vertex.
+	 * @param auditableItemGraphEdges.remove Target vertex IDs to disconnect; their back-edges are removed.
 	 * @returns Nothing.
 	 */
-	public async update(
+	public async updatePartial(
 		auditableItemGraphDocumentId: string,
 		blob?: Uint8Array,
 		annotationObject?: IJsonLdNodeObject,
 		auditableItemGraphEdges?: {
-			targetId: string;
-			addAlias?: boolean;
-			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[]
+			add?: IDocumentManagementEdgeEntry[];
+			remove?: string[];
+		}
 	): Promise<void> {
 		Urn.guard(
 			DocumentManagementService.CLASS_NAME,
@@ -299,6 +328,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			auditableItemGraphDocumentId
 		);
 
+		await Mutex.lock(auditableItemGraphDocumentId, { throwOnTimeout: true });
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId,
@@ -320,26 +350,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			// If auditableItemGraphEdges is undefined we are not updating the edges
 			// an empty array can be passed to remove all edges
-			const connectedVertices: { [targetId: string]: IAuditableItemGraphVertex } = {};
-			if (Is.array(auditableItemGraphEdges)) {
-				// Get the updated connected vertices first, if one fails we abort the update
-				for (const edge of auditableItemGraphEdges) {
-					connectedVertices[edge.targetId] = await this._auditableItemGraphComponent.get(
-						edge.targetId
-					);
-				}
-				// Also get the current edges in case some need disconnecting
-				if (Is.arrayValue(documents.entries.edges)) {
-					for (const edgeId of documents.entries.edges) {
-						// If we haven't retrieved the edge then it must be one that needs removing
-						if (Is.empty(connectedVertices[edgeId])) {
-							connectedVertices[edgeId] = await this._auditableItemGraphComponent.get(edgeId);
-						}
-					}
-				}
-			}
 
-			let updatedVertex = false;
+			const resourcePatchesAdd: IAuditableItemGraphResource[] = [];
 			let blobRevisionCreated = false;
 			let newRevisionHasAttestation = false;
 
@@ -362,60 +374,110 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					);
 					newRevision.integrity = newIntegrity;
 					newRevision.blobStorageId = blobStorageId;
-					newRevision.annotationObject = annotationObject;
+					if (!Is.empty(annotationObject)) {
+						newRevision.annotationObject = annotationObject;
+					}
 
 					if (Is.stringValue(latestRevision.attestationId)) {
 						newRevision.attestationId = await this.createAttestation(newRevision);
 					}
 
-					documentVertex.resources.push({
+					resourcePatchesAdd.push({
 						"@context": AuditableItemGraphContexts.Context,
 						type: AuditableItemGraphTypes.Resource,
-						resourceObject: newRevision as unknown as IJsonLdNodeObject
+						resourceObject: JsonLdHelper.toNodeObject(newRevision)
 					});
 
 					newRevisionHasAttestation = Is.stringValue(newRevision.attestationId);
 					blobRevisionCreated = true;
-					updatedVertex = true;
+				} else if (Is.stringValue(latestRevision.dateDeleted)) {
+					// Same content as the most recent (soft-deleted) revision — restore it.
+					const restoredRevision = ObjectHelper.clone(latestRevision);
+					delete restoredRevision.dateDeleted;
+					if (!Is.empty(annotationObject)) {
+						restoredRevision.annotationObject = annotationObject;
+					}
+					resourcePatchesAdd.push({
+						"@context": AuditableItemGraphContexts.Context,
+						type: AuditableItemGraphTypes.Resource,
+						resourceObject: JsonLdHelper.toNodeObject(restoredRevision)
+					});
+					blobRevisionCreated = true;
 				}
 			}
 
-			// If the blob wasn't updated but the annotation object has then update the current revision
-			// instead of creating a new one
+			// If the blob wasn't updated but the annotation object was explicitly provided and has
+			// changed, update the current revision instead of creating a new one.
+			// Undefined means "no change" in patch semantics — it does not clear the annotation.
 			if (
-				!updatedVertex &&
+				!blobRevisionCreated &&
+				!Is.empty(annotationObject) &&
 				!ObjectHelper.equal(latestRevision.annotationObject, annotationObject)
 			) {
-				updatedVertex = true;
 				latestRevision.annotationObject = annotationObject;
 				latestRevision.dateModified = new Date(Date.now()).toISOString();
-			}
-
-			const existingEdgeIds = documentVertex.edges?.map(e => e.targetId) ?? [];
-
-			// Update the edges from the document to the items
-			const edgesUpdated = this.updateEdges(documentVertex, auditableItemGraphEdges);
-			if (edgesUpdated) {
-				updatedVertex = true;
-			}
-
-			if (updatedVertex) {
-				await this._auditableItemGraphComponent.update(
-					ObjectHelper.removeEmptyProperties(documentVertex)
+				resourcePatchesAdd.push(
+					ObjectHelper.removeEmptyProperties({
+						"@context": AuditableItemGraphContexts.Context,
+						type: AuditableItemGraphTypes.Resource,
+						resourceObject: JsonLdHelper.toNodeObject(latestRevision)
+					})
 				);
 			}
 
-			if (edgesUpdated) {
+			// Build document-vertex edge patches directly from the explicit delta.
+			const edgesToAdd = auditableItemGraphEdges?.add ?? [];
+			const edgeTargetIdsToRemove = auditableItemGraphEdges?.remove ?? [];
+			const hasEdgeChanges =
+				!Is.empty(auditableItemGraphEdges) &&
+				(edgesToAdd.length > 0 || edgeTargetIdsToRemove.length > 0);
+
+			const documentEdgePatchesAdd: IAuditableItemGraphEdge[] = edgesToAdd.map(aigEdge => ({
+				"@context": AuditableItemGraphContexts.Context,
+				type: AuditableItemGraphTypes.Edge,
+				targetId: aigEdge.targetId,
+				edgeRelationships: ["document"]
+			}));
+
+			// Resolve remove targetIds to stored edge IDs for the document vertex patch.
+			const documentEdgePatchesRemove: string[] = edgeTargetIdsToRemove
+				.map(
+					targetId =>
+						documentVertex.edges?.find(e => e.targetId === targetId && Is.empty(e.dateDeleted))?.id
+				)
+				.filter((id): id is string => Is.stringValue(id));
+
+			if (resourcePatchesAdd.length > 0 || hasEdgeChanges) {
+				const partial: IAuditableItemGraphPartialVertex = {
+					"@context": [
+						AuditableItemGraphContexts.Context,
+						AuditableItemGraphContexts.ContextCommon
+					],
+					id: auditableItemGraphDocumentId
+				};
+				if (resourcePatchesAdd.length > 0) {
+					partial.resourcePatches = { add: resourcePatchesAdd };
+				}
+				if (hasEdgeChanges) {
+					partial.edgePatches = {
+						...(documentEdgePatchesAdd.length > 0 ? { add: documentEdgePatchesAdd } : {}),
+						...(documentEdgePatchesRemove.length > 0 ? { remove: documentEdgePatchesRemove } : {})
+					};
+				}
+				await this._auditableItemGraphComponent.updatePartial(partial);
+			}
+
+			if (hasEdgeChanges) {
 				await this.updateConnectedEdges(
-					connectedVertices,
 					auditableItemGraphDocumentId,
-					existingEdgeIds,
-					auditableItemGraphEdges,
+					edgesToAdd,
+					edgeTargetIdsToRemove,
 					latestRevision.documentId,
 					latestRevision.documentIdFormat
 				);
 			}
 
+			const updatedVertex = resourcePatchesAdd.length > 0 || hasEdgeChanges;
 			if (blobRevisionCreated) {
 				await MetricHelper.metricIncrement(
 					this._telemetryComponent,
@@ -440,6 +502,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				undefined,
 				error
 			);
+		} finally {
+			Mutex.unlock(auditableItemGraphDocumentId);
 		}
 	}
 
@@ -451,6 +515,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeBlobStorageData Flag to include the blob storage data for the document, defaults to false.
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
 	 * @param options.includeRemoved Flag to include deleted documents, defaults to false.
+	 * @param options.includeDeletedEdges Flag to include soft-deleted edges in the response, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
@@ -464,6 +529,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			includeBlobStorageData?: boolean;
 			includeAttestation?: boolean;
 			includeRemoved?: boolean;
+			includeDeletedEdges?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
 		},
@@ -482,8 +548,17 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId,
-				{ includeDeleted: options?.includeRemoved }
+				{
+					includeDeleted:
+						(options?.includeRemoved ?? false) || (options?.includeDeletedEdges ?? false)
+				}
 			);
+
+			// If we fetched deleted items to expose edges but the caller did not ask for deleted
+			// documents, strip the deleted resources so they don't appear in the output.
+			if ((options?.includeDeletedEdges ?? false) && !(options?.includeRemoved ?? false)) {
+				documentVertex.resources = documentVertex.resources?.filter(r => Is.empty(r.dateDeleted));
+			}
 
 			// Populate the document and revisions with the options set
 			const documents = await this.getDocumentsFromVertex(documentVertex, options, cursor, limit);
@@ -593,8 +668,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			nameof(auditableItemGraphDocumentId),
 			auditableItemGraphDocumentId
 		);
-		Guards.number(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
+		Guards.integer(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
 
+		await Mutex.lock(auditableItemGraphDocumentId, { throwOnTimeout: true });
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId
@@ -616,9 +692,22 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				);
 			}
 
-			documentVertex.resources.splice(docRevisionIndex, 1);
+			const revisionResourceId =
+				(documentVertex.resources[docRevisionIndex].resourceObject?.id as string | undefined) ??
+				(documentVertex.resources[docRevisionIndex].resourceObject?.["@id"] as string | undefined);
 
-			await this._auditableItemGraphComponent.update(documentVertex);
+			if (!Is.stringValue(revisionResourceId)) {
+				// The revision exists but its stored resource-id is unresolvable — integrity anomaly.
+				throw new GeneralError(DocumentManagementService.CLASS_NAME, "documentRevisionMissingId", {
+					revision
+				});
+			}
+
+			await this._auditableItemGraphComponent.updatePartial({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				id: auditableItemGraphDocumentId,
+				resourcePatches: { remove: [revisionResourceId] }
+			});
 			await MetricHelper.metricIncrement(
 				this._telemetryComponent,
 				DocumentManagementMetricIds.RevisionsRemoved
@@ -633,6 +722,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				undefined,
 				error
 			);
+		} finally {
+			Mutex.unlock(auditableItemGraphDocumentId);
 		}
 	}
 
@@ -677,174 +768,171 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	}
 
 	/**
-	 * Update the edges of the document vertex.
-	 * @param documentVertex The document vertex to update.
-	 * @param auditableItemGraphEdges The list of edges to use.
-	 * @returns True if the edges were updated.
-	 * @internal
-	 */
-	private updateEdges(
-		documentVertex: Omit<IAuditableItemGraphVertex, "@context" | "id" | "type">,
-		auditableItemGraphEdges:
-			| { targetId: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
-			| undefined
-	): boolean {
-		let changed = false;
-
-		const existingEdgeIds = documentVertex.edges?.map(e => e.targetId) ?? [];
-
-		if (Is.array(auditableItemGraphEdges)) {
-			for (const aigEdge of auditableItemGraphEdges) {
-				const existingIndex = existingEdgeIds.indexOf(aigEdge.targetId);
-				if (existingIndex !== -1) {
-					// If the edge already exists then we don't need to add it again
-					// We just need to remove it from the list of existing ids
-					// any remaining after this loop will be need to be removed
-					existingEdgeIds.splice(existingIndex, 1);
-				} else {
-					const vertexEdge: IAuditableItemGraphEdge = {
-						"@context": AuditableItemGraphContexts.Context,
-						type: AuditableItemGraphTypes.Edge,
-						targetId: aigEdge.targetId,
-						edgeRelationships: ["document"]
-					};
-
-					documentVertex.edges ??= [];
-					documentVertex.edges?.push(vertexEdge);
-					changed = true;
-				}
-			}
-
-			// Anything left in the existingEdgeIds array means they need to be removed
-			if (existingEdgeIds.length > 0 && Is.array(documentVertex.edges)) {
-				for (const existingEdgeId of existingEdgeIds) {
-					const existingIndex = documentVertex.edges.findIndex(e => e.targetId === existingEdgeId);
-					if (existingIndex !== -1) {
-						documentVertex.edges.splice(existingIndex, 1);
-						changed = true;
-					}
-				}
-			}
-		}
-
-		return changed;
-	}
-
-	/**
-	 * Update the edges.
-	 * @param connectedVertices The connected vertices for the edges.
+	 * Update the edges on connected vertices using non-destructive patch operations.
+	 * Uses updatePartial so AIG's per-vertex Mutex serialises concurrent callers.
+	 *
+	 * On the **create path** (`isCreatePath = true`) the method is fail-fast:
+	 * if any back-edge write fails (target vertex does not exist), all back-edges
+	 * already written in this call are removed (best-effort rollback) and the
+	 * failing target vertex ID is returned so the caller can surface a meaningful error.
+	 *
+	 * On the **update path** each missing vertex is caught individually; the remaining
+	 * updates continue and `undefined` is always returned.
 	 * @param auditableItemGraphDocumentId The document id to use.
-	 * @param documentVertex The document vertex to update.
-	 * @param auditableItemGraphEdges The list of edges to use.
+	 * @param edgesToAdd Connections to add — each connected vertex receives a new back-edge.
+	 * @param edgeTargetIdsToRemove Target vertex IDs to disconnect — their back-edges are removed.
 	 * @param documentId The document identifier.
 	 * @param documentIdFormat The format of the document identifier.
+	 * @param isCreatePath When true, enables fail-fast + rollback semantics.
+	 * @returns The failing target vertex ID when `isCreatePath` is true and a write fails;
+	 * `undefined` on success or when called from the update path.
 	 * @internal
 	 */
 	private async updateConnectedEdges(
-		connectedVertices: { [id: string]: IAuditableItemGraphVertex },
 		auditableItemGraphDocumentId: string,
-		existingEdgeIds: string[],
-		auditableItemGraphEdges:
-			| { targetId: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
-			| undefined,
+		edgesToAdd: IDocumentManagementEdgeEntry[],
+		edgeTargetIdsToRemove: string[],
 		documentId: string,
-		documentIdFormat: string | undefined
-	): Promise<void> {
-		if (Is.array(auditableItemGraphEdges)) {
-			for (const aigEdge of auditableItemGraphEdges) {
-				const connected = connectedVertices[aigEdge.targetId];
+		documentIdFormat: string | undefined,
+		isCreatePath: boolean = false
+	): Promise<string | undefined> {
+		// Track which target IDs received a successful back-edge write so we can roll back
+		// if a later write fails (create path only).
+		const writtenTargetIds: string[] = [];
 
-				if (!Is.empty(connected)) {
-					let updatedConnected = false;
-
-					const existingIndex = existingEdgeIds.indexOf(aigEdge.targetId);
-					if (existingIndex !== -1) {
-						// If the edge already exists we remove it from the list of existing ids
-						// any remaining after this loop will be need to be disconnected
-						existingEdgeIds.splice(existingIndex, 1);
-					}
-
-					// Add the edge with the document vertex id if it doesn't already exist
-					const hasEdge = connected.edges?.some(e => e.targetId === auditableItemGraphDocumentId);
-					if (!hasEdge) {
-						const vertexEdge: IAuditableItemGraphEdge = {
+		// Add back-edges to each newly connected vertex.
+		for (const aigEdge of edgesToAdd) {
+			const partial: IAuditableItemGraphPartialVertex = {
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				id: aigEdge.targetId,
+				edgePatches: {
+					add: [
+						{
 							"@context": AuditableItemGraphContexts.Context,
 							type: AuditableItemGraphTypes.Edge,
 							targetId: auditableItemGraphDocumentId,
 							edgeRelationships: ["document"]
-						};
-
-						connected.edges ??= [];
-						connected.edges?.push(vertexEdge);
-						updatedConnected = true;
-					}
-
-					// Add alias with the document id if option flag is set and it doesn't already exist
-					if (aigEdge.addAlias) {
-						const alias = connected.aliases?.find(a => a.id === documentId);
-						if (Is.empty(alias)) {
-							// No existing alias, so create one
-							const vertexAlias: IAuditableItemGraphAlias = {
-								"@context": AuditableItemGraphContexts.Context,
-								type: AuditableItemGraphTypes.Alias,
-								id: documentId,
-								aliasFormat: documentIdFormat,
-								annotationObject: aigEdge.aliasAnnotationObject
-							};
-
-							connected.aliases ??= [];
-							connected.aliases?.push(vertexAlias);
-							updatedConnected = true;
-						} else if (
-							!ObjectHelper.equal(alias.annotationObject, aigEdge.aliasAnnotationObject) ||
-							documentIdFormat !== alias.aliasFormat
-						) {
-							// The alias already exists, but the format or annotation object has changed
-							alias.annotationObject = aigEdge.aliasAnnotationObject;
-							alias.aliasFormat = documentIdFormat;
-							updatedConnected = true;
 						}
-					}
+					]
+				}
+			};
 
-					if (updatedConnected) {
-						await this._auditableItemGraphComponent.update(connected);
-					}
+			if (aigEdge.addAlias) {
+				partial.aliasPatches = {
+					add: [
+						{
+							"@context": AuditableItemGraphContexts.Context,
+							type: AuditableItemGraphTypes.Alias,
+							id: documentId,
+							aliasFormat: documentIdFormat,
+							annotationObject: aigEdge.aliasAnnotationObject
+						}
+					]
+				};
+			}
+
+			if (isCreatePath) {
+				try {
+					await this._auditableItemGraphComponent.updatePartial(partial);
+					writtenTargetIds.push(aigEdge.targetId);
+				} catch {
+					// Rollback all back-edges already written before this failure.
+					await this.rollbackConnectedEdges(
+						auditableItemGraphDocumentId,
+						writtenTargetIds,
+						documentId
+					);
+					return aigEdge.targetId;
+				}
+			} else {
+				try {
+					await this._auditableItemGraphComponent.updatePartial(partial);
+				} catch {
+					// Best-effort on the update path — swallow to avoid interrupting remaining back-edge writes.
 				}
 			}
 		}
 
-		// Anything left in the existingEdgeIds array means they need to be removed
-		if (existingEdgeIds.length > 0) {
-			for (const existingEdgeId of existingEdgeIds) {
-				const connected = connectedVertices[existingEdgeId];
+		// Remove back-edges from disconnected vertices.
+		for (const staleTargetId of edgeTargetIdsToRemove) {
+			// Fetch to resolve the stored edge ID; the write is still Mutex-protected.
+			const connected = await this._auditableItemGraphComponent.get(staleTargetId);
 
-				if (!Is.empty(connected)) {
-					let updatedConnected = false;
+			const edgeId = connected.edges?.find(
+				e => Is.empty(e.dateDeleted) && e.targetId === auditableItemGraphDocumentId
+			)?.id;
 
-					// Remove the edge from the connected vertex
-					if (Is.arrayValue(connected.edges)) {
-						const existingIndex = connected.edges.findIndex(
-							e => e.targetId === auditableItemGraphDocumentId
-						);
-						if (existingIndex !== -1) {
-							connected.edges.splice(existingIndex, 1);
-							updatedConnected = true;
-						}
-					}
+			const hasAlias =
+				Is.arrayValue(connected.aliases) &&
+				connected.aliases.some(a => Is.empty(a.dateDeleted) && a.id === documentId);
 
-					// Remove the alias from the connected vertex
-					if (Is.arrayValue(connected.aliases)) {
-						const existingIndex = connected.aliases.findIndex(e => e.id === documentId);
-						if (existingIndex !== -1) {
-							connected.aliases.splice(existingIndex, 1);
-							updatedConnected = true;
-						}
-					}
+			const partial: IAuditableItemGraphPartialVertex = {
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				id: staleTargetId
+			};
 
-					if (updatedConnected) {
-						await this._auditableItemGraphComponent.update(connected);
-					}
+			if (hasAlias) {
+				partial.aliasPatches = { remove: [documentId] };
+			}
+
+			if (Is.stringValue(edgeId)) {
+				partial.edgePatches = { remove: [edgeId] };
+			}
+
+			if (hasAlias || Is.stringValue(edgeId)) {
+				await this._auditableItemGraphComponent.updatePartial(partial);
+			}
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Best-effort removal of back-edges that were written during a failed create operation.
+	 * Errors are silently swallowed to avoid masking the original failure.
+	 * @param auditableItemGraphDocumentId The document vertex whose back-edges should be removed.
+	 * @param targetIds The connected vertex IDs that received a back-edge.
+	 * @param documentId The document identifier used for alias cleanup.
+	 * @internal
+	 */
+	private async rollbackConnectedEdges(
+		auditableItemGraphDocumentId: string,
+		targetIds: string[],
+		documentId: string
+	): Promise<void> {
+		for (const targetId of targetIds) {
+			try {
+				const connected = await this._auditableItemGraphComponent.get(targetId);
+
+				const edgeId = connected.edges?.find(
+					e => Is.empty(e.dateDeleted) && e.targetId === auditableItemGraphDocumentId
+				)?.id;
+
+				const hasAlias =
+					Is.arrayValue(connected.aliases) &&
+					connected.aliases.some(a => Is.empty(a.dateDeleted) && a.id === documentId);
+
+				const partial: IAuditableItemGraphPartialVertex = {
+					"@context": [
+						AuditableItemGraphContexts.Context,
+						AuditableItemGraphContexts.ContextCommon
+					],
+					id: targetId
+				};
+
+				if (hasAlias) {
+					partial.aliasPatches = { remove: [documentId] };
 				}
+
+				if (Is.stringValue(edgeId)) {
+					partial.edgePatches = { remove: [edgeId] };
+				}
+
+				if (hasAlias || Is.stringValue(edgeId)) {
+					await this._auditableItemGraphComponent.updatePartial(partial);
+				}
+			} catch {
+				// Best-effort — do not let cleanup errors mask the original failure.
 			}
 		}
 	}
@@ -856,6 +944,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeBlobStorageMetadata Flag to include the blob storage metadata for the document, defaults to false.
 	 * @param options.includeBlobStorageData Flag to include the blob storage data for the document, defaults to false.
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
+	 * @param options.includeDeletedEdges Flag to include soft-deleted edges in the response, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
@@ -869,6 +958,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			includeBlobStorageMetadata?: boolean;
 			includeBlobStorageData?: boolean;
 			includeAttestation?: boolean;
+			includeDeletedEdges?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
 		},
@@ -968,7 +1058,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			docList.edges ??= [];
 
 			for (const edge of documentVertex.edges) {
-				if (Is.object(edge)) {
+				if (
+					Is.object(edge) &&
+					((options?.includeDeletedEdges ?? false) || Is.empty(edge.dateDeleted))
+				) {
 					docList.edges.push(edge.targetId);
 				}
 			}

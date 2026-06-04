@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import type { IDocumentManagementEdgeEntry } from "../IDocumentManagementEdgeEntry.js";
 
 /**
  * Request to create a document as an auditable item graph vertex.
@@ -39,11 +40,7 @@ export interface IDocumentManagementCreateRequest {
 		/**
 		 * The auditable item graph vertices to connect the document to.
 		 */
-		auditableItemGraphEdges?: {
-			targetId: string;
-			addAlias?: boolean;
-			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[];
+		auditableItemGraphEdges?: IDocumentManagementEdgeEntry[];
 
 		/**
 		 * Flag to create an attestation for the document, defaults to false.
