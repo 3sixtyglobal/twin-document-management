@@ -6,6 +6,9 @@ import {
 	tagsDocumentManagement
 } from "./documentManagementRoutes.js";
 
+/**
+ * REST entry points for the document management service.
+ */
 export const restEntryPoints: IRestRouteEntryPoint[] = [
 	{
 		name: "document-management",

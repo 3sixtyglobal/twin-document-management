@@ -3,7 +3,7 @@
 import type { HeaderTypes, MimeTypes } from "@twin.org/web";
 
 /**
- * Request to get a list of document from an auditable item graph vertex.
+ * Request to query a list of documents from an auditable item graph vertex.
  */
 export interface IDocumentManagementQueryRequest {
 	/**

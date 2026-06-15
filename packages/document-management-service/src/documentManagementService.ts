@@ -124,6 +124,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 	/**
 	 * Register all document management metrics with the telemetry component.
+	 * @returns A promise that resolves when metrics have been registered.
 	 */
 	public async start(): Promise<void> {
 		if (Is.undefined(this._telemetryComponent)) {
@@ -311,7 +312,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * alias is updated in place without creating a duplicate back-edge.
 	 * @param auditableItemGraphEdges.add Connections to add; each creates a back-edge on the connected vertex.
 	 * @param auditableItemGraphEdges.remove Target vertex IDs to disconnect; their back-edges are removed.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the document has been updated.
 	 */
 	public async updatePartial(
 		auditableItemGraphDocumentId: string,
@@ -589,7 +590,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
-	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
+	 * @returns The document for the specified revision.
 	 */
 	public async getRevision(
 		auditableItemGraphDocumentId: string,
@@ -657,7 +658,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * The document dateDeleted will be set, but can still be queried with the includeRemoved flag.
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
 	 * @param revision The revision of the document to remove.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the revision has been removed.
 	 */
 	public async removeRevision(
 		auditableItemGraphDocumentId: string,

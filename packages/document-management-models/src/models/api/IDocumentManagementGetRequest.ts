@@ -68,7 +68,7 @@ export interface IDocumentManagementGetRequest {
 		extractMimeType?: string;
 
 		/**
-		 * PLimit the number of items to return, defaults to 1 so only most recent is returned.
+		 * Limit the number of items to return, defaults to 1 so only most recent is returned.
 		 * @default 1
 		 */
 		limit?: string;
