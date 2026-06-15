@@ -119,7 +119,8 @@ describe("document-management-service", async () => {
 		initSchemaDataProcessing();
 
 		verifiableItemEntityStorage = new MemoryEntityStorageConnector({
-			entitySchema: nameof<VerifiableItem>()
+			entitySchema: nameof<VerifiableItem>(),
+			config: { storageKey: "verifiable-item" }
 		});
 		EntityStorageConnectorFactory.register("verifiable-item", () => verifiableItemEntityStorage);
 
@@ -130,7 +131,8 @@ describe("document-management-service", async () => {
 		);
 
 		backgroundTaskStorage = new MemoryEntityStorageConnector<BackgroundTask>({
-			entitySchema: "BackgroundTask"
+			entitySchema: "BackgroundTask",
+			config: { storageKey: "background-task" }
 		});
 		EntityStorageConnectorFactory.register("background-task", () => backgroundTaskStorage);
 
@@ -139,12 +141,14 @@ describe("document-management-service", async () => {
 		await backgroundTaskService.start();
 
 		immutableProofEntityStorage = new MemoryEntityStorageConnector({
-			entitySchema: "ImmutableProof"
+			entitySchema: "ImmutableProof",
+			config: { storageKey: "immutable-proof" }
 		});
 		EntityStorageConnectorFactory.register("immutable-proof", () => immutableProofEntityStorage);
 
 		notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
-			entitySchema: nameof<Notarization>()
+			entitySchema: nameof<Notarization>(),
+			config: { storageKey: "notarization" }
 		});
 		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
 		NotarizationConnectorFactory.register(
@@ -156,7 +160,8 @@ describe("document-management-service", async () => {
 		ComponentFactory.register("immutable-proof", () => immutableProofComponent);
 
 		vertexEntityStorage = new MemoryEntityStorageConnector<AuditableItemGraphVertex>({
-			entitySchema: "AuditableItemGraphVertex"
+			entitySchema: "AuditableItemGraphVertex",
+			config: { storageKey: "auditable-item-graph-vertex" }
 		});
 		EntityStorageConnectorFactory.register(
 			"auditable-item-graph-vertex",
@@ -164,7 +169,8 @@ describe("document-management-service", async () => {
 		);
 
 		changesetEntityStorage = new MemoryEntityStorageConnector<AuditableItemGraphChangeset>({
-			entitySchema: "AuditableItemGraphChangeset"
+			entitySchema: "AuditableItemGraphChangeset",
+			config: { storageKey: "auditable-item-graph-changeset" }
 		});
 
 		EntityStorageConnectorFactory.register(
@@ -176,7 +182,8 @@ describe("document-management-service", async () => {
 		ComponentFactory.register("auditable-item-graph", () => auditableItemGraphComponent);
 
 		blobEntryEntityStorage = new MemoryEntityStorageConnector<BlobStorageEntry>({
-			entitySchema: "BlobStorageEntry"
+			entitySchema: "BlobStorageEntry",
+			config: { storageKey: "blob-storage-entry" }
 		});
 		EntityStorageConnectorFactory.register("blob-storage-entry", () => blobEntryEntityStorage);
 
@@ -187,7 +194,8 @@ describe("document-management-service", async () => {
 		ComponentFactory.register("blob-storage", () => blobStorageComponent);
 
 		nftEntityStorage = new MemoryEntityStorageConnector<Nft>({
-			entitySchema: "Nft"
+			entitySchema: "Nft",
+			config: { storageKey: "nft" }
 		});
 		EntityStorageConnectorFactory.register("nft", () => nftEntityStorage);
 
@@ -201,7 +209,8 @@ describe("document-management-service", async () => {
 		ComponentFactory.register("attestation", () => attestationComponent);
 
 		extractionRuleGroupEntityStorage = new MemoryEntityStorageConnector<ExtractionRuleGroup>({
-			entitySchema: "ExtractionRuleGroup"
+			entitySchema: "ExtractionRuleGroup",
+			config: { storageKey: "extraction-rule-group" }
 		});
 		EntityStorageConnectorFactory.register(
 			"extraction-rule-group",
@@ -250,6 +259,18 @@ describe("document-management-service", async () => {
 		}));
 	});
 
+	afterEach(async () => {
+		await verifiableItemEntityStorage.teardown();
+		await immutableProofEntityStorage.teardown();
+		await notarizationStorage.teardown();
+		await backgroundTaskStorage.teardown();
+		await vertexEntityStorage.teardown();
+		await changesetEntityStorage.teardown();
+		await blobEntryEntityStorage.teardown();
+		await extractionRuleGroupEntityStorage.teardown();
+		await nftEntityStorage.teardown();
+	});
+
 	test("can create the service", async () => {
 		const service = new DocumentManagementService();
 		expect(service).toBeDefined();
@@ -270,10 +291,10 @@ describe("document-management-service", async () => {
 		);
 		expect(documentId).toEqual("aig:01917849fb0071018101010101010101");
 
-		const nftStore = nftEntityStorage.getStore();
+		const nftStore = await nftEntityStorage.getStore();
 		expect(nftStore).toEqual([]);
 
-		const blobStore = blobEntryEntityStorage.getStore();
+		const blobStore = await blobEntryEntityStorage.getStore();
 		expect(blobStore).toEqual([
 			{
 				blobSize: 11,
@@ -286,7 +307,7 @@ describe("document-management-service", async () => {
 			}
 		]);
 
-		const aigStore = vertexEntityStorage.getStore();
+		const aigStore = await vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
 				id: "01917849fb0071018101010101010101",
@@ -359,7 +380,7 @@ describe("document-management-service", async () => {
 		);
 		expect(documentId).toEqual("aig:01917849fb007a0a8a0a0a0a0a0a0a0a");
 
-		const nftStore = nftEntityStorage.getStore();
+		const nftStore = await nftEntityStorage.getStore();
 		expect(nftStore).toEqual([
 			{
 				id: "0909090909090909090909090909090909090909090909090909090909090909",
@@ -375,7 +396,7 @@ describe("document-management-service", async () => {
 			}
 		]);
 
-		const blobStore = blobEntryEntityStorage.getStore();
+		const blobStore = await blobEntryEntityStorage.getStore();
 		expect(blobStore).toEqual([
 			{
 				blobSize: 11,
@@ -388,7 +409,7 @@ describe("document-management-service", async () => {
 			}
 		]);
 
-		const aigStore = vertexEntityStorage.getStore();
+		const aigStore = await vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
 				id: "01917849fb0071018101010101010101",
@@ -530,7 +551,7 @@ describe("document-management-service", async () => {
 		expect(docs2.entries.itemListElement.length).toEqual(1);
 		expect(docs2.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading-2");
 
-		const aigStore = vertexEntityStorage.getStore();
+		const aigStore = await vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
 				id: "01917849fb0072028202020202020202",
@@ -660,7 +681,7 @@ describe("document-management-service", async () => {
 			}
 		);
 
-		const aigStore = vertexEntityStorage.getStore();
+		const aigStore = await vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
 			{
 				id: "01917849fb0071018101010101010101",
@@ -794,7 +815,7 @@ describe("document-management-service", async () => {
 			add: [{ targetId: aigId3, addAlias: true }],
 			remove: [removedEdge]
 		});
-		const aigStore2 = vertexEntityStorage.getStore();
+		const aigStore2 = await vertexEntityStorage.getStore();
 		expect(aigStore2).toEqual([
 			{
 				id: "01917849fb0071018101010101010101",
@@ -1836,7 +1857,7 @@ describe("document-management-service", async () => {
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
 
 			// The blob created during the attempt must have been removed.
-			expect(blobEntryEntityStorage.getStore()).toHaveLength(0);
+			expect(await blobEntryEntityStorage.getStore()).toHaveLength(0);
 		});
 
 		test("document vertex resource is soft-deleted when create fails due to missing target vertex", async () => {
@@ -1854,7 +1875,7 @@ describe("document-management-service", async () => {
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
 
 			// The created document vertex must exist but its resource must be soft-deleted.
-			const aigStore = vertexEntityStorage.getStore();
+			const aigStore = await vertexEntityStorage.getStore();
 			const docVertex = aigStore.find(v => v.resourceTypeIndex?.includes("document"));
 			expect(docVertex).toBeDefined();
 			expect(docVertex?.resources?.[0]?.dateDeleted).toBeDefined();

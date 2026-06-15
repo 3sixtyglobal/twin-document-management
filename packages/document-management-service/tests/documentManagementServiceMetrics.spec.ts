@@ -159,7 +159,8 @@ describe("DocumentManagementService — metrics", () => {
 
 	beforeEach(async () => {
 		const verifiableItemStorage = new MemoryEntityStorageConnector<VerifiableItem>({
-			entitySchema: nameof<VerifiableItem>()
+			entitySchema: nameof<VerifiableItem>(),
+			config: { storageKey: "verifiable-item" }
 		});
 		EntityStorageConnectorFactory.register("verifiable-item", () => verifiableItemStorage);
 
@@ -169,7 +170,8 @@ describe("DocumentManagementService — metrics", () => {
 		);
 
 		const backgroundTaskStorage = new MemoryEntityStorageConnector<BackgroundTask>({
-			entitySchema: "BackgroundTask"
+			entitySchema: "BackgroundTask",
+			config: { storageKey: "background-task" }
 		});
 		EntityStorageConnectorFactory.register("background-task", () => backgroundTaskStorage);
 
@@ -178,12 +180,14 @@ describe("DocumentManagementService — metrics", () => {
 		await backgroundTaskService.start();
 
 		const immutableProofStorage = new MemoryEntityStorageConnector<ImmutableProof>({
-			entitySchema: "ImmutableProof"
+			entitySchema: "ImmutableProof",
+			config: { storageKey: "immutable-proof" }
 		});
 		EntityStorageConnectorFactory.register("immutable-proof", () => immutableProofStorage);
 
 		const notarizationStorage = new MemoryEntityStorageConnector<Notarization>({
-			entitySchema: nameof<Notarization>()
+			entitySchema: nameof<Notarization>(),
+			config: { storageKey: "notarization" }
 		});
 		EntityStorageConnectorFactory.register("notarization", () => notarizationStorage);
 		NotarizationConnectorFactory.register(
@@ -196,12 +200,14 @@ describe("DocumentManagementService — metrics", () => {
 		await immutableProofService.start();
 
 		const vertexStorage = new MemoryEntityStorageConnector<AuditableItemGraphVertex>({
-			entitySchema: "AuditableItemGraphVertex"
+			entitySchema: "AuditableItemGraphVertex",
+			config: { storageKey: "auditable-item-graph-vertex" }
 		});
 		EntityStorageConnectorFactory.register("auditable-item-graph-vertex", () => vertexStorage);
 
 		const changesetStorage = new MemoryEntityStorageConnector<AuditableItemGraphChangeset>({
-			entitySchema: "AuditableItemGraphChangeset"
+			entitySchema: "AuditableItemGraphChangeset",
+			config: { storageKey: "auditable-item-graph-changeset" }
 		});
 		EntityStorageConnectorFactory.register(
 			"auditable-item-graph-changeset",
@@ -212,7 +218,8 @@ describe("DocumentManagementService — metrics", () => {
 		ComponentFactory.register("auditable-item-graph", () => auditableItemGraphService);
 
 		const blobEntryStorage = new MemoryEntityStorageConnector<BlobStorageEntry>({
-			entitySchema: "BlobStorageEntry"
+			entitySchema: "BlobStorageEntry",
+			config: { storageKey: "blob-storage-entry" }
 		});
 		EntityStorageConnectorFactory.register("blob-storage-entry", () => blobEntryStorage);
 
@@ -221,7 +228,10 @@ describe("DocumentManagementService — metrics", () => {
 		const blobStorageService = new BlobStorageService();
 		ComponentFactory.register("blob-storage", () => blobStorageService);
 
-		const nftStorage = new MemoryEntityStorageConnector<Nft>({ entitySchema: "Nft" });
+		const nftStorage = new MemoryEntityStorageConnector<Nft>({
+			entitySchema: "Nft",
+			config: { storageKey: "nft" }
+		});
 		EntityStorageConnectorFactory.register("nft", () => nftStorage);
 
 		NftConnectorFactory.register("nft", () => new EntityStorageNftConnector());
@@ -231,7 +241,8 @@ describe("DocumentManagementService — metrics", () => {
 		ComponentFactory.register("attestation", () => attestationService);
 
 		const extractionRuleGroupStorage = new MemoryEntityStorageConnector<ExtractionRuleGroup>({
-			entitySchema: "ExtractionRuleGroup"
+			entitySchema: "ExtractionRuleGroup",
+			config: { storageKey: "extraction-rule-group" }
 		});
 		EntityStorageConnectorFactory.register(
 			"extraction-rule-group",
