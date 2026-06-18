@@ -112,7 +112,7 @@ By default extraction will auto detect the mime type of the document, this can b
 
 > `optional` **limit?**: `string`
 
-PLimit the number of items to return, defaults to 1 so only most recent is returned.
+Limit the number of items to return, defaults to 1 so only most recent is returned.
 
 ##### Default
 

@@ -1,6 +1,6 @@
 # Interface: IDocumentManagementQueryRequest
 
-Request to get a list of document from an auditable item graph vertex.
+Request to query a list of documents from an auditable item graph vertex.
 
 ## Properties
 

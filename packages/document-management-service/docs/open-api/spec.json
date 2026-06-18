@@ -510,7 +510,7 @@
 					},
 					{
 						"name": "limit",
-						"description": "PLimit the number of items to return, defaults to 1 so only most recent is returned.",
+						"description": "Limit the number of items to return, defaults to 1 so only most recent is returned.",
 						"in": "query",
 						"required": false,
 						"schema": {

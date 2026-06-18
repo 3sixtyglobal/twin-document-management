@@ -64,6 +64,8 @@ Register all document management metrics with the telemetry component.
 
 `Promise`\<`void`\>
 
+A promise that resolves when metrics have been registered.
+
 #### Implementation of
 
 `IDocumentManagementComponent.start`
@@ -202,7 +204,7 @@ Target vertex IDs to disconnect; their back-edges are removed.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the document has been updated.
 
 #### Implementation of
 
@@ -352,7 +354,7 @@ By default extraction will auto detect the mime type of the document, this can b
 
 `Promise`\<`IDocument`\>
 
-The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
+The document for the specified revision.
 
 #### Implementation of
 
@@ -385,7 +387,7 @@ The revision of the document to remove.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the revision has been removed.
 
 #### Implementation of
 

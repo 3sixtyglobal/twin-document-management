@@ -136,7 +136,7 @@ Target vertex IDs to disconnect; their back-edges are removed.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the document has been updated.
 
 ***
 
@@ -278,7 +278,7 @@ By default extraction will auto detect the mime type of the document, this can b
 
 `Promise`\<[`IDocument`](IDocument.md)\>
 
-The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
+The document for the specified revision.
 
 ***
 
@@ -307,7 +307,7 @@ The revision of the document to remove.
 
 `Promise`\<`void`\>
 
-Nothing.
+A promise that resolves when the revision has been removed.
 
 ***
 
