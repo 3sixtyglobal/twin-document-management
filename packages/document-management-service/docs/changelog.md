@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.0.3-next.17](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.0.3-next.16...document-management-service-v0.0.3-next.17) (2026-06-18)
+
+
+### Features
+
+* remove hosting component ([#53](https://github.com/iotaledger/twin-document-management/issues/53)) ([2ec9d91](https://github.com/iotaledger/twin-document-management/commit/2ec9d91170ade5aaa732a05af685ae93f362bb16))
+
+
+### Bug Fixes
+
+* use async getStore in tests ([8e16a85](https://github.com/iotaledger/twin-document-management/commit/8e16a858a4916d57a19dfa8fa42c0a92632b9f39))
+* use async getStore in tests ([e9a7ecd](https://github.com/iotaledger/twin-document-management/commit/e9a7ecdc1f1f5bb3e46fe3499667eaee4c67012f))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.16 to 0.0.3-next.17
+
 ## [0.0.3-next.16](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.0.3-next.15...document-management-service-v0.0.3-next.16) (2026-06-04)
 
 
