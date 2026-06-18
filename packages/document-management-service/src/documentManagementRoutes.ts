@@ -1,28 +1,30 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type {
-	ICreatedResponse,
-	IHostingComponent,
-	IHttpRequestContext,
-	INoContentResponse,
-	INotFoundResponse,
-	IRestRoute,
-	ITag
+import {
+	HttpContextIdKeys,
+	HttpUrlHelper,
+	type ICreatedResponse,
+	type IHttpRequestContext,
+	type INoContentResponse,
+	type INotFoundResponse,
+	type IRestRoute,
+	type ITag
 } from "@twin.org/api-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes
 } from "@twin.org/auditable-item-graph-models";
+import { ContextIdStore } from "@twin.org/context";
 import { Coerce, ComponentFactory, Converter, Guards, Is } from "@twin.org/core";
 import {
 	DocumentContexts,
 	DocumentTypes,
-	type IDocumentManagementGetRevisionRequest,
-	type IDocumentManagementGetRevisionResponse,
 	type IDocumentManagementComponent,
 	type IDocumentManagementCreateRequest,
 	type IDocumentManagementGetRequest,
 	type IDocumentManagementGetResponse,
+	type IDocumentManagementGetRevisionRequest,
+	type IDocumentManagementGetRevisionResponse,
 	type IDocumentManagementQueryRequest,
 	type IDocumentManagementQueryResponse,
 	type IDocumentManagementRemoveRequest,
@@ -592,10 +594,6 @@ export async function documentManagementGet(
 		request.pathParams.auditableItemGraphDocumentId
 	);
 
-	const hostingComponent = ComponentFactory.get<IHostingComponent>(
-		httpRequestContext.hostingComponentType ?? "hosting"
-	);
-
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	const result = await component.get(
@@ -619,8 +617,12 @@ export async function documentManagementGet(
 	};
 
 	if (Is.stringValue(result.cursor)) {
+		const contextIds = await ContextIdStore.getContextIds();
 		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			await hostingComponent.buildPublicUrl(httpRequestContext.serverRequest.url),
+			HttpUrlHelper.replaceOrigin(
+				httpRequestContext.serverRequest.url,
+				contextIds?.[HttpContextIdKeys.PublicOrigin]
+			),
 			{ cursor: result.cursor },
 			"next"
 		);
@@ -777,10 +779,6 @@ export async function documentManagementQuery(
 	);
 	Guards.stringValue(ROUTES_SOURCE, nameof(request.query.documentId), request.query.documentId);
 
-	const hostingComponent = ComponentFactory.get<IHostingComponent>(
-		httpRequestContext.hostingComponentType ?? "hosting"
-	);
-
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	const result = await component.query(
@@ -795,8 +793,12 @@ export async function documentManagementQuery(
 	};
 
 	if (Is.stringValue(result.cursor)) {
+		const contextIds = await ContextIdStore.getContextIds();
 		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			await hostingComponent.buildPublicUrl(httpRequestContext.serverRequest.url),
+			HttpUrlHelper.replaceOrigin(
+				httpRequestContext.serverRequest.url,
+				contextIds?.[HttpContextIdKeys.PublicOrigin]
+			),
 			{ cursor: result.cursor },
 			"next"
 		);
