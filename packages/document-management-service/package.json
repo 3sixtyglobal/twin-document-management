@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/document-management-service",
-	"version": "0.0.3-next.17",
+	"version": "0.0.3-next.18",
 	"description": "Service-side document lifecycle operations and REST route generation for server integrations.",
 	"repository": {
 		"type": "git",
@@ -34,7 +34,7 @@
 		"@twin.org/auditable-item-graph-models": "next",
 		"@twin.org/blob-storage-models": "next",
 		"@twin.org/data-processing-models": "next",
-		"@twin.org/document-management-models": "0.0.3-next.17",
+		"@twin.org/document-management-models": "0.0.3-next.18",
 		"@twin.org/context": "next",
 		"@twin.org/core": "next",
 		"@twin.org/crypto": "next",
