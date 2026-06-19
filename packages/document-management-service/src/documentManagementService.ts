@@ -91,6 +91,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	private readonly _telemetryComponent?: ITelemetryComponent;
 
 	/**
+	 * The timeout in milliseconds for acquiring a mutex lock.
+	 * @internal
+	 */
+	private readonly _mutexTimeoutMs?: number;
+
+	/**
 	 * Create a new instance of DocumentManagementService.
 	 * @param options The options for the service.
 	 */
@@ -110,6 +116,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		this._telemetryComponent = ComponentFactory.getIfExists<ITelemetryComponent>(
 			options?.telemetryComponentType
 		);
+		this._mutexTimeoutMs = Coerce.integer(options?.config?.mutexTimeoutMs);
 
 		SchemaOrgDataTypes.registerRedirects();
 	}
@@ -329,7 +336,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			auditableItemGraphDocumentId
 		);
 
-		await Mutex.lock(auditableItemGraphDocumentId, { throwOnTimeout: true });
+		await Mutex.lock(auditableItemGraphDocumentId, {
+			throwOnTimeout: true,
+			timeoutMs: this._mutexTimeoutMs
+		});
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId,
@@ -671,7 +681,10 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		);
 		Guards.integer(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
 
-		await Mutex.lock(auditableItemGraphDocumentId, { throwOnTimeout: true });
+		await Mutex.lock(auditableItemGraphDocumentId, {
+			throwOnTimeout: true,
+			timeoutMs: this._mutexTimeoutMs
+		});
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId
