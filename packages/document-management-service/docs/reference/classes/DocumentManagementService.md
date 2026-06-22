@@ -74,7 +74,7 @@ A promise that resolves when metrics have been registered.
 
 ### create() {#create}
 
-> **create**(`documentId`, `documentIdFormat`, `documentCode`, `blob`, `annotationObject?`, `auditableItemGraphEdges?`, `options?`): `Promise`\<`string`\>
+> **create**(`document`, `blob`, `auditableItemGraphEdges?`, `options?`): `Promise`\<`string`\>
 
 Store a document as an auditable item graph vertex and add its content to blob storage.
 If the document id already exists and the blob data is different a new revision will be created.
@@ -82,35 +82,17 @@ For any other changes the current revision will be updated.
 
 #### Parameters
 
-##### documentId
+##### document
 
-`string`
+`IDocumentBase`
 
-The document id to create.
-
-##### documentIdFormat
-
-`string` \| `undefined`
-
-The format of the document identifier.
-
-##### documentCode
-
-`UneceDocumentCodeList`
-
-The code for the document type.
+The document base properties.
 
 ##### blob
 
-`Uint8Array`
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-The data to create the document with.
-
-##### annotationObject?
-
-`IJsonLdNodeObject`
-
-Additional information to associate with the document.
+The data to create the document with as bytes, or an existing blob storage entry id.
 
 ##### auditableItemGraphEdges?
 
@@ -122,13 +104,13 @@ The auditable item graph vertices to connect the document to.
 
 Additional options for the set operation.
 
-###### createAttestation?
+###### includeAttestation?
 
 `boolean`
 
-Flag to create an attestation for the document, defaults to false.
+Flag to include an attestation for the document, defaults to false.
 
-###### addAlias?
+###### includeAlias?
 
 `boolean`
 
@@ -154,7 +136,7 @@ The auditable item graph vertex created for the document including its revision.
 
 ### updatePartial() {#updatepartial}
 
-> **updatePartial**(`auditableItemGraphDocumentId`, `blob?`, `annotationObject?`, `auditableItemGraphEdges?`): `Promise`\<`void`\>
+> **updatePartial**(`auditableItemGraphDocumentId`, `document?`, `blob?`, `auditableItemGraphEdges?`, `options?`): `Promise`\<`void`\>
 
 Update a document as an auditable item graph vertex and add its content to blob storage.
 If the blob data is different a new revision will be created.
@@ -168,17 +150,17 @@ For any other changes the current revision will be updated.
 
 The auditable item graph vertex id which contains the document.
 
+##### document?
+
+`Partial`\<`Pick`\<`IDocumentBase`, `"annotationObject"` \| `"documentIdFormat"` \| `"documentCode"`\>\>
+
+The document base properties to update. Only annotationObject is applied; other fields are ignored.
+
 ##### blob?
 
-`Uint8Array`\<`ArrayBufferLike`\>
+`string` \| `Uint8Array`\<`ArrayBufferLike`\>
 
-The data to update the document with.
-
-##### annotationObject?
-
-`IJsonLdNodeObject`
-
-Additional information to associate with the document.
+The data to update the document with as bytes, or an existing blob storage entry id.
 
 ##### auditableItemGraphEdges?
 
@@ -199,6 +181,28 @@ Connections to add; each creates a back-edge on the connected vertex.
 `string`[]
 
 Target vertex IDs to disconnect; their back-edges are removed.
+
+##### options?
+
+Additional options for the update operation.
+
+###### includeAttestation?
+
+`boolean`
+
+Set to true to include an attestation for the document, or false to remove the existing attestation. Omit (undefined) to leave attestation state unchanged.
+
+###### includeAlias?
+
+`boolean`
+
+Set to true to add the document id as an alias on the aig vertex, or false to remove it. Omit to leave alias state unchanged.
+
+###### aliasAnnotationObject?
+
+`IJsonLdNodeObject`
+
+Annotation object for the alias when adding.
 
 #### Returns
 
@@ -298,7 +302,7 @@ The documents and revisions if requested, ordered by revision descending, cursor
 
 ### getRevision() {#getrevision}
 
-> **getRevision**(`auditableItemGraphDocumentId`, `revision`, `options?`): `Promise`\<`IDocument`\>
+> **getRevision**(`auditableItemGraphDocumentId`, `revision`, `options?`): `Promise`\<`IDocumentHydrated`\>
 
 Get a document revision using it's auditable item graph vertex id.
 
@@ -352,7 +356,7 @@ By default extraction will auto detect the mime type of the document, this can b
 
 #### Returns
 
-`Promise`\<`IDocument`\>
+`Promise`\<`IDocumentHydrated`\>
 
 The document for the specified revision.
 

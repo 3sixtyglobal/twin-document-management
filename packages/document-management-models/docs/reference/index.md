@@ -8,6 +8,8 @@
 
 - [IDocument](interfaces/IDocument.md)
 - [IDocumentAttestation](interfaces/IDocumentAttestation.md)
+- [IDocumentBase](interfaces/IDocumentBase.md)
+- [IDocumentHydrated](interfaces/IDocumentHydrated.md)
 - [IDocumentList](interfaces/IDocumentList.md)
 - [IDocumentManagementComponent](interfaces/IDocumentManagementComponent.md)
 - [IDocumentManagementEdgeEntry](interfaces/IDocumentManagementEdgeEntry.md)

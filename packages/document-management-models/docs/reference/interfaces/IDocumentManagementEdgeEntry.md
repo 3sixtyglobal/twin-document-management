@@ -12,9 +12,9 @@ The target AIG vertex id to connect to.
 
 ***
 
-### addAlias? {#addalias}
+### includeAlias? {#includealias}
 
-> `optional` **addAlias?**: `boolean`
+> `optional` **includeAlias?**: `boolean`
 
 Whether to add the document id as an alias on the connected vertex, defaults to false.
 
@@ -24,4 +24,4 @@ Whether to add the document id as an alias on the connected vertex, defaults to 
 
 > `optional` **aliasAnnotationObject?**: `IJsonLdNodeObject`
 
-Annotation object for the alias, if addAlias is true.
+Annotation object for the alias, if includeAlias is true.

@@ -1,14 +1,10 @@
-# Interface: IDocument
+# Interface: IDocumentHydrated
 
-Interface describing a document.
+Interface describing a hydrated document which includes additional information that can be optionally requested when retrieving a document.
 
 ## Extends
 
-- [`IDocumentBase`](IDocumentBase.md)
-
-## Extended by
-
-- [`IDocumentHydrated`](IDocumentHydrated.md)
+- [`IDocument`](IDocument.md)
 
 ## Properties
 
@@ -18,6 +14,10 @@ Interface describing a document.
 
 JSON-LD Context.
 
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`@context`](IDocument.md#context)
+
 ***
 
 ### type {#type}
@@ -25,6 +25,10 @@ JSON-LD Context.
 > **type**: `"Document"`
 
 JSON-LD Type.
+
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`type`](IDocument.md#type)
 
 ***
 
@@ -34,6 +38,10 @@ JSON-LD Type.
 
 The full id of the document.
 
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`id`](IDocument.md#id)
+
 ***
 
 ### documentRevision {#documentrevision}
@@ -41,6 +49,10 @@ The full id of the document.
 > **documentRevision**: `number`
 
 The revision of the document as a 0 based index.
+
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`documentRevision`](IDocument.md#documentrevision)
 
 ***
 
@@ -50,6 +62,10 @@ The revision of the document as a 0 based index.
 
 The blob storage id for the document.
 
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`blobStorageId`](IDocument.md#blobstorageid)
+
 ***
 
 ### integrity {#integrity}
@@ -57,6 +73,10 @@ The blob storage id for the document.
 > **integrity**: `string`
 
 The integrity of the blob data.
+
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`integrity`](IDocument.md#integrity)
 
 ***
 
@@ -66,6 +86,10 @@ The integrity of the blob data.
 
 The attestation for the document if one was created.
 
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`attestationId`](IDocument.md#attestationid)
+
 ***
 
 ### dateCreated {#datecreated}
@@ -73,6 +97,10 @@ The attestation for the document if one was created.
 > **dateCreated**: `string`
 
 The date/time of when the document was created.
+
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`dateCreated`](IDocument.md#datecreated)
 
 ***
 
@@ -82,6 +110,10 @@ The date/time of when the document was created.
 
 The date/time of when the document was modified.
 
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`dateModified`](IDocument.md#datemodified)
+
 ***
 
 ### dateDeleted? {#datedeleted}
@@ -89,6 +121,10 @@ The date/time of when the document was modified.
 > `optional` **dateDeleted?**: `string`
 
 The date/time of when the document was deleted, as we never actually remove items.
+
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`dateDeleted`](IDocument.md#datedeleted)
 
 ***
 
@@ -98,6 +134,10 @@ The date/time of when the document was deleted, as we never actually remove item
 
 The organization which added the document to the graph.
 
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`organizationIdentity`](IDocument.md#organizationidentity)
+
 ***
 
 ### userIdentity? {#useridentity}
@@ -105,6 +145,10 @@ The organization which added the document to the graph.
 > `optional` **userIdentity?**: `string`
 
 The user who added the document to the graph.
+
+#### Inherited from
+
+[`IDocument`](IDocument.md).[`userIdentity`](IDocument.md#useridentity)
 
 ***
 
@@ -116,7 +160,7 @@ The id of the document.
 
 #### Inherited from
 
-[`IDocumentBase`](IDocumentBase.md).[`documentId`](IDocumentBase.md#documentid)
+[`IDocument`](IDocument.md).[`documentId`](IDocument.md#documentid)
 
 ***
 
@@ -128,7 +172,7 @@ The format of the document id.
 
 #### Inherited from
 
-[`IDocumentBase`](IDocumentBase.md).[`documentIdFormat`](IDocumentBase.md#documentidformat)
+[`IDocument`](IDocument.md).[`documentIdFormat`](IDocument.md#documentidformat)
 
 ***
 
@@ -140,7 +184,7 @@ The code for the document type.
 
 #### Inherited from
 
-[`IDocumentBase`](IDocumentBase.md).[`documentCode`](IDocumentBase.md#documentcode)
+[`IDocument`](IDocument.md).[`documentCode`](IDocument.md#documentcode)
 
 ***
 
@@ -152,4 +196,28 @@ Additional annotation information for the document.
 
 #### Inherited from
 
-[`IDocumentBase`](IDocumentBase.md).[`annotationObject`](IDocumentBase.md#annotationobject)
+[`IDocument`](IDocument.md).[`annotationObject`](IDocument.md#annotationobject)
+
+***
+
+### blobStorageEntry? {#blobstorageentry}
+
+> `optional` **blobStorageEntry?**: `IBlobStorageEntry`
+
+The additional JSON-LD for blob storage if it was requested.
+
+***
+
+### extractedData? {#extracteddata}
+
+> `optional` **extractedData?**: `unknown`
+
+The data extracted from the document using data extraction services.
+
+***
+
+### attestationInformation? {#attestationinformation}
+
+> `optional` **attestationInformation?**: `IAttestationInformation`
+
+The additional JSON-LD for attestation storage if it was requested.

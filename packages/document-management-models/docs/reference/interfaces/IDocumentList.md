@@ -22,7 +22,7 @@ JSON-LD Type.
 
 ### itemListElement {#itemlistelement}
 
-> **itemListElement**: [`IDocument`](IDocument.md)[]
+> **itemListElement**: [`IDocumentHydrated`](IDocumentHydrated.md)[]
 
 The list of documents.
 

@@ -24,17 +24,17 @@ The full id of the document to update.
 
 The body parameters.
 
+#### document?
+
+> `optional` **document?**: `Partial`\<`Pick`\<[`IDocumentBase`](IDocumentBase.md), `"annotationObject"` \| `"documentIdFormat"` \| `"documentCode"`\>\>
+
+The document base properties to update. annotationObject, documentIdFormat and documentCode are applied in-place to the current revision.
+
 #### blob?
 
 > `optional` **blob?**: `string`
 
-The data to update the document with, in base64.
-
-#### annotationObject?
-
-> `optional` **annotationObject?**: `IJsonLdNodeObject`
-
-Additional information to associate with the document.
+The data to update the document with, either as base64-encoded content or an existing blob storage entry id.
 
 #### auditableItemGraphEdges?
 
@@ -54,3 +54,27 @@ Connections to add; each entry creates a back-edge on the connected vertex.
 > `optional` **remove?**: `string`[]
 
 Target vertex IDs to disconnect; their back-edges are removed.
+
+#### options?
+
+> `optional` **options?**: `object`
+
+Additional options for the update operation.
+
+##### options.includeAttestation?
+
+> `optional` **includeAttestation?**: `boolean`
+
+Set to true to start attesting the document (even if originally created without attestation), or false to remove the existing attestation. Omit to leave attestation state unchanged.
+
+##### options.includeAlias?
+
+> `optional` **includeAlias?**: `boolean`
+
+Set to true to add the document id as an alias on the aig vertex, or false to remove it. Omit to leave alias state unchanged.
+
+##### options.aliasAnnotationObject?
+
+> `optional` **aliasAnnotationObject?**: `IJsonLdNodeObject`
+
+Annotation object for the alias when adding.
