@@ -279,14 +279,14 @@ describe("document-management-service", async () => {
 	test("can create a simple document as an AIG vertex", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Hello World"),
 			undefined,
-			undefined,
 			{
-				addAlias: false
+				includeAlias: false
 			}
 		);
 		expect(documentId).toEqual("aig:01917849fb0071018101010101010101");
@@ -355,15 +355,21 @@ describe("document-management-service", async () => {
 
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			"foo",
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentIdFormat: "foo",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading"
+				}
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			[
 				{
 					targetId: aigId1,
-					addAlias: true,
+					includeAlias: true,
 					aliasAnnotationObject: {
 						"@context": "https://schema.org",
 						type: "Thing",
@@ -375,7 +381,7 @@ describe("document-management-service", async () => {
 				}
 			],
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 		expect(documentId).toEqual("aig:01917849fb007a0a8a0a0a0a0a0a0a0a");
@@ -520,15 +526,20 @@ describe("document-management-service", async () => {
 	test("can update a documents annotation object without creating a new revision", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading"
+				}
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: true,
-				addAlias: true,
+				includeAttestation: true,
+				includeAlias: true,
 				aliasAnnotationObject: {
 					"@context": ["https://schema.org"],
 					type: "DigitalDocument",
@@ -541,10 +552,12 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement.length).toEqual(1);
 		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
 
-		await service.updatePartial(documentId, undefined, {
-			"@context": "https://schema.org",
-			type: "DigitalDocument",
-			name: "bill-of-lading-2"
+		await service.updatePartial(documentId, {
+			annotationObject: {
+				"@context": "https://schema.org",
+				type: "DigitalDocument",
+				name: "bill-of-lading-2"
+			}
 		});
 
 		const docs2 = await service.get(documentId, undefined, undefined, 100);
@@ -611,14 +624,19 @@ describe("document-management-service", async () => {
 	test("can update a documents blob data and create a new revision", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading"
+				}
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 
@@ -626,11 +644,17 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement.length).toEqual(1);
 		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("bill-of-lading");
 
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Hello World2"), {
-			"@context": "https://schema.org",
-			type: "DigitalDocument",
-			name: "bill-of-lading-2"
-		});
+		await service.updatePartial(
+			documentId,
+			{
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading-2"
+				}
+			},
+			Converter.utf8ToBytes("Hello World2")
+		);
 
 		const docs2 = await service.get(documentId, undefined, undefined, 100);
 		expect(docs2.entries.itemListElement.length).toEqual(2);
@@ -651,15 +675,21 @@ describe("document-management-service", async () => {
 
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			"foo",
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentIdFormat: "foo",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading"
+				}
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			[
 				{
 					targetId: aigId1,
-					addAlias: true,
+					includeAlias: true,
 					aliasAnnotationObject: {
 						"@context": "https://schema.org",
 						type: "Thing",
@@ -668,7 +698,7 @@ describe("document-management-service", async () => {
 				},
 				{
 					targetId: aigId2,
-					addAlias: true,
+					includeAlias: true,
 					aliasAnnotationObject: {
 						"@context": "https://schema.org",
 						type: "Thing",
@@ -677,7 +707,7 @@ describe("document-management-service", async () => {
 				}
 			],
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 
@@ -812,7 +842,7 @@ describe("document-management-service", async () => {
 		const removedEdge = allEdges.splice(1, 1)[0];
 
 		await service.updatePartial(documentId, undefined, undefined, {
-			add: [{ targetId: aigId3, addAlias: true }],
+			add: [{ targetId: aigId3, includeAlias: true }],
 			remove: [removedEdge]
 		});
 		const aigStore2 = await vertexEntityStorage.getStore();
@@ -971,14 +1001,19 @@ describe("document-management-service", async () => {
 	test("can get a document from an AIG", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading"
+				}
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
@@ -1019,14 +1054,19 @@ describe("document-management-service", async () => {
 	test("can get a document from an AIG with blob metadata", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "bill-of-lading"
+				}
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
@@ -1078,14 +1118,15 @@ describe("document-management-service", async () => {
 	test("can get a document from an AIG with blob metadata and content", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
@@ -1140,14 +1181,15 @@ describe("document-management-service", async () => {
 	test("can get a document from an AIG with blob metadata, content and attestation", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: true
+				includeAttestation: true
 			}
 		);
 		expect(documentId).toEqual("aig:01917849fb0072028202020202020202");
@@ -1224,22 +1266,24 @@ describe("document-management-service", async () => {
 	test("can get the most recent document from an AIG with multiple revisions", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				type: "DigitalDocument",
-				name: "bill-of-lading"
-			});
+			await service.updatePartial(
+				documentId,
+				{ annotationObject: { type: "DigitalDocument", name: "bill-of-lading" } },
+				Converter.utf8ToBytes(`Hello World${i}`)
+			);
 		}
 
 		const docs = await service.get(documentId);
@@ -1251,22 +1295,24 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				type: "DigitalDocument",
-				name: "bill-of-lading"
-			});
+			await service.updatePartial(
+				documentId,
+				{ annotationObject: { type: "DigitalDocument", name: "bill-of-lading" } },
+				Converter.utf8ToBytes(`Hello World${i}`)
+			);
 		}
 
 		const docs = await service.get(documentId, undefined, undefined, 100);
@@ -1283,22 +1329,24 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
 		for (let i = 0; i < 30; i++) {
-			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				type: "DigitalDocument",
-				name: "bill-of-lading"
-			});
+			await service.updatePartial(
+				documentId,
+				{ annotationObject: { type: "DigitalDocument", name: "bill-of-lading" } },
+				Converter.utf8ToBytes(`Hello World${i}`)
+			);
 		}
 
 		let docs = await service.get(documentId, undefined, undefined, 10);
@@ -1329,22 +1377,24 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				type: "DigitalDocument",
-				name: "bill-of-lading"
-			});
+			await service.updatePartial(
+				documentId,
+				{ annotationObject: { type: "DigitalDocument", name: "bill-of-lading" } },
+				Converter.utf8ToBytes(`Hello World${i}`)
+			);
 		}
 
 		const revision = await service.getRevision(documentId, 2);
@@ -1355,22 +1405,24 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
 		for (let i = 0; i < 5; i++) {
-			await service.updatePartial(documentId, Converter.utf8ToBytes(`Hello World${i}`), {
-				type: "DigitalDocument",
-				name: "bill-of-lading"
-			});
+			await service.updatePartial(
+				documentId,
+				{ annotationObject: { type: "DigitalDocument", name: "bill-of-lading" } },
+				Converter.utf8ToBytes(`Hello World${i}`)
+			);
 		}
 
 		await service.removeRevision(documentId, 2);
@@ -1393,18 +1445,19 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const documentId = await service.create(
-			"test-doc-id:aaa",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-doc-id:aaa",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes("Hello World"),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Hello World2"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Hello World2"));
 
 		const docs = await service.get(documentId, undefined, undefined, 20);
 		expect(docs.entries.itemListElement.length).toEqual(2);
@@ -1417,7 +1470,7 @@ describe("document-management-service", async () => {
 		expect(docs2.entries.itemListElement.length).toEqual(1);
 		expect(docs2.entries.itemListElement[0].documentRevision).toEqual(0);
 
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Hello World3"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Hello World3"));
 
 		const docs3 = await service.get(documentId, undefined, undefined, 20);
 
@@ -1444,14 +1497,15 @@ describe("document-management-service", async () => {
 
 		for (let i = 0; i < 5; i++) {
 			await service.create(
-				`test-id-${i}`,
-				undefined,
-				UneceDocumentCodeList.BillOfLading,
+				{
+					documentId: `test-id-${i}`,
+					documentCode: UneceDocumentCodeList.BillOfLading,
+					annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+				},
 				Converter.utf8ToBytes(`Hello World${i}`),
-				{ type: "DigitalDocument", name: "bill-of-lading" },
 				undefined,
 				{
-					createAttestation: false
+					includeAttestation: false
 				}
 			);
 		}
@@ -1465,14 +1519,15 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const docId = await service.create(
-			"test-id",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-id",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
@@ -1501,14 +1556,15 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const docId = await service.create(
-			"test-id",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-id",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
@@ -1541,14 +1597,15 @@ describe("document-management-service", async () => {
 		const service = new DocumentManagementService();
 
 		const docId = await service.create(
-			"test-id",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "test-id",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
 			Converter.utf8ToBytes(JSON.stringify({ address: { line1: "bar" } })),
-			{ type: "DigitalDocument", name: "bill-of-lading" },
 			undefined,
 			{
-				createAttestation: false
+				includeAttestation: false
 			}
 		);
 
@@ -1581,11 +1638,13 @@ describe("document-management-service", async () => {
 	test("can create a document with custom document ID format", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"DOC-2024-12345",
-			"custom-doc-format",
-			UneceDocumentCodeList.BillOfLading,
-			Converter.utf8ToBytes("Invoice data"),
-			{ type: "Invoice", name: "test-invoice" }
+			{
+				documentId: "DOC-2024-12345",
+				documentIdFormat: "custom-doc-format",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "Invoice", name: "test-invoice" }
+			},
+			Converter.utf8ToBytes("Invoice data")
 		);
 		expect(documentId).toBeDefined();
 		expect(documentId).toMatch(/^aig:/);
@@ -1598,17 +1657,18 @@ describe("document-management-service", async () => {
 	test("can update a document that creates multiple revisions", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"multi-rev-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "multi-rev-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Version 1")
 		);
 
 		// Update with new blob data - creates revision 1
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 2"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 2"));
 
 		// Update with new blob data - creates revision 2
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 3"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 3"));
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
 		expect(docs.entries.itemListElement).toHaveLength(3);
@@ -1620,17 +1680,17 @@ describe("document-management-service", async () => {
 	test("can get a document with removed flag when includeRemoved is true", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"remove-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "remove-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Original"),
 			undefined,
-			undefined,
-			{ createAttestation: false }
+			{ includeAttestation: false }
 		);
 
 		// Create a second revision
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Updated"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Updated"));
 
 		// Remove the first revision
 		await service.removeRevision(documentId, 0);
@@ -1652,17 +1712,19 @@ describe("document-management-service", async () => {
 
 		// Create first document with shared ID
 		const doc1Id = await service.create(
-			"shared-doc-id",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "shared-doc-id",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Document 1")
 		);
 
 		// Create second document with same ID
 		const doc2Id = await service.create(
-			"shared-doc-id",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "shared-doc-id",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Document 2")
 		);
 
@@ -1695,11 +1757,12 @@ describe("document-management-service", async () => {
 		};
 
 		const documentId = await service.create(
-			"large-annotation-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
-			Converter.utf8ToBytes("Test data"),
-			largeAnnotation
+			{
+				documentId: "large-annotation-test",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: largeAnnotation
+			},
+			Converter.utf8ToBytes("Test data")
 		);
 
 		const docs = await service.get(documentId);
@@ -1709,9 +1772,10 @@ describe("document-management-service", async () => {
 	test("verifies blob storage entry context is removed after retrieval", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"context-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "context-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Test")
 		);
 
@@ -1728,13 +1792,13 @@ describe("document-management-service", async () => {
 	test("verifies attestation information context is removed after retrieval", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"attestation-context-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "attestation-context-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Test"),
 			undefined,
-			undefined,
-			{ createAttestation: true }
+			{ includeAttestation: true }
 		);
 
 		const docs = await service.get(documentId, { includeAttestation: true });
@@ -1749,26 +1813,28 @@ describe("document-management-service", async () => {
 
 		// Create target vertices
 		const targetId1 = await service.create(
-			"target-doc-1",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "target-doc-1",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Target 1")
 		);
 
 		const targetId2 = await service.create(
-			"target-doc-2",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "target-doc-2",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Target 2")
 		);
 
 		// Create document with edges
 		const documentId = await service.create(
-			"source-doc",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "source-doc",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Source"),
-			undefined,
 			[{ targetId: targetId1 }, { targetId: targetId2 }]
 		);
 
@@ -1789,21 +1855,22 @@ describe("document-management-service", async () => {
 	test("maintains revision counter after removing middle revision", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"revision-counter-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "revision-counter-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Rev 0")
 		);
 
 		// Create revisions 1 and 2
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Rev 1"));
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Rev 2"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Rev 1"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Rev 2"));
 
 		// Remove middle revision
 		await service.removeRevision(documentId, 1);
 
 		// Create new revision - should be revision 3, not 2
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Rev 3"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Rev 3"));
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
 		const revisions = docs.entries.itemListElement.map(doc => doc.documentRevision).sort();
@@ -1817,9 +1884,10 @@ describe("document-management-service", async () => {
 		const documentIds = [];
 		for (const docId of docIds) {
 			const id = await service.create(
-				docId,
-				undefined,
-				UneceDocumentCodeList.BillOfLading,
+				{
+					documentId: docId,
+					documentCode: UneceDocumentCodeList.BillOfLading
+				},
 				Converter.utf8ToBytes(`Document with ID ${docId}`)
 			);
 			documentIds.push(id);
@@ -1833,10 +1901,6 @@ describe("document-management-service", async () => {
 		}
 	});
 
-	// ------------------------------------------------------------------ //
-	// Fix 1 – create() cleans up blob + vertex resource on edge failure  //
-	// ------------------------------------------------------------------ //
-
 	describe("create() cleans up on edge write failure", () => {
 		beforeEach(() => {
 			SharedStore.set("mutexLocks", {});
@@ -1847,11 +1911,11 @@ describe("document-management-service", async () => {
 
 			await expect(
 				service.create(
-					"cleanup-blob-test",
-					undefined,
-					UneceDocumentCodeList.BillOfLading,
+					{
+						documentId: "cleanup-blob-test",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
 					Converter.utf8ToBytes("Cleanup blob test"),
-					undefined,
 					[{ targetId: "aig:does-not-exist-blob-cleanup" }]
 				)
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
@@ -1865,11 +1929,11 @@ describe("document-management-service", async () => {
 
 			await expect(
 				service.create(
-					"cleanup-resource-test",
-					undefined,
-					UneceDocumentCodeList.BillOfLading,
+					{
+						documentId: "cleanup-resource-test",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
 					Converter.utf8ToBytes("Cleanup resource test"),
-					undefined,
 					[{ targetId: "aig:does-not-exist-resource-cleanup" }]
 				)
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
@@ -1882,30 +1946,29 @@ describe("document-management-service", async () => {
 		});
 	});
 
-	// ------------------------------------------------------------------ //
-	// Fix 2 – restore soft-deleted revision when blob integrity matches   //
-	// ------------------------------------------------------------------ //
-
 	test("updating with the same blob as a soft-deleted revision restores it instead of creating a new one", async () => {
 		const service = new DocumentManagementService();
 		const blobV1 = Converter.utf8ToBytes("Restore content");
 
 		const documentId = await service.create(
-			"restore-rev-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "restore-rev-test",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { "@context": "https://schema.org", type: "DigitalDocument", name: "v1" }
+			},
 			blobV1,
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "v1" },
 			undefined,
-			{ createAttestation: false }
+			{ includeAttestation: false }
 		);
 
 		// Create a second revision.
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Different content"), {
-			"@context": "https://schema.org",
-			type: "DigitalDocument",
-			name: "v2"
-		});
+		await service.updatePartial(
+			documentId,
+			{
+				annotationObject: { "@context": "https://schema.org", type: "DigitalDocument", name: "v2" }
+			},
+			Converter.utf8ToBytes("Different content")
+		);
 
 		// Soft-delete revision 1.
 		await service.removeRevision(documentId, 1);
@@ -1915,11 +1978,17 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
 
 		// Push blob matching the deleted revision 1 → should restore it, not create revision 2.
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Different content"), {
-			"@context": "https://schema.org",
-			type: "DigitalDocument",
-			name: "restored"
-		});
+		await service.updatePartial(
+			documentId,
+			{
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "restored"
+				}
+			},
+			Converter.utf8ToBytes("Different content")
+		);
 
 		docs = await service.get(documentId, undefined, undefined, 100);
 		expect(docs.entries.itemListElement).toHaveLength(2);
@@ -1928,10 +1997,6 @@ describe("document-management-service", async () => {
 		expect(docs.entries.itemListElement[0].dateDeleted).toBeUndefined();
 		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("restored");
 	});
-
-	// ------------------------------------------------------------------ //
-	// Fix 3 – update path back-edge writes are best-effort               //
-	// ------------------------------------------------------------------ //
 
 	describe("update path back-edge writes are best-effort", () => {
 		beforeEach(() => {
@@ -1947,9 +2012,10 @@ describe("document-management-service", async () => {
 			});
 
 			const documentId = await service.create(
-				"best-effort-edge-test",
-				undefined,
-				UneceDocumentCodeList.BillOfLading,
+				{
+					documentId: "best-effort-edge-test",
+					documentCode: UneceDocumentCodeList.BillOfLading
+				},
 				Converter.utf8ToBytes("Best-effort edge test")
 			);
 
@@ -1967,24 +2033,25 @@ describe("document-management-service", async () => {
 		});
 	});
 
-	// ------------------------------------------------------------------ //
-	// Fix 4 – blob update without annotationObject preserves annotation  //
-	// ------------------------------------------------------------------ //
-
 	test("updating blob without annotationObject preserves the existing annotation on the new revision", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"annotation-preserve-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "annotation-preserve-test",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: {
+					"@context": "https://schema.org",
+					type: "DigitalDocument",
+					name: "keep-this"
+				}
+			},
 			Converter.utf8ToBytes("Version 1"),
-			{ "@context": "https://schema.org", type: "DigitalDocument", name: "keep-this" },
 			undefined,
-			{ createAttestation: false }
+			{ includeAttestation: false }
 		);
 
 		// Update blob only — annotationObject is undefined (no change intended).
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 2"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 2"));
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
 		expect(docs.entries.itemListElement).toHaveLength(2);
@@ -1992,10 +2059,6 @@ describe("document-management-service", async () => {
 		// The annotation from revision 0 must be carried forward to revision 1.
 		expect(docs.entries.itemListElement[0].annotationObject?.name).toEqual("keep-this");
 	});
-
-	// ------------------------------------------------------------------ //
-	// Fix 7 – includeDeletedEdges option                                  //
-	// ------------------------------------------------------------------ //
 
 	test("get excludes soft-deleted edges by default and returns them with includeDeletedEdges", async () => {
 		const service = new DocumentManagementService();
@@ -2006,11 +2069,11 @@ describe("document-management-service", async () => {
 		});
 
 		const documentId = await service.create(
-			"include-deleted-edges-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "include-deleted-edges-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Include deleted edges test"),
-			undefined,
 			[{ targetId }]
 		);
 
@@ -2030,11 +2093,7 @@ describe("document-management-service", async () => {
 		expect(docs.entries.edges).toHaveLength(1);
 	});
 
-	// ------------------------------------------------------------------ //
-	// Fix 8 – alias removal is conditional on alias existence             //
-	// ------------------------------------------------------------------ //
-
-	test("removing an edge to a vertex that was connected without addAlias succeeds without error", async () => {
+	test("removing an edge to a vertex that was connected without includeAlias succeeds without error", async () => {
 		const service = new DocumentManagementService();
 
 		// Create a target vertex — it will NOT receive an alias when connected.
@@ -2044,12 +2103,12 @@ describe("document-management-service", async () => {
 		});
 
 		const documentId = await service.create(
-			"no-alias-remove-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "no-alias-remove-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("No alias remove test"),
-			undefined,
-			[{ targetId }] // addAlias is not set — no alias on targetId
+			[{ targetId }] // includeAlias is not set — no alias on targetId
 		);
 
 		// Removing the edge must not throw even though there is no alias to remove.
@@ -2061,33 +2120,24 @@ describe("document-management-service", async () => {
 		expect(docs.entries.edges).toBeUndefined();
 	});
 
-	// ------------------------------------------------------------------ //
-	// Fix 9 – Guards.integer for revision parameters                      //
-	// ------------------------------------------------------------------ //
-
 	test("removeRevision throws a GuardError when revision is not an integer", async () => {
 		const service = new DocumentManagementService();
 		const documentId = await service.create(
-			"integer-guard-test",
-			undefined,
-			UneceDocumentCodeList.BillOfLading,
+			{
+				documentId: "integer-guard-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
 			Converter.utf8ToBytes("Integer guard test"),
 			undefined,
-			undefined,
-			{ createAttestation: false }
+			{ includeAttestation: false }
 		);
 
-		await service.updatePartial(documentId, Converter.utf8ToBytes("Version 2"));
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 2"));
 
 		await expect(service.removeRevision(documentId, 1.5)).rejects.toSatisfy(
 			(e: Error) => e.name === "GuardError"
 		);
 	});
-
-	// ------------------------------------------------------------------ //
-	// N parallel create() calls sharing the same connected vertex must   //
-	// all succeed and persist their back-edges without lost-updates.     //
-	// ------------------------------------------------------------------ //
 
 	describe("edge re-linking after soft-delete", () => {
 		beforeEach(() => {
@@ -2104,11 +2154,11 @@ describe("document-management-service", async () => {
 
 			// Step 1: create document linked to consignment
 			const documentVertexId = await service.create(
-				"relink-test-doc",
-				undefined,
-				UneceDocumentCodeList.BillOfLading,
+				{
+					documentId: "relink-test-doc",
+					documentCode: UneceDocumentCodeList.BillOfLading
+				},
 				Converter.utf8ToBytes("Relink test"),
-				undefined,
 				[{ targetId: consignmentVertexId }]
 			);
 
@@ -2154,11 +2204,11 @@ describe("document-management-service", async () => {
 
 			// Step 1: create document linked to both vertices
 			const documentVertexId = await service.create(
-				"no-dup-test-doc",
-				undefined,
-				UneceDocumentCodeList.BillOfLading,
+				{
+					documentId: "no-dup-test-doc",
+					documentCode: UneceDocumentCodeList.BillOfLading
+				},
 				Converter.utf8ToBytes("No-dup test"),
-				undefined,
 				[{ targetId: consignmentVertexId }, { targetId: warehouseVertexId }]
 			);
 
@@ -2194,11 +2244,11 @@ describe("document-management-service", async () => {
 
 			await expect(
 				service.create(
-					"rollback-test-doc",
-					undefined,
-					UneceDocumentCodeList.BillOfLading,
+					{
+						documentId: "rollback-test-doc",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
 					Converter.utf8ToBytes("Rollback test"),
-					undefined,
 					[{ targetId: nonExistentVertexId }]
 				)
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
@@ -2215,11 +2265,11 @@ describe("document-management-service", async () => {
 
 			await expect(
 				service.create(
-					"rollback-test-multi",
-					undefined,
-					UneceDocumentCodeList.BillOfLading,
+					{
+						documentId: "rollback-test-multi",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
 					Converter.utf8ToBytes("Multi rollback"),
-					undefined,
 					[{ targetId: goodVertexId }, { targetId: badVertexId }]
 				)
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
@@ -2229,6 +2279,60 @@ describe("document-management-service", async () => {
 			const activeEdges = (goodVertex.edges ?? []).filter(e => !e.dateDeleted);
 			expect(activeEdges).toHaveLength(0);
 		});
+	});
+
+	test("updatePartial with only includeAttestation:true adds attestation without changing any other properties", async () => {
+		const service = new DocumentManagementService();
+		const originalBlob = Converter.utf8ToBytes("Attestation upgrade test");
+		const originalAnnotation = {
+			"@context": "https://schema.org",
+			type: "DigitalDocument",
+			name: "no-attestation-doc"
+		};
+
+		const documentId = await service.create(
+			{
+				documentId: "attest-upgrade-test",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: originalAnnotation
+			},
+			originalBlob,
+			undefined,
+			{ includeAttestation: false }
+		);
+
+		// Verify no attestation on the original document.
+		const before = await service.get(documentId, undefined, undefined, 10);
+		expect(before.entries.itemListElement).toHaveLength(1);
+		const revBefore = before.entries.itemListElement[0];
+		expect(revBefore.attestationId).toBeUndefined();
+		expect(revBefore.documentRevision).toEqual(0);
+
+		// Call updatePartial with only the includeAttestation flag — no blob, no annotation, no edges.
+		await service.updatePartial(documentId, undefined, undefined, undefined, {
+			includeAttestation: true
+		});
+
+		// Fetch again and verify attestation was added.
+		const after = await service.get(documentId, undefined, undefined, 10);
+
+		// Still only one revision — no new revision was created.
+		expect(after.entries.itemListElement).toHaveLength(1);
+
+		const revAfter = after.entries.itemListElement[0];
+
+		// Attestation is now present.
+		expect(revAfter.attestationId).toBeDefined();
+		expect(revAfter.attestationId).toMatch(/^attestation:/);
+
+		// All other properties are unchanged.
+		expect(revAfter.documentRevision).toEqual(revBefore.documentRevision);
+		expect(revAfter.documentId).toEqual(revBefore.documentId);
+		expect(revAfter.documentCode).toEqual(revBefore.documentCode);
+		expect(revAfter.integrity).toEqual(revBefore.integrity);
+		expect(revAfter.blobStorageId).toEqual(revBefore.blobStorageId);
+		expect(revAfter.annotationObject).toEqual(revBefore.annotationObject);
+		expect(revAfter.dateCreated).toEqual(revBefore.dateCreated);
 	});
 
 	describe("concurrent document create — shared connected vertex", () => {
@@ -2251,11 +2355,11 @@ describe("document-management-service", async () => {
 			const results = await Promise.allSettled(
 				Array.from({ length: PARALLEL_CREATE_COUNT }, async (unused, i) =>
 					service.create(
-						`concurrent-doc-${i}`,
-						undefined,
-						UneceDocumentCodeList.BillOfLading,
+						{
+							documentId: `concurrent-doc-${i}`,
+							documentCode: UneceDocumentCodeList.BillOfLading
+						},
 						Converter.utf8ToBytes(`Document ${i}`),
-						undefined,
 						[{ targetId: consignmentVertexId }]
 					)
 				)
@@ -2276,11 +2380,11 @@ describe("document-management-service", async () => {
 			const documentVertexIds = await Promise.all(
 				Array.from({ length: PARALLEL_CREATE_COUNT }, async (unused, i) =>
 					service.create(
-						`concurrent-doc-edge-${i}`,
-						undefined,
-						UneceDocumentCodeList.BillOfLading,
+						{
+							documentId: `concurrent-doc-edge-${i}`,
+							documentCode: UneceDocumentCodeList.BillOfLading
+						},
 						Converter.utf8ToBytes(`Document ${i}`),
-						undefined,
 						[{ targetId: consignmentVertexId }]
 					)
 				)
@@ -2296,5 +2400,424 @@ describe("document-management-service", async () => {
 				expect(edgeTargetIds.has(docVertexId)).toBe(true);
 			}
 		});
+	});
+
+	test("updatePartial updates documentIdFormat in-place without creating a new revision", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "format-update-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Format update test"),
+			undefined,
+			{ includeAttestation: false, includeAlias: false }
+		);
+
+		await service.updatePartial(documentId, { documentIdFormat: "updated-format" });
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(1);
+		expect(docs.entries.itemListElement[0].documentIdFormat).toEqual("updated-format");
+	});
+
+	test("updatePartial updates documentCode in-place without creating a new revision", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "code-update-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Code update test"),
+			undefined,
+			{ includeAttestation: false, includeAlias: false }
+		);
+
+		await service.updatePartial(documentId, {
+			documentCode: UneceDocumentCodeList.CommercialInvoice
+		});
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(1);
+		expect(docs.entries.itemListElement[0].documentCode).toContain("380");
+	});
+
+	test("updatePartial with options.includeAlias true adds alias to the AIG vertex", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "alias-add-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Alias add test"),
+			undefined,
+			{ includeAttestation: false, includeAlias: false }
+		);
+
+		const storeBefore = await vertexEntityStorage.getStore();
+		const vertexBefore = storeBefore.find(v => v.resourceTypeIndex?.includes("document"));
+		expect((vertexBefore?.aliases ?? []).filter(a => !a.dateDeleted)).toHaveLength(0);
+
+		await service.updatePartial(documentId, undefined, undefined, undefined, {
+			includeAlias: true
+		});
+
+		const storeAfter = await vertexEntityStorage.getStore();
+		const vertexAfter = storeAfter.find(v => v.resourceTypeIndex?.includes("document"));
+		const activeAliases = (vertexAfter?.aliases ?? []).filter(a => !a.dateDeleted);
+		expect(activeAliases).toHaveLength(1);
+		expect(activeAliases[0].id).toEqual("alias-add-test");
+	});
+
+	test("updatePartial with options.includeAlias false removes alias from the AIG vertex", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "alias-remove-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Alias remove test"),
+			undefined,
+			{ includeAttestation: false, includeAlias: true }
+		);
+
+		const storeBefore = await vertexEntityStorage.getStore();
+		const vertexBefore = storeBefore.find(v => v.resourceTypeIndex?.includes("document"));
+		expect((vertexBefore?.aliases ?? []).filter(a => !a.dateDeleted)).toHaveLength(1);
+
+		await service.updatePartial(documentId, undefined, undefined, undefined, {
+			includeAlias: false
+		});
+
+		const storeAfter = await vertexEntityStorage.getStore();
+		const vertexAfter = storeAfter.find(v => v.resourceTypeIndex?.includes("document"));
+		expect((vertexAfter?.aliases ?? []).filter(a => !a.dateDeleted)).toHaveLength(0);
+	});
+
+	test("updatePartial with options.aliasAnnotationObject sets annotation on the added alias", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "alias-annotation-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Alias annotation test"),
+			undefined,
+			{ includeAttestation: false, includeAlias: false }
+		);
+
+		const aliasAnnotation = {
+			"@context": "https://schema.org",
+			type: "Thing",
+			name: "alias-annotation"
+		};
+
+		await service.updatePartial(documentId, undefined, undefined, undefined, {
+			includeAlias: true,
+			aliasAnnotationObject: aliasAnnotation
+		});
+
+		const storeAfter = await vertexEntityStorage.getStore();
+		const vertexAfter = storeAfter.find(v => v.resourceTypeIndex?.includes("document"));
+		const activeAliases = (vertexAfter?.aliases ?? []).filter(a => !a.dateDeleted);
+		expect(activeAliases).toHaveLength(1);
+		expect(activeAliases[0].annotationObject).toEqual(aliasAnnotation);
+	});
+
+	test("getRevision with includeBlobStorageMetadata returns blob storage entry without data", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "get-revision-blob-meta-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Revision blob metadata test"),
+			undefined,
+			{ includeAttestation: false }
+		);
+
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 2"));
+
+		const revision = await service.getRevision(documentId, 0, {
+			includeBlobStorageMetadata: true
+		});
+		expect(revision.documentRevision).toEqual(0);
+		expect(revision.blobStorageEntry).toBeDefined();
+		expect(revision.blobStorageEntry?.blob).toBeUndefined();
+	});
+
+	test("getRevision with includeBlobStorageData returns blob content", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "get-revision-blob-data-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Revision blob data test"),
+			undefined,
+			{ includeAttestation: false }
+		);
+
+		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 2"));
+
+		const revision = await service.getRevision(documentId, 0, {
+			includeBlobStorageMetadata: true,
+			includeBlobStorageData: true
+		});
+		expect(revision.documentRevision).toEqual(0);
+		expect(revision.blobStorageEntry).toBeDefined();
+		expect(revision.blobStorageEntry?.blob).toBeDefined();
+	});
+
+	test("getRevision with includeAttestation returns attestation information", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "get-revision-attest-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Revision attestation test"),
+			undefined,
+			{ includeAttestation: true }
+		);
+
+		const revision = await service.getRevision(documentId, 0, {
+			includeAttestation: true
+		});
+		expect(revision.documentRevision).toEqual(0);
+		expect(revision.attestationInformation).toBeDefined();
+	});
+
+	test("getRevision with extractRuleGroupId returns extracted data", async () => {
+		const service = new DocumentManagementService();
+		const documentId = await service.create(
+			{
+				documentId: "get-revision-extract-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes(JSON.stringify({ city: "Berlin" })),
+			undefined,
+			{ includeAttestation: false }
+		);
+
+		await extractionRuleGroupEntityStorage.set({
+			id: "rev-rules",
+			label: "Rev Rules",
+			rules: [{ source: "$.city", target: "location" }]
+		});
+
+		const revision = await service.getRevision(documentId, 0, {
+			extractRuleGroupId: "rev-rules"
+		});
+		expect(revision.documentRevision).toEqual(0);
+		expect(revision.extractedData).toEqual({ location: "Berlin" });
+	});
+
+	// ── blob: string (blobStorageId) paths ──────────────────────────────────
+
+	test("can create a document using an existing blob storage entry id", async () => {
+		const service = new DocumentManagementService();
+
+		// Upload a blob externally to obtain its storage ID.
+		const blobStorageId = await blobStorageComponent.create(
+			Converter.bytesToBase64(Converter.utf8ToBytes("Hello World"))
+		);
+
+		const documentId = await service.create(
+			{
+				documentId: "string-blob-create-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			blobStorageId,
+			undefined,
+			{ includeAlias: false }
+		);
+
+		expect(documentId).toMatch(/^aig:/);
+
+		// Only one blob entry — we referenced, not uploaded.
+		const blobStore = await blobEntryEntityStorage.getStore();
+		expect(blobStore).toHaveLength(1);
+		expect(blobStore[0].id).toEqual(blobStorageId);
+
+		// The stored document references the same blobStorageId and its integrity.
+		const docs = await service.get(documentId);
+		expect(docs.entries.itemListElement[0].blobStorageId).toEqual(blobStorageId);
+		expect(docs.entries.itemListElement[0].integrity).toEqual(blobStore[0].integrity);
+	});
+
+	test("can update a document using an existing blob storage entry id creating a new revision", async () => {
+		const service = new DocumentManagementService();
+
+		const documentId = await service.create(
+			{
+				documentId: "string-blob-update-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Original content"),
+			undefined,
+			{ includeAlias: false }
+		);
+
+		// Upload a new blob externally, then pass its ID to updatePartial.
+		const newBlobStorageId = await blobStorageComponent.create(
+			Converter.bytesToBase64(Converter.utf8ToBytes("New content"))
+		);
+
+		await service.updatePartial(documentId, undefined, newBlobStorageId);
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(2);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(1);
+		expect(docs.entries.itemListElement[0].blobStorageId).toEqual(newBlobStorageId);
+	});
+
+	test("updatePartial with the same blobStorageId does not create a new revision", async () => {
+		const service = new DocumentManagementService();
+
+		const blobStorageId = await blobStorageComponent.create(
+			Converter.bytesToBase64(Converter.utf8ToBytes("Same content"))
+		);
+
+		const documentId = await service.create(
+			{
+				documentId: "same-blob-no-revision-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			blobStorageId,
+			undefined,
+			{ includeAlias: false }
+		);
+
+		// Pass the same blobStorageId back — must be a no-op for revisions.
+		await service.updatePartial(documentId, undefined, blobStorageId);
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
+		expect(docs.entries.itemListElement[0].blobStorageId).toEqual(blobStorageId);
+	});
+
+	describe("create() with string blobStorageId on edge write failure", () => {
+		beforeEach(() => {
+			SharedStore.set("mutexLocks", {});
+		});
+
+		test("does not remove the referenced blob when create fails due to missing target vertex", async () => {
+			const service = new DocumentManagementService();
+
+			// Upload a blob externally.
+			const blobStorageId = await blobStorageComponent.create(
+				Converter.bytesToBase64(Converter.utf8ToBytes("Rollback string blob"))
+			);
+
+			await expect(
+				service.create(
+					{
+						documentId: "string-blob-rollback-test",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
+					blobStorageId,
+					[{ targetId: "aig:does-not-exist-string-blob-rollback" }]
+				)
+			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+
+			// The blob we only referenced must NOT have been deleted.
+			const blobStore = await blobEntryEntityStorage.getStore();
+			expect(blobStore).toHaveLength(1);
+			expect(blobStore[0].id).toEqual(blobStorageId);
+		});
+	});
+
+	test("updatePartial with string blobStorageId restores a soft-deleted revision", async () => {
+		const service = new DocumentManagementService();
+
+		// Create revision 0 using a pre-uploaded blob.
+		const blobV0Id = await blobStorageComponent.create(
+			Converter.bytesToBase64(Converter.utf8ToBytes("Restore via blob id"))
+		);
+
+		const documentId = await service.create(
+			{
+				documentId: "string-blob-restore-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			blobV0Id,
+			undefined,
+			{ includeAlias: false }
+		);
+
+		// Soft-delete the only revision.
+		await service.removeRevision(documentId, 0);
+
+		// Pass the same blobStorageId via string — the matching blob on the deleted revision
+		// should be restored rather than creating a new revision.
+		await service.updatePartial(documentId, undefined, blobV0Id);
+
+		const docs = await service.get(documentId, undefined, undefined, 10);
+		expect(docs.entries.itemListElement).toHaveLength(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
+		expect(docs.entries.itemListElement[0].dateDeleted).toBeUndefined();
+		expect(docs.entries.itemListElement[0].blobStorageId).toEqual(blobV0Id);
+	});
+
+	// ── includeAttestation: false (remove attestation) ─────────────────────
+
+	test("updatePartial with includeAttestation false removes attestation without creating a new revision", async () => {
+		const service = new DocumentManagementService();
+
+		const documentId = await service.create(
+			{
+				documentId: "remove-attest-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Test content"),
+			undefined,
+			{ includeAttestation: true }
+		);
+
+		const before = await service.get(documentId);
+		expect(before.entries.itemListElement[0].attestationId).toBeDefined();
+
+		await service.updatePartial(documentId, undefined, undefined, undefined, {
+			includeAttestation: false
+		});
+
+		const after = await service.get(documentId);
+		expect(after.entries.itemListElement).toHaveLength(1);
+		expect(after.entries.itemListElement[0].documentRevision).toEqual(0);
+		expect(after.entries.itemListElement[0].attestationId).toBeUndefined();
+	});
+
+	test("updatePartial with includeAttestation false removes attestation on a new revision when blob also changes", async () => {
+		const service = new DocumentManagementService();
+
+		const documentId = await service.create(
+			{
+				documentId: "remove-attest-new-rev-test",
+				documentCode: UneceDocumentCodeList.BillOfLading
+			},
+			Converter.utf8ToBytes("Version 1"),
+			undefined,
+			{ includeAttestation: true }
+		);
+
+		const before = await service.get(documentId);
+		expect(before.entries.itemListElement[0].attestationId).toBeDefined();
+
+		await service.updatePartial(
+			documentId,
+			undefined,
+			Converter.utf8ToBytes("Version 2"),
+			undefined,
+			{ includeAttestation: false }
+		);
+
+		const after = await service.get(documentId, undefined, undefined, 10);
+		expect(after.entries.itemListElement).toHaveLength(2);
+		expect(after.entries.itemListElement[0].documentRevision).toEqual(1);
+		expect(after.entries.itemListElement[0].attestationId).toBeUndefined();
+		// Original revision 0 still has its attestation.
+		expect(after.entries.itemListElement[1].attestationId).toBeDefined();
 	});
 });

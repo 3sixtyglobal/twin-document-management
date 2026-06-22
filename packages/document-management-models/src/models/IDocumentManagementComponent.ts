@@ -3,8 +3,8 @@
 import type { IAuditableItemGraphVertexList } from "@twin.org/auditable-item-graph-models";
 import type { IComponent } from "@twin.org/core";
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { UneceDocumentCodeList } from "@twin.org/standards-unece";
-import type { IDocument } from "./IDocument.js";
+import type { IDocumentBase } from "./IDocumentBase.js";
+import type { IDocumentHydrated } from "./IDocumentHydrated.js";
 import type { IDocumentList } from "./IDocumentList.js";
 import type { IDocumentManagementEdgeEntry } from "./IDocumentManagementEdgeEntry.js";
 
@@ -16,28 +16,22 @@ export interface IDocumentManagementComponent extends IComponent {
 	 * Create a document as an auditable item graph vertex and add its content to blob storage.
 	 * If the document id already exists and the blob data is different a new revision will be created.
 	 * For any other changes the current revision will be updated.
-	 * @param documentId The document id to create.
-	 * @param documentIdFormat The format of the document identifier.
-	 * @param documentCode The code for the document type.
-	 * @param blob The data to create the document with.
-	 * @param annotationObject Additional information to associate with the document.
+	 * @param document The document base properties.
+	 * @param blob The data to create the document with as bytes, or an existing blob storage entry id.
 	 * @param auditableItemGraphEdges The auditable item graph vertices to connect the document to.
 	 * @param options Additional options for the set operation.
-	 * @param options.createAttestation Flag to create an attestation for the document, defaults to false.
-	 * @param options.addAlias Flag to add the document id as an alias to the aig vertex, defaults to true.
+	 * @param options.includeAttestation Flag to create an attestation for the document, defaults to false.
+	 * @param options.includeAlias Flag to add the document id as an alias to the aig vertex, defaults to true.
 	 * @param options.aliasAnnotationObject Annotation object for the alias.
 	 * @returns The auditable item graph vertex created for the document including its revision.
 	 */
 	create(
-		documentId: string,
-		documentIdFormat: string | undefined,
-		documentCode: UneceDocumentCodeList,
-		blob: Uint8Array,
-		annotationObject?: IJsonLdNodeObject,
+		document: IDocumentBase,
+		blob: Uint8Array | string,
 		auditableItemGraphEdges?: IDocumentManagementEdgeEntry[],
 		options?: {
-			createAttestation?: boolean;
-			addAlias?: boolean;
+			includeAttestation?: boolean;
+			includeAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
 		}
 	): Promise<string>;
@@ -47,8 +41,8 @@ export interface IDocumentManagementComponent extends IComponent {
 	 * If the blob data is different a new revision will be created.
 	 * For any other changes the current revision will be updated.
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
-	 * @param blob The data to update the document with.
-	 * @param annotationObject Additional information to associate with the document.
+	 * @param document The document base properties to update. annotationObject, documentIdFormat and documentCode are applied in-place to the current revision.
+	 * @param blob The data to update the document with as bytes, or an existing blob storage entry id.
 	 * @param auditableItemGraphEdges Explicit edge delta to apply. If undefined, existing connections
 	 * are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
 	 * ones by their target vertex id. To update alias metadata on an already-connected vertex, include
@@ -56,15 +50,26 @@ export interface IDocumentManagementComponent extends IComponent {
 	 * alias is updated in place without creating a duplicate back-edge.
 	 * @param auditableItemGraphEdges.add Connections to add; each creates a back-edge on the connected vertex.
 	 * @param auditableItemGraphEdges.remove Target vertex IDs to disconnect; their back-edges are removed.
+	 * @param options Additional options for the update operation.
+	 * @param options.includeAttestation Set to true to start attesting the document (even if originally created without attestation), or false to remove the existing attestation. Omit (undefined) to leave attestation state unchanged.
+	 * @param options.includeAlias Set to true to add the document id as an alias on the aig vertex, or false to remove it. Omit to leave alias state unchanged.
+	 * @param options.aliasAnnotationObject Annotation object for the alias when adding.
 	 * @returns A promise that resolves when the document has been updated.
 	 */
 	updatePartial(
 		auditableItemGraphDocumentId: string,
-		blob?: Uint8Array,
-		annotationObject?: IJsonLdNodeObject,
+		document?: Partial<
+			Pick<IDocumentBase, "annotationObject" | "documentIdFormat" | "documentCode">
+		>,
+		blob?: Uint8Array | string,
 		auditableItemGraphEdges?: {
 			add?: IDocumentManagementEdgeEntry[];
 			remove?: string[];
+		},
+		options?: {
+			includeAttestation?: boolean;
+			includeAlias?: boolean;
+			aliasAnnotationObject?: IJsonLdNodeObject;
 		}
 	): Promise<void>;
 
@@ -123,7 +128,7 @@ export interface IDocumentManagementComponent extends IComponent {
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
 		}
-	): Promise<IDocument>;
+	): Promise<IDocumentHydrated>;
 
 	/**
 	 * Remove an auditable item graph vertex using it's id.

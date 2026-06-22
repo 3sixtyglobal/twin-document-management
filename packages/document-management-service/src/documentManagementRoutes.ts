@@ -79,16 +79,18 @@ export function generateRestRoutesDocumentManagement(
 					id: "DocumentManagementCreateRequestExample",
 					request: {
 						body: {
-							documentId: "2721000",
-							documentIdFormat: "bol",
-							documentCode: UneceDocumentCodeList.BillOfLading,
-							blob: "SGVsbG8gV29ybGQ=",
-							annotationObject: {
-								"@context": "https://schema.org",
-								"@type": "DigitalDocument",
-								name: "myfile.pdf"
+							document: {
+								documentId: "2721000",
+								documentIdFormat: "bol",
+								documentCode: UneceDocumentCodeList.BillOfLading,
+								annotationObject: {
+									"@context": "https://schema.org",
+									"@type": "DigitalDocument",
+									name: "myfile.pdf"
+								}
 							},
-							createAttestation: true
+							blob: "SGVsbG8gV29ybGQ=",
+							options: { includeAttestation: true }
 						}
 					}
 				}
@@ -134,12 +136,14 @@ export function generateRestRoutesDocumentManagement(
 							auditableItemGraphDocumentId: "aig:123456"
 						},
 						body: {
-							blob: "SGVsbG8gV29ybGQ=",
-							annotationObject: {
-								"@context": "https://schema.org",
-								"@type": "DigitalDocument",
-								name: "myfile.pdf"
-							}
+							document: {
+								annotationObject: {
+									"@context": "https://schema.org",
+									"@type": "DigitalDocument",
+									name: "myfile.pdf"
+								}
+							},
+							blob: "SGVsbG8gV29ybGQ="
 						}
 					}
 				}
@@ -545,20 +549,24 @@ export async function documentManagementCreate(
 		nameof(request.body),
 		request.body
 	);
-	Guards.stringBase64(ROUTES_SOURCE, nameof(request.body.blob), request.body.blob);
+	Guards.object<IDocumentManagementCreateRequest["body"]["document"]>(
+		ROUTES_SOURCE,
+		nameof(request.body.document),
+		request.body.document
+	);
+	Guards.stringValue(ROUTES_SOURCE, nameof(request.body.blob), request.body.blob);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 	const id = await component.create(
-		request.body.documentId,
-		request.body.documentIdFormat,
-		request.body.documentCode,
-		Converter.base64ToBytes(request.body.blob),
-		request.body.annotationObject,
+		request.body.document,
+		Is.stringBase64(request.body.blob)
+			? Converter.base64ToBytes(request.body.blob)
+			: request.body.blob,
 		request.body.auditableItemGraphEdges,
 		{
-			createAttestation: request.body.createAttestation,
-			addAlias: request.body.addAlias,
-			aliasAnnotationObject: request.body.aliasAnnotationObject
+			includeAttestation: request.body.options?.includeAttestation,
+			includeAlias: request.body.options?.includeAlias,
+			aliasAnnotationObject: request.body.options?.aliasAnnotationObject
 		}
 	);
 
@@ -709,14 +717,26 @@ export async function documentManagementUpdatePartial(
 		nameof(request.pathParams.auditableItemGraphDocumentId),
 		request.pathParams.auditableItemGraphDocumentId
 	);
+	Guards.object<IDocumentManagementUpdatePartialRequest["body"]>(
+		ROUTES_SOURCE,
+		nameof(request.body),
+		request.body
+	);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	await component.updatePartial(
 		request.pathParams.auditableItemGraphDocumentId,
-		Is.stringValue(request.body.blob) ? Converter.base64ToBytes(request.body.blob) : undefined,
-		request.body.annotationObject,
-		request.body.auditableItemGraphEdges
+		request.body.document,
+		Is.stringBase64(request.body.blob)
+			? Converter.base64ToBytes(request.body.blob)
+			: request.body.blob,
+		request.body.auditableItemGraphEdges,
+		{
+			includeAttestation: request.body.options?.includeAttestation,
+			includeAlias: request.body.options?.includeAlias,
+			aliasAnnotationObject: request.body.options?.aliasAnnotationObject
+		}
 	);
 
 	return {

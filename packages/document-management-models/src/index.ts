@@ -13,6 +13,8 @@ export * from "./models/api/IDocumentManagementUpdatePartialRequest.js";
 export * from "./models/documentContexts.js";
 export * from "./models/documentTypes.js";
 export * from "./models/IDocument.js";
+export * from "./models/IDocumentBase.js";
+export * from "./models/IDocumentHydrated.js";
 export * from "./models/IDocumentAttestation.js";
 export * from "./models/IDocumentList.js";
 export * from "./models/IDocumentManagementComponent.js";

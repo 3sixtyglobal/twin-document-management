@@ -3,6 +3,8 @@
 	"types": [
 		"./src/models/IDocument.ts",
 		"./src/models/IDocumentAttestation.ts",
+		"./src/models/IDocumentBase.ts",
+		"./src/models/IDocumentHydrated.ts",
 		"./src/models/IDocumentList.ts"
 	],
 	"externalReferences": {

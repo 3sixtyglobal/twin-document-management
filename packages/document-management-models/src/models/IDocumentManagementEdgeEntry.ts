@@ -14,10 +14,10 @@ export interface IDocumentManagementEdgeEntry {
 	/**
 	 * Whether to add the document id as an alias on the connected vertex, defaults to false.
 	 */
-	addAlias?: boolean;
+	includeAlias?: boolean;
 
 	/**
-	 * Annotation object for the alias, if addAlias is true.
+	 * Annotation object for the alias, if includeAlias is true.
 	 */
 	aliasAnnotationObject?: IJsonLdNodeObject;
 }

@@ -309,8 +309,8 @@ describe("DocumentManagementService — metrics", () => {
 
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
-		await service.create(DOC_ID, undefined, DOC_CODE, BLOB_V0, undefined, undefined, {
-			addAlias: false
+		await service.create({ documentId: DOC_ID, documentCode: DOC_CODE }, BLOB_V0, undefined, {
+			includeAlias: false
 		});
 
 		const created = values.filter(v => v.id === DocumentManagementMetricIds.DocumentsCreated);
@@ -323,15 +323,15 @@ describe("DocumentManagementService — metrics", () => {
 		).toHaveLength(0);
 	});
 
-	test("create() with createAttestation: true emits dm_documents_created (hasAttestation: true) and dm_attestations_created", async () => {
+	test("create() with includeAttestation: true emits dm_documents_created (hasAttestation: true) and dm_attestations_created", async () => {
 		const { component, values } = makeMockTelemetry();
 		ComponentFactory.register("test-telemetry", () => component);
 
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
-		await service.create(DOC_ID, undefined, DOC_CODE, BLOB_V0, undefined, undefined, {
-			addAlias: false,
-			createAttestation: true
+		await service.create({ documentId: DOC_ID, documentCode: DOC_CODE }, BLOB_V0, undefined, {
+			includeAlias: false,
+			includeAttestation: true
 		});
 
 		const created = values.filter(v => v.id === DocumentManagementMetricIds.DocumentsCreated);
@@ -352,20 +352,15 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false
-			}
+			{ includeAlias: false }
 		);
 
 		values.length = 0;
 
-		await service.updatePartial(vertexId, BLOB_V1);
+		await service.updatePartial(vertexId, undefined, BLOB_V1);
 
 		const revisions = values.filter(v => v.id === DocumentManagementMetricIds.RevisionsCreated);
 		expect(revisions).toHaveLength(1);
@@ -385,21 +380,15 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false,
-				createAttestation: true
-			}
+			{ includeAlias: false, includeAttestation: true }
 		);
 
 		values.length = 0;
 
-		await service.updatePartial(vertexId, BLOB_V1);
+		await service.updatePartial(vertexId, undefined, BLOB_V1);
 
 		const revisions = values.filter(v => v.id === DocumentManagementMetricIds.RevisionsCreated);
 		expect(revisions).toHaveLength(1);
@@ -422,23 +411,20 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false
-			}
+			{ includeAlias: false }
 		);
 
 		values.length = 0;
 
-		await service.updatePartial(vertexId, undefined, {
-			"@context": "https://schema.org",
-			"@type": "Thing",
-			name: "updated-annotation"
+		await service.updatePartial(vertexId, {
+			annotationObject: {
+				"@context": "https://schema.org",
+				"@type": "Thing",
+				name: "updated-annotation"
+			}
 		});
 
 		expect(values.filter(v => v.id === DocumentManagementMetricIds.RevisionsCreated)).toHaveLength(
@@ -458,15 +444,10 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false
-			}
+			{ includeAlias: false }
 		);
 
 		values.length = 0;
@@ -483,15 +464,10 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false
-			}
+			{ includeAlias: false }
 		);
 
 		values.length = 0;
@@ -510,15 +486,10 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService({ telemetryComponentType: "test-telemetry" });
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false
-			}
+			{ includeAlias: false }
 		);
 
 		values.length = 0;
@@ -534,24 +505,21 @@ describe("DocumentManagementService — metrics", () => {
 		const service = new DocumentManagementService();
 
 		const vertexId = await service.create(
-			DOC_ID,
-			undefined,
-			DOC_CODE,
+			{ documentId: DOC_ID, documentCode: DOC_CODE },
 			BLOB_V0,
 			undefined,
-			undefined,
-			{
-				addAlias: false
-			}
+			{ includeAlias: false }
 		);
 		expect(vertexId).toBeDefined();
 
-		await service.updatePartial(vertexId, BLOB_V1);
+		await service.updatePartial(vertexId, undefined, BLOB_V1);
 
-		await service.updatePartial(vertexId, undefined, {
-			"@context": "https://schema.org",
-			"@type": "Thing",
-			name: "no-telemetry-annotation"
+		await service.updatePartial(vertexId, {
+			annotationObject: {
+				"@context": "https://schema.org",
+				"@type": "Thing",
+				name: "no-telemetry-annotation"
+			}
 		});
 
 		await service.removeRevision(vertexId, 1);
