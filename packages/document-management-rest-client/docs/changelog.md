@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.0.3-next.19](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.0.3-next.18...document-management-rest-client-v0.0.3-next.19) (2026-06-22)
+
+
+### Features
+
+* updated API surface ([#58](https://github.com/iotaledger/twin-document-management/issues/58)) ([e811d22](https://github.com/iotaledger/twin-document-management/commit/e811d22e27d905ff4dbee43273f6195c7386491b))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.0.3-next.18 to 0.0.3-next.19
+
 ## [0.0.3-next.18](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.0.3-next.17...document-management-rest-client-v0.0.3-next.18) (2026-06-19)
 
 
