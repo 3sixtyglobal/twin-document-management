@@ -1,10 +1,16 @@
 {
 	"baseUrl": "https://schema.twindev.org/documents/",
-	"types": ["./src/models/IDocument.ts", "./src/models/IDocumentAttestation.ts"],
+	"types": [
+		"./src/models/IDocument.ts",
+		"./src/models/IDocumentAttestation.ts",
+		"./src/models/IDocumentBase.ts",
+		"./src/models/IDocumentHydrated.ts",
+		"./src/models/IDocumentList.ts"
+	],
 	"externalReferences": {
-		"IJsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
-		"IAttestation(.*)": "https://schema.twindev.org/attestation/Attestation$1",
-		"IBlob(.*)": "https://schema.twindev.org/blob-storage/Blob$1",
-		"UneceDocumentCodes": "https://vocabulary.uncefact.org/DocumentCodeList"
+		"JsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
+		"Attestation(.*)": "https://schema.twindev.org/attestation/Attestation$1",
+		"Blob(.*)": "https://schema.twindev.org/blob-storage/Blob$1",
+		"Unece(.*)": "https://schema.twindev.org/unece/Unece$1"
 	}
 }

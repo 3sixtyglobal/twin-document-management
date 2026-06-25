@@ -1,12 +1,12 @@
 # Interface: IDocumentManagementQueryRequest
 
-Request to get a list of document from an auditable item graph vertex.
+Request to query a list of documents from an auditable item graph vertex.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
-> `optional` **headers**: `object`
+> `optional` **headers?**: `object`
 
 The headers which can be used to determine the response data type.
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### query
+### query {#query}
 
 > **query**: `object`
 
@@ -30,12 +30,12 @@ The id of the document id we are trying to find.
 
 #### cursor?
 
-> `optional` **cursor**: `string`
+> `optional` **cursor?**: `string`
 
 The cursor to get the next chunk of documents.
 
-#### pageSize?
+#### limit?
 
-> `optional` **pageSize**: `string` \| `number`
+> `optional` **limit?**: `string`
 
 The number of documents to return.

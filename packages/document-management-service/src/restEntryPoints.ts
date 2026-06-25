@@ -4,8 +4,11 @@ import type { IRestRouteEntryPoint } from "@twin.org/api-models";
 import {
 	generateRestRoutesDocumentManagement,
 	tagsDocumentManagement
-} from "./documentManagementRoutes";
+} from "./documentManagementRoutes.js";
 
+/**
+ * REST entry points for the document management service.
+ */
 export const restEntryPoints: IRestRouteEntryPoint[] = [
 	{
 		name: "document-management",

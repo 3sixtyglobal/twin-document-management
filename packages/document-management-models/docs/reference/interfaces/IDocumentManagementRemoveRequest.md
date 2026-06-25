@@ -4,7 +4,7 @@ Request to remove a document revision from an auditable item graph.
 
 ## Properties
 
-### pathParams
+### pathParams {#pathparams}
 
 > **pathParams**: `object`
 

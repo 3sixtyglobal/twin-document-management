@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { RandomHelper } from "@twin.org/core";
+import { Converter, RandomHelper } from "@twin.org/core";
 import { Bip39 } from "@twin.org/crypto";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
@@ -33,16 +33,19 @@ EntityStorageConnectorFactory.register(
 	"vault-key",
 	() =>
 		new MemoryEntityStorageConnector<VaultKey>({
-			entitySchema: nameof<VaultKey>()
+			entitySchema: nameof<VaultKey>(),
+			config: { storageKey: "vault-key" }
 		})
 );
 const secretEntityStorage = new MemoryEntityStorageConnector<VaultSecret>({
-	entitySchema: nameof<VaultSecret>()
+	entitySchema: nameof<VaultSecret>(),
+	config: { storageKey: "vault-secret" }
 });
 EntityStorageConnectorFactory.register("vault-secret", () => secretEntityStorage);
 
 const identityDocumentEntityStorage = new MemoryEntityStorageConnector<IdentityDocument>({
-	entitySchema: nameof<IdentityDocument>()
+	entitySchema: nameof<IdentityDocument>(),
+	config: { storageKey: "identity-document" }
 });
 EntityStorageConnectorFactory.register("identity-document", () => identityDocumentEntityStorage);
 
@@ -53,7 +56,8 @@ export const TEST_IDENTITY_CONNECTOR = new EntityStorageIdentityConnector();
 IdentityConnectorFactory.register("identity", () => TEST_IDENTITY_CONNECTOR);
 
 const walletAddressEntityStorage = new MemoryEntityStorageConnector<WalletAddress>({
-	entitySchema: nameof<WalletAddress>()
+	entitySchema: nameof<WalletAddress>(),
+	config: { storageKey: "wallet-address" }
 });
 EntityStorageConnectorFactory.register("wallet-address", () => walletAddressEntityStorage);
 
@@ -61,6 +65,9 @@ export const TEST_WALLET_CONNECTOR = new EntityStorageWalletConnector();
 WalletConnectorFactory.register("wallet", () => TEST_WALLET_CONNECTOR);
 
 export let TEST_NODE_IDENTITY: string;
+export let TEST_TENANT_IDENTITY: string;
+export let TEST_TENANT_IDENTITY_SHORT: string;
+export let TEST_ORGANIZATION_IDENTITY: string;
 export let TEST_USER_IDENTITY: string;
 export let TEST_VAULT_KEY: string;
 
@@ -83,21 +90,26 @@ export async function setupTestEnv(): Promise<void> {
 	const testVaultConnector = VaultConnectorFactory.get("vault");
 
 	const didNode = await testIdentityConnector.createDocument("test-node-identity");
+	const didOrganisation = await testIdentityConnector.createDocument("test-organisation-identity");
+	const didUser = await testIdentityConnector.createDocument("test-user-identity");
+
 	await testIdentityConnector.addVerificationMethod(
-		"test-node-identity",
-		didNode.id,
+		"test-organisation-identity",
+		didOrganisation.id,
 		"assertionMethod",
 		"immutable-proof-assertion"
 	);
 	await testIdentityConnector.addVerificationMethod(
-		"test-node-identity",
-		didNode.id,
+		"test-organisation-identity",
+		didOrganisation.id,
 		"assertionMethod",
 		"attestation-assertion"
 	);
-	const didUser = await testIdentityConnector.createDocument("test-node-identity");
 
 	TEST_NODE_IDENTITY = didNode.id;
+	TEST_ORGANIZATION_IDENTITY = didOrganisation.id;
+	TEST_TENANT_IDENTITY = "a".repeat(32);
+	TEST_TENANT_IDENTITY_SHORT = Converter.bytesToBase64(Converter.hexToBytes(TEST_TENANT_IDENTITY));
 	TEST_USER_IDENTITY = didUser.id;
 	TEST_VAULT_KEY = `${TEST_NODE_IDENTITY}/immutable-proof-hash`;
 

@@ -20,6 +20,6 @@
 - [documentManagementCreate](functions/documentManagementCreate.md)
 - [documentManagementGet](functions/documentManagementGet.md)
 - [documentManagementGetRevision](functions/documentManagementGetRevision.md)
-- [documentManagementUpdate](functions/documentManagementUpdate.md)
+- [documentManagementUpdatePartial](functions/documentManagementUpdatePartial.md)
 - [documentManagementRemove](functions/documentManagementRemove.md)
 - [documentManagementQuery](functions/documentManagementQuery.md)

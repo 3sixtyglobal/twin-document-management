@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0.
 import type { IJsonLdContextDefinitionElement } from "@twin.org/data-json-ld";
 import type { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
-import type { DocumentContexts } from "./documentContexts";
-import type { IDocument } from "./IDocument";
+import type { DocumentContexts } from "./documentContexts.js";
+import type { IDocumentHydrated } from "./IDocumentHydrated.js";
 
 /**
  * Interface describing a list of document entries.
@@ -13,9 +13,9 @@ export interface IDocumentList {
 	 * JSON-LD Context.
 	 */
 	"@context": [
-		typeof SchemaOrgContexts.ContextRoot,
-		typeof DocumentContexts.ContextRoot,
-		typeof DocumentContexts.ContextRootCommon,
+		typeof SchemaOrgContexts.Context,
+		typeof DocumentContexts.Context,
+		typeof DocumentContexts.ContextCommon,
 		...IJsonLdContextDefinitionElement[]
 	];
 
@@ -26,16 +26,13 @@ export interface IDocumentList {
 
 	/**
 	 * The list of documents.
+	 * @json-ld namespace:schema
 	 */
-	[SchemaOrgTypes.ItemListElement]: IDocument[];
+	[SchemaOrgTypes.ItemListElement]: IDocumentHydrated[];
 
 	/**
 	 * The ids of the other vertices which are connected to the document.
+	 * @json-ld container:set
 	 */
 	edges?: string[];
-
-	/**
-	 * The cursor to get the next chunk of documents.
-	 */
-	[SchemaOrgTypes.NextItem]?: string;
 }

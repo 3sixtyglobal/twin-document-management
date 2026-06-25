@@ -7,14 +7,34 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const DocumentContexts = {
 	/**
-	 * The context root for the document types.
+	 * The canonical RDF namespace URI for Document Management.
 	 */
-	ContextRoot: "https://schema.twindev.org/documents/",
+	Namespace: "https://schema.twindev.org/documents/",
 
 	/**
-	 * The context root for the common types.
+	 * The value to use in context for Document Management.
 	 */
-	ContextRootCommon: "https://schema.twindev.org/common/"
+	Context: "https://schema.twindev.org/documents/",
+
+	/**
+	 * The JSON-LD Context URL for Document Management.
+	 */
+	JsonLdContext: "https://schema.twindev.org/documents/types.jsonld",
+
+	/**
+	 * The canonical RDF namespace URI for TWIN Common.
+	 */
+	NamespaceCommon: "https://schema.twindev.org/common/",
+
+	/**
+	 * The value to use in JSON-LD context for TWIN Common.
+	 */
+	ContextCommon: "https://schema.twindev.org/common/",
+
+	/**
+	 * The JSON-LD Context URL for TWIN Common.
+	 */
+	JsonLdContextCommon: "https://schema.twindev.org/common/types.jsonld"
 } as const;
 
 /**

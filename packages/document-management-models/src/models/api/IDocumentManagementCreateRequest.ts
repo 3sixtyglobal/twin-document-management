@@ -1,7 +1,8 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { UneceDocumentCodes } from "@twin.org/standards-unece";
+import type { IDocumentBase } from "../IDocumentBase.js";
+import type { IDocumentManagementEdgeEntry } from "../IDocumentManagementEdgeEntry.js";
 
 /**
  * Request to create a document as an auditable item graph vertex.
@@ -12,52 +13,38 @@ export interface IDocumentManagementCreateRequest {
 	 */
 	body: {
 		/**
-		 * The document id to create.
+		 * The document base properties.
 		 */
-		documentId: string;
+		document: IDocumentBase;
 
 		/**
-		 * The format of the document identifier.
-		 */
-		documentIdFormat: string | undefined;
-
-		/**
-		 * The code for the document type.
-		 */
-		documentCode: UneceDocumentCodes;
-
-		/**
-		 * The data to create the document with, in base64.
+		 * The data to create the document with, either as base64-encoded content or an existing blob storage entry id.
 		 */
 		blob: string;
 
 		/**
-		 * Additional information to associate with the document.
-		 */
-		annotationObject?: IJsonLdNodeObject;
-
-		/**
 		 * The auditable item graph vertices to connect the document to.
 		 */
-		auditableItemGraphEdges?: {
-			id: string;
-			addAlias?: boolean;
+		auditableItemGraphEdges?: IDocumentManagementEdgeEntry[];
+
+		/**
+		 * Additional options for the create operation.
+		 */
+		options?: {
+			/**
+			 * Flag to create an attestation for the document, defaults to false.
+			 */
+			includeAttestation?: boolean;
+
+			/**
+			 * Flag to add the document id as an alias to the aig vertex, defaults to true.
+			 */
+			includeAlias?: boolean;
+
+			/**
+			 * Annotation object for the alias.
+			 */
 			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[];
-
-		/**
-		 * Flag to create an attestation for the document, defaults to false.
-		 */
-		createAttestation?: boolean;
-
-		/**
-		 * Flag to add the document id as an alias to the aig vertex, defaults to true.
-		 */
-		addAlias?: boolean;
-
-		/**
-		 * Annotation object for the alias.
-		 */
-		aliasAnnotationObject?: IJsonLdNodeObject;
+		};
 	};
 }

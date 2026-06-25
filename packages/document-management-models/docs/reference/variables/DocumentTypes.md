@@ -4,15 +4,15 @@
 
 The types of document management objects.
 
-## Type declaration
+## Type Declaration
 
-### Document
+### Document {#document}
 
 > `readonly` **Document**: `"Document"` = `"Document"`
 
 Represents a document.
 
-### DocumentAttestation
+### DocumentAttestation {#documentattestation}
 
 > `readonly` **DocumentAttestation**: `"DocumentAttestation"` = `"DocumentAttestation"`
 

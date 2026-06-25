@@ -8,8 +8,11 @@
 
 - [IDocument](interfaces/IDocument.md)
 - [IDocumentAttestation](interfaces/IDocumentAttestation.md)
+- [IDocumentBase](interfaces/IDocumentBase.md)
+- [IDocumentHydrated](interfaces/IDocumentHydrated.md)
 - [IDocumentList](interfaces/IDocumentList.md)
 - [IDocumentManagementComponent](interfaces/IDocumentManagementComponent.md)
+- [IDocumentManagementEdgeEntry](interfaces/IDocumentManagementEdgeEntry.md)
 - [IDocumentManagementCreateRequest](interfaces/IDocumentManagementCreateRequest.md)
 - [IDocumentManagementGetRequest](interfaces/IDocumentManagementGetRequest.md)
 - [IDocumentManagementGetResponse](interfaces/IDocumentManagementGetResponse.md)
@@ -18,14 +21,17 @@
 - [IDocumentManagementQueryRequest](interfaces/IDocumentManagementQueryRequest.md)
 - [IDocumentManagementQueryResponse](interfaces/IDocumentManagementQueryResponse.md)
 - [IDocumentManagementRemoveRequest](interfaces/IDocumentManagementRemoveRequest.md)
-- [IDocumentManagementUpdateRequest](interfaces/IDocumentManagementUpdateRequest.md)
+- [IDocumentManagementUpdatePartialRequest](interfaces/IDocumentManagementUpdatePartialRequest.md)
 
 ## Type Aliases
 
 - [DocumentContexts](type-aliases/DocumentContexts.md)
+- [DocumentManagementMetricIds](type-aliases/DocumentManagementMetricIds.md)
 - [DocumentTypes](type-aliases/DocumentTypes.md)
 
 ## Variables
 
 - [DocumentContexts](variables/DocumentContexts.md)
+- [DocumentManagementMetricIds](variables/DocumentManagementMetricIds.md)
+- [DocumentManagementMetrics](variables/DocumentManagementMetrics.md)
 - [DocumentTypes](variables/DocumentTypes.md)

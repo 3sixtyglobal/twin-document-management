@@ -1,9 +1,9 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { DataTypeHandlerFactory, type IJsonSchema } from "@twin.org/data-core";
-import { DocumentContexts } from "../models/documentContexts";
-import { DocumentTypes } from "../models/documentTypes";
-import DocumentSchema from "../schemas/Document.json";
+import { DataTypeHandlerFactory } from "@twin.org/data-core";
+import { DocumentContexts } from "../models/documentContexts.js";
+import { DocumentTypes } from "../models/documentTypes.js";
+import DocumentSchema from "../schemas/Document.json" with { type: "json" };
 
 /**
  * Handle all the data types for document management.
@@ -14,22 +14,22 @@ export class DocumentManagementDataTypes {
 	 */
 	public static registerTypes(): void {
 		DataTypeHandlerFactory.register(
-			`${DocumentContexts.ContextRoot}${DocumentTypes.Document}`,
+			`${DocumentContexts.Namespace}${DocumentTypes.Document}`,
 			() => ({
-				context: DocumentContexts.ContextRoot,
+				namespace: DocumentContexts.Namespace,
 				type: DocumentTypes.Document,
 				defaultValue: {},
-				jsonSchema: async () => DocumentSchema as IJsonSchema
+				jsonSchema: async () => DocumentSchema
 			})
 		);
 
 		DataTypeHandlerFactory.register(
-			`${DocumentContexts.ContextRoot}${DocumentTypes.DocumentAttestation}`,
+			`${DocumentContexts.Namespace}${DocumentTypes.DocumentAttestation}`,
 			() => ({
-				context: DocumentContexts.ContextRoot,
+				namespace: DocumentContexts.Namespace,
 				type: DocumentTypes.DocumentAttestation,
 				defaultValue: {},
-				jsonSchema: async () => DocumentSchema as IJsonSchema
+				jsonSchema: async () => DocumentSchema
 			})
 		);
 	}

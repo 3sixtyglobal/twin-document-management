@@ -12,6 +12,7 @@ export interface IDocumentManagementQueryResponse {
 	 */
 	headers?: {
 		[HeaderTypes.ContentType]: typeof MimeTypes.Json | typeof MimeTypes.JsonLd;
+		[HeaderTypes.Link]?: string | string[];
 	};
 
 	/**

@@ -1,9 +1,9 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import type { SchemaOrgContexts } from "@twin.org/standards-schema-org";
-import type { UneceDocumentCodes } from "@twin.org/standards-unece";
-import type { DocumentContexts } from "./documentContexts";
-import type { DocumentTypes } from "./documentTypes";
+import type { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import type { DocumentContexts } from "./documentContexts.js";
+import type { DocumentTypes } from "./documentTypes.js";
 
 /**
  * Interface describing a document attestation.
@@ -13,9 +13,9 @@ export interface IDocumentAttestation {
 	 * JSON-LD Context.
 	 */
 	"@context": [
-		typeof DocumentContexts.ContextRoot,
-		typeof DocumentContexts.ContextRootCommon,
-		typeof SchemaOrgContexts.ContextRoot
+		typeof SchemaOrgContexts.Context,
+		typeof DocumentContexts.Context,
+		typeof DocumentContexts.ContextCommon
 	];
 
 	/**
@@ -25,26 +25,31 @@ export interface IDocumentAttestation {
 
 	/**
 	 * The id of the document.
+	 * @json-ld type:schema:identifier
 	 */
 	documentId: string;
 
 	/**
 	 * The code for the document type.
+	 * @json-ld type:schema:identifier
 	 */
-	documentCode: UneceDocumentCodes;
+	documentCode: UneceDocumentCodeList;
 
 	/**
 	 * The revision of the document as a 0 based index.
+	 * @json-ld type:schema:Integer
 	 */
 	documentRevision: number;
 
 	/**
 	 * The date/time of when the document was created.
+	 * @json-ld namespace:schema
 	 */
 	dateCreated: string;
 
 	/**
-	 * The hash of the document being attested.
+	 * The integrity of the document being attested.
+	 * @json-ld namespace:twin-common
 	 */
-	blobHash: string;
+	integrity: string;
 }

@@ -4,62 +4,50 @@ Request to create a document as an auditable item graph vertex.
 
 ## Properties
 
-### body
+### body {#body}
 
 > **body**: `object`
 
 The body parameters.
 
-#### documentId
+#### document
 
-> **documentId**: `string`
+> **document**: [`IDocumentBase`](IDocumentBase.md)
 
-The document id to create.
-
-#### documentIdFormat
-
-> **documentIdFormat**: `undefined` \| `string`
-
-The format of the document identifier.
-
-#### documentCode
-
-> **documentCode**: `string`
-
-The code for the document type.
+The document base properties.
 
 #### blob
 
 > **blob**: `string`
 
-The data to create the document with, in base64.
-
-#### annotationObject?
-
-> `optional` **annotationObject**: `IJsonLdNodeObject`
-
-Additional information to associate with the document.
+The data to create the document with, either as base64-encoded content or an existing blob storage entry id.
 
 #### auditableItemGraphEdges?
 
-> `optional` **auditableItemGraphEdges**: `object`[]
+> `optional` **auditableItemGraphEdges?**: [`IDocumentManagementEdgeEntry`](IDocumentManagementEdgeEntry.md)[]
 
 The auditable item graph vertices to connect the document to.
 
-#### createAttestation?
+#### options?
 
-> `optional` **createAttestation**: `boolean`
+> `optional` **options?**: `object`
+
+Additional options for the create operation.
+
+##### options.includeAttestation?
+
+> `optional` **includeAttestation?**: `boolean`
 
 Flag to create an attestation for the document, defaults to false.
 
-#### addAlias?
+##### options.includeAlias?
 
-> `optional` **addAlias**: `boolean`
+> `optional` **includeAlias?**: `boolean`
 
 Flag to add the document id as an alias to the aig vertex, defaults to true.
 
-#### aliasAnnotationObject?
+##### options.aliasAnnotationObject?
 
-> `optional` **aliasAnnotationObject**: `IJsonLdNodeObject`
+> `optional` **aliasAnnotationObject?**: `IJsonLdNodeObject`
 
 Annotation object for the alias.

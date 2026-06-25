@@ -1,36 +1,39 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type {
-	ICreatedResponse,
-	IHttpRequestContext,
-	INoContentResponse,
-	INotFoundResponse,
-	IRestRoute,
-	ITag
+import {
+	HttpContextIdKeys,
+	HttpUrlHelper,
+	type ICreatedResponse,
+	type IHttpRequestContext,
+	type INoContentResponse,
+	type INotFoundResponse,
+	type IRestRoute,
+	type ITag
 } from "@twin.org/api-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes
 } from "@twin.org/auditable-item-graph-models";
+import { ContextIdStore } from "@twin.org/context";
 import { Coerce, ComponentFactory, Converter, Guards, Is } from "@twin.org/core";
 import {
 	DocumentContexts,
 	DocumentTypes,
-	type IDocumentManagementGetRevisionRequest,
-	type IDocumentManagementGetRevisionResponse,
 	type IDocumentManagementComponent,
 	type IDocumentManagementCreateRequest,
 	type IDocumentManagementGetRequest,
 	type IDocumentManagementGetResponse,
+	type IDocumentManagementGetRevisionRequest,
+	type IDocumentManagementGetRevisionResponse,
 	type IDocumentManagementQueryRequest,
 	type IDocumentManagementQueryResponse,
 	type IDocumentManagementRemoveRequest,
-	type IDocumentManagementUpdateRequest
+	type IDocumentManagementUpdatePartialRequest
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
 import { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
-import { UneceDocumentCodes } from "@twin.org/standards-unece";
-import { HeaderTypes, HttpStatusCode, MimeTypes } from "@twin.org/web";
+import { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import { HeaderHelper, HeaderTypes, HttpStatusCode, MimeTypes } from "@twin.org/web";
 
 /**
  * The source used when communicating about these routes.
@@ -76,16 +79,18 @@ export function generateRestRoutesDocumentManagement(
 					id: "DocumentManagementCreateRequestExample",
 					request: {
 						body: {
-							documentId: "2721000",
-							documentIdFormat: "bol",
-							documentCode: UneceDocumentCodes.BillOfLading,
-							blob: "SGVsbG8gV29ybGQ=",
-							annotationObject: {
-								"@context": "https://schema.org",
-								"@type": "DigitalDocument",
-								name: "myfile.pdf"
+							document: {
+								documentId: "2721000",
+								documentIdFormat: "bol",
+								documentCode: UneceDocumentCodeList.BillOfLading,
+								annotationObject: {
+									"@context": "https://schema.org",
+									"@type": "DigitalDocument",
+									name: "myfile.pdf"
+								}
 							},
-							createAttestation: true
+							blob: "SGVsbG8gV29ybGQ=",
+							options: { includeAttestation: true }
 						}
 					}
 				}
@@ -100,7 +105,7 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							statusCode: HttpStatusCode.created,
 							headers: {
-								[HeaderTypes.Location]: "aig:123456"
+								[HeaderTypes.Location]: "aig%3A123456"
 							}
 						}
 					}
@@ -109,34 +114,36 @@ export function generateRestRoutesDocumentManagement(
 		]
 	};
 
-	const documentManagementUpdateRoute: IRestRoute<
-		IDocumentManagementUpdateRequest,
+	const documentManagementUpdatePartialRoute: IRestRoute<
+		IDocumentManagementUpdatePartialRequest,
 		INoContentResponse
 	> = {
-		operationId: "DocumentManagementUpdate",
+		operationId: "DocumentManagementUpdatePartial",
 		summary:
-			"Update a document in an auditable item graph vertex and add its content to blob storage.",
+			"Partially update a document in an auditable item graph vertex and add its content to blob storage.",
 		tag: tagsDocumentManagement[0].name,
-		method: "PUT",
+		method: "PATCH",
 		path: `${baseRouteName}/:auditableItemGraphDocumentId`,
 		handler: async (httpRequestContext, request) =>
-			documentManagementUpdate(httpRequestContext, componentName, request),
+			documentManagementUpdatePartial(httpRequestContext, componentName, request),
 		requestType: {
-			type: nameof<IDocumentManagementUpdateRequest>(),
+			type: nameof<IDocumentManagementUpdatePartialRequest>(),
 			examples: [
 				{
-					id: "DocumentManagementUpdateRequestExample",
+					id: "DocumentManagementUpdatePartialRequestExample",
 					request: {
 						pathParams: {
 							auditableItemGraphDocumentId: "aig:123456"
 						},
 						body: {
-							blob: "SGVsbG8gV29ybGQ=",
-							annotationObject: {
-								"@context": "https://schema.org",
-								"@type": "DigitalDocument",
-								name: "myfile.pdf"
-							}
+							document: {
+								annotationObject: {
+									"@context": "https://schema.org",
+									"@type": "DigitalDocument",
+									name: "myfile.pdf"
+								}
+							},
+							blob: "SGVsbG8gV29ybGQ="
 						}
 					}
 				}
@@ -147,7 +154,7 @@ export function generateRestRoutesDocumentManagement(
 				type: nameof<INoContentResponse>(),
 				examples: [
 					{
-						id: "DocumentManagementCreateResponseExample",
+						id: "DocumentManagementUpdatePartialResponseExample",
 						response: {
 							statusCode: HttpStatusCode.noContent
 						}
@@ -190,34 +197,34 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									SchemaOrgContexts.ContextRoot,
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon
+									SchemaOrgContexts.Context,
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon
 								],
 								type: SchemaOrgTypes.ItemList,
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											DocumentContexts.ContextRoot,
-											DocumentContexts.ContextRootCommon,
-											SchemaOrgContexts.ContextRoot
+											SchemaOrgContexts.Context,
+											DocumentContexts.Context,
+											DocumentContexts.ContextCommon
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
 										documentId: "2721000",
 										documentIdFormat: "bol",
-										documentCode: UneceDocumentCodes.BillOfLading,
+										documentCode: UneceDocumentCodeList.BillOfLading,
 										documentRevision: 0,
 										blobStorageId:
 											"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-										blobHash: "sha256:123456",
+										integrity: "sha256-123456",
 										dateCreated: "2024-01-01T00:00:00Z",
 										annotationObject: {
 											"@context": "https://schema.org",
 											"@type": "DigitalDocument",
 											name: "myfile.pdf"
 										},
-										nodeIdentity:
+										organizationIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 										userIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -237,34 +244,34 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									SchemaOrgContexts.ContextRoot,
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon
+									SchemaOrgContexts.Context,
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon
 								],
 								type: SchemaOrgTypes.ItemList,
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											DocumentContexts.ContextRoot,
-											DocumentContexts.ContextRootCommon,
-											SchemaOrgContexts.ContextRoot
+											SchemaOrgContexts.Context,
+											DocumentContexts.Context,
+											DocumentContexts.ContextCommon
 										],
 										type: DocumentTypes.Document,
 										id: "2721000:0",
 										documentId: "2721000",
 										documentIdFormat: "bol",
-										documentCode: UneceDocumentCodes.BillOfLading,
+										documentCode: UneceDocumentCodeList.BillOfLading,
 										documentRevision: 0,
 										blobStorageId:
 											"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-										blobHash: "sha256:123456",
+										integrity: "sha256-123456",
 										dateCreated: "2024-01-01T00:00:00Z",
 										annotationObject: {
 											"@context": "https://schema.org",
 											"@type": "DigitalDocument",
 											name: "myfile.pdf"
 										},
-										nodeIdentity:
+										organizationIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 										userIdentity:
 											"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -315,26 +322,26 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon,
-									SchemaOrgContexts.ContextRoot
+									SchemaOrgContexts.Context,
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
 								documentId: "2721000",
 								documentIdFormat: "bol",
-								documentCode: UneceDocumentCodes.BillOfLading,
+								documentCode: UneceDocumentCodeList.BillOfLading,
 								documentRevision: 1,
 								blobStorageId:
 									"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-								blobHash: "sha256:123456",
+								integrity: "sha256-123456",
 								dateCreated: "2024-01-01T00:00:00Z",
 								annotationObject: {
 									"@context": "https://schema.org",
 									"@type": "DigitalDocument",
 									name: "myfile.pdf"
 								},
-								nodeIdentity:
+								organizationIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 								userIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -352,26 +359,26 @@ export function generateRestRoutesDocumentManagement(
 						response: {
 							body: {
 								"@context": [
-									DocumentContexts.ContextRoot,
-									DocumentContexts.ContextRootCommon,
-									SchemaOrgContexts.ContextRoot
+									SchemaOrgContexts.Context,
+									DocumentContexts.Context,
+									DocumentContexts.ContextCommon
 								],
 								type: DocumentTypes.Document,
 								id: "2721000:0",
 								documentId: "2721000",
 								documentIdFormat: "bol",
-								documentCode: UneceDocumentCodes.BillOfLading,
+								documentCode: UneceDocumentCodeList.BillOfLading,
 								documentRevision: 1,
 								blobStorageId:
 									"blob-memory:c57d94b088f4c6d2cb32ded014813d0c786aa00134c8ee22f84b1e2545602a70",
-								blobHash: "sha256:123456",
+								integrity: "sha256-123456",
 								dateCreated: "2024-01-01T00:00:00Z",
 								annotationObject: {
 									"@context": "https://schema.org",
 									"@type": "DigitalDocument",
 									name: "myfile.pdf"
 								},
-								nodeIdentity:
+								organizationIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363",
 								userIdentity:
 									"did:entity-storage:0x6363636363636363636363636363636363636363636363636363636363636363"
@@ -453,20 +460,20 @@ export function generateRestRoutesDocumentManagement(
 						id: "DocumentManagementQueryResponseExample",
 						response: {
 							body: {
-								"@context": [SchemaOrgContexts.ContextRoot, AuditableItemGraphContexts.ContextRoot],
+								"@context": [SchemaOrgContexts.Context, AuditableItemGraphContexts.Context],
 								type: [SchemaOrgTypes.ItemList, AuditableItemGraphTypes.VertexList],
 								[SchemaOrgTypes.ItemListElement]: [
 									{
 										"@context": [
-											AuditableItemGraphContexts.ContextRoot,
-											AuditableItemGraphContexts.ContextRootCommon
+											AuditableItemGraphContexts.Context,
+											AuditableItemGraphContexts.ContextCommon
 										],
 										id: "aig:c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7",
 										type: AuditableItemGraphTypes.Vertex,
 										dateCreated: "2024-08-22T04:13:20.000Z",
 										aliases: [
 											{
-												"@context": [AuditableItemGraphContexts.ContextRoot],
+												"@context": [AuditableItemGraphContexts.Context],
 												id: "test-id-0",
 												type: AuditableItemGraphTypes.Alias,
 												dateCreated: "2024-08-22T04:13:20.000Z"
@@ -474,7 +481,7 @@ export function generateRestRoutesDocumentManagement(
 										],
 										resources: [
 											{
-												"@context": AuditableItemGraphContexts.ContextRoot,
+												"@context": AuditableItemGraphContexts.Context,
 												type: AuditableItemGraphTypes.Resource,
 												dateCreated: "2024-08-22T04:13:20.000Z",
 												resourceObject: {
@@ -493,11 +500,11 @@ export function generateRestRoutesDocumentManagement(
 														type: "DigitalDocument",
 														name: "bill-of-lading"
 													},
-													blobHash: "sha256:E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
+													integrity: "sha256-E3Duqrp6bHojSx+CzDttAToAiP1eFkCDAPBbKLABVGM=",
 													blobStorageId:
 														"blob:memory:1370eeaaba7a6c7a234b1f82cc3b6d013a0088fd5e16408300f05b28b0015463",
 													dateCreated: "2024-08-22T04:13:20.000Z",
-													nodeIdentity:
+													organizationIdentity:
 														"did:entity-storage:0x0101010101010101010101010101010101010101010101010101010101010101",
 													userIdentity:
 														"did:entity-storage:0x0404040404040404040404040404040404040404040404040404040404040404"
@@ -516,7 +523,7 @@ export function generateRestRoutesDocumentManagement(
 
 	return [
 		documentManagementCreateRoute,
-		documentManagementUpdateRoute,
+		documentManagementUpdatePartialRoute,
 		documentManagementGetRoute,
 		documentManagementGetRevisionRoute,
 		documentManagementRemoveRevisionRoute,
@@ -542,23 +549,25 @@ export async function documentManagementCreate(
 		nameof(request.body),
 		request.body
 	);
-	Guards.stringBase64(ROUTES_SOURCE, nameof(request.body.blob), request.body.blob);
+	Guards.object<IDocumentManagementCreateRequest["body"]["document"]>(
+		ROUTES_SOURCE,
+		nameof(request.body.document),
+		request.body.document
+	);
+	Guards.stringValue(ROUTES_SOURCE, nameof(request.body.blob), request.body.blob);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 	const id = await component.create(
-		request.body.documentId,
-		request.body.documentIdFormat,
-		request.body.documentCode,
-		Converter.base64ToBytes(request.body.blob),
-		request.body.annotationObject,
+		request.body.document,
+		Is.stringBase64(request.body.blob)
+			? Converter.base64ToBytes(request.body.blob)
+			: request.body.blob,
 		request.body.auditableItemGraphEdges,
 		{
-			createAttestation: request.body.createAttestation,
-			addAlias: request.body.addAlias,
-			aliasAnnotationObject: request.body.aliasAnnotationObject
-		},
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+			includeAttestation: request.body.options?.includeAttestation,
+			includeAlias: request.body.options?.includeAlias,
+			aliasAnnotationObject: request.body.options?.aliasAnnotationObject
+		}
 	);
 
 	return {
@@ -593,8 +602,6 @@ export async function documentManagementGet(
 		request.pathParams.auditableItemGraphDocumentId
 	);
 
-	const mimeType = request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? "jsonld" : "json";
-
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	const result = await component.get(
@@ -604,20 +611,34 @@ export async function documentManagementGet(
 			includeBlobStorageData: Coerce.boolean(request.query?.includeBlobStorageData),
 			includeAttestation: Coerce.boolean(request.query?.includeAttestation),
 			includeRemoved: Coerce.boolean(request.query?.includeRemoved),
+			includeDeletedEdges: Coerce.boolean(request.query?.includeDeletedEdges),
 			extractRuleGroupId: request.query?.extractRuleGroupId,
 			extractMimeType: request.query?.extractMimeType
 		},
 		request.query?.cursor,
-		Coerce.integer(request.query?.pageSize),
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		Coerce.integer(request.query?.limit)
 	);
 
+	const headers: IDocumentManagementGetResponse["headers"] = {
+		[HeaderTypes.ContentType]:
+			request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? MimeTypes.JsonLd : MimeTypes.Json
+	};
+
+	if (Is.stringValue(result.cursor)) {
+		const contextIds = await ContextIdStore.getContextIds();
+		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
+			HttpUrlHelper.replaceOrigin(
+				httpRequestContext.serverRequest.url,
+				contextIds?.[HttpContextIdKeys.PublicOrigin]
+			),
+			{ cursor: result.cursor },
+			"next"
+		);
+	}
+
 	return {
-		headers: {
-			[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
-		},
-		body: result
+		headers,
+		body: result.entries
 	};
 }
 
@@ -648,8 +669,6 @@ export async function documentManagementGetRevision(
 	const revision = Coerce.integer(request.pathParams.revision);
 	Guards.integer(ROUTES_SOURCE, nameof(revision), revision);
 
-	const mimeType = request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? "jsonld" : "json";
-
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	const result = await component.getRevision(
@@ -661,14 +680,15 @@ export async function documentManagementGetRevision(
 			includeAttestation: Coerce.boolean(request.query?.includeAttestation),
 			extractRuleGroupId: request.query?.extractRuleGroupId,
 			extractMimeType: request.query?.extractMimeType
-		},
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		}
 	);
 
 	return {
 		headers: {
-			[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
+			[HeaderTypes.ContentType]:
+				request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd
+					? MimeTypes.JsonLd
+					: MimeTypes.Json
 		},
 		body: result
 	};
@@ -681,13 +701,13 @@ export async function documentManagementGetRevision(
  * @param request The request.
  * @returns The response object with additional http response properties.
  */
-export async function documentManagementUpdate(
+export async function documentManagementUpdatePartial(
 	httpRequestContext: IHttpRequestContext,
 	componentName: string,
-	request: IDocumentManagementUpdateRequest
+	request: IDocumentManagementUpdatePartialRequest
 ): Promise<INoContentResponse> {
-	Guards.object<IDocumentManagementUpdateRequest>(ROUTES_SOURCE, nameof(request), request);
-	Guards.object<IDocumentManagementUpdateRequest["pathParams"]>(
+	Guards.object<IDocumentManagementUpdatePartialRequest>(ROUTES_SOURCE, nameof(request), request);
+	Guards.object<IDocumentManagementUpdatePartialRequest["pathParams"]>(
 		ROUTES_SOURCE,
 		nameof(request.pathParams),
 		request.pathParams
@@ -697,16 +717,26 @@ export async function documentManagementUpdate(
 		nameof(request.pathParams.auditableItemGraphDocumentId),
 		request.pathParams.auditableItemGraphDocumentId
 	);
+	Guards.object<IDocumentManagementUpdatePartialRequest["body"]>(
+		ROUTES_SOURCE,
+		nameof(request.body),
+		request.body
+	);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
-	await component.update(
+	await component.updatePartial(
 		request.pathParams.auditableItemGraphDocumentId,
-		Is.stringValue(request.body.blob) ? Converter.base64ToBytes(request.body.blob) : undefined,
-		request.body.annotationObject,
+		request.body.document,
+		Is.stringBase64(request.body.blob)
+			? Converter.base64ToBytes(request.body.blob)
+			: request.body.blob,
 		request.body.auditableItemGraphEdges,
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		{
+			includeAttestation: request.body.options?.includeAttestation,
+			includeAlias: request.body.options?.includeAlias,
+			aliasAnnotationObject: request.body.options?.aliasAnnotationObject
+		}
 	);
 
 	return {
@@ -737,17 +767,12 @@ export async function documentManagementRemove(
 		nameof(request.pathParams.auditableItemGraphDocumentId),
 		request.pathParams.auditableItemGraphDocumentId
 	);
-	const revision = Coerce.number(request.pathParams.revision);
-	Guards.integer(ROUTES_SOURCE, nameof(request.pathParams.revision), revision);
+	const revision = Coerce.integer(request.pathParams.revision);
+	Guards.integer(ROUTES_SOURCE, nameof(revision), revision);
 
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
-	await component.removeRevision(
-		request.pathParams.auditableItemGraphDocumentId,
-		revision,
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
-	);
+	await component.removeRevision(request.pathParams.auditableItemGraphDocumentId, revision);
 
 	return {
 		statusCode: HttpStatusCode.noContent
@@ -774,22 +799,33 @@ export async function documentManagementQuery(
 	);
 	Guards.stringValue(ROUTES_SOURCE, nameof(request.query.documentId), request.query.documentId);
 
-	const mimeType = request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? "jsonld" : "json";
-
 	const component = ComponentFactory.get<IDocumentManagementComponent>(componentName);
 
 	const result = await component.query(
 		request.query.documentId,
 		request.query?.cursor,
-		Coerce.integer(request.query?.pageSize),
-		httpRequestContext.userIdentity,
-		httpRequestContext.nodeIdentity
+		Coerce.integer(request.query?.limit)
 	);
 
+	const headers: IDocumentManagementQueryResponse["headers"] = {
+		[HeaderTypes.ContentType]:
+			request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? MimeTypes.JsonLd : MimeTypes.Json
+	};
+
+	if (Is.stringValue(result.cursor)) {
+		const contextIds = await ContextIdStore.getContextIds();
+		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
+			HttpUrlHelper.replaceOrigin(
+				httpRequestContext.serverRequest.url,
+				contextIds?.[HttpContextIdKeys.PublicOrigin]
+			),
+			{ cursor: result.cursor },
+			"next"
+		);
+	}
+
 	return {
-		headers: {
-			[HeaderTypes.ContentType]: mimeType === "json" ? MimeTypes.Json : MimeTypes.JsonLd
-		},
-		body: result
+		headers,
+		body: result.entries
 	};
 }

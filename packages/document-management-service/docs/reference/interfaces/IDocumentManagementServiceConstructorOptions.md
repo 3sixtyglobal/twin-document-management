@@ -4,9 +4,9 @@ Options for the document management Service constructor.
 
 ## Properties
 
-### auditableItemGraphComponentType?
+### auditableItemGraphComponentType? {#auditableitemgraphcomponenttype}
 
-> `optional` **auditableItemGraphComponentType**: `string`
+> `optional` **auditableItemGraphComponentType?**: `string`
 
 The type of the auditable item graph component.
 
@@ -18,9 +18,9 @@ auditable-item-graph
 
 ***
 
-### blobStorageComponentType?
+### blobStorageComponentType? {#blobstoragecomponenttype}
 
-> `optional` **blobStorageComponentType**: `string`
+> `optional` **blobStorageComponentType?**: `string`
 
 The type of the blob storage component.
 
@@ -32,9 +32,9 @@ blob-storage
 
 ***
 
-### attestationComponentType?
+### attestationComponentType? {#attestationcomponenttype}
 
-> `optional` **attestationComponentType**: `string`
+> `optional` **attestationComponentType?**: `string`
 
 The type of the attestation component.
 
@@ -46,9 +46,9 @@ attestation
 
 ***
 
-### dataProcessingComponentType?
+### dataProcessingComponentType? {#dataprocessingcomponenttype}
 
-> `optional` **dataProcessingComponentType**: `string`
+> `optional` **dataProcessingComponentType?**: `string`
 
 The type of the data processing component.
 
@@ -60,8 +60,16 @@ data-processing
 
 ***
 
-### config?
+### telemetryComponentType? {#telemetrycomponenttype}
 
-> `optional` **config**: [`IDocumentManagementServiceConfig`](IDocumentManagementServiceConfig.md)
+> `optional` **telemetryComponentType?**: `string`
+
+The type of the telemetry component used for event metrics.
+
+***
+
+### config? {#config}
+
+> `optional` **config?**: [`IDocumentManagementServiceConfig`](IDocumentManagementServiceConfig.md)
 
 The configuration for the service.

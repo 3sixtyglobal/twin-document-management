@@ -4,9 +4,9 @@ Request to get a document revision from an auditable item graph vertex.
 
 ## Properties
 
-### headers?
+### headers? {#headers}
 
-> `optional` **headers**: `object`
+> `optional` **headers?**: `object`
 
 The headers which can be used to determine the response data type.
 
@@ -16,7 +16,7 @@ The headers which can be used to determine the response data type.
 
 ***
 
-### pathParams
+### pathParams {#pathparams}
 
 > **pathParams**: `object`
 
@@ -36,15 +36,15 @@ The revision of the document to get.
 
 ***
 
-### query?
+### query? {#query}
 
-> `optional` **query**: `object`
+> `optional` **query?**: `object`
 
 The query parameters.
 
 #### includeBlobStorageMetadata?
 
-> `optional` **includeBlobStorageMetadata**: `string` \| `boolean`
+> `optional` **includeBlobStorageMetadata?**: `string`
 
 Include the blob storage metadata in the response.
 
@@ -56,7 +56,7 @@ false
 
 #### includeBlobStorageData?
 
-> `optional` **includeBlobStorageData**: `string` \| `boolean`
+> `optional` **includeBlobStorageData?**: `string`
 
 Include the blob storage data in the response.
 
@@ -68,7 +68,7 @@ false
 
 #### includeAttestation?
 
-> `optional` **includeAttestation**: `string` \| `boolean`
+> `optional` **includeAttestation?**: `string`
 
 Include the attestation information in the response.
 
@@ -80,12 +80,12 @@ false
 
 #### extractRuleGroupId?
 
-> `optional` **extractRuleGroupId**: `string`
+> `optional` **extractRuleGroupId?**: `string`
 
 If provided will extract data from the document using the specified rule group id.
 
 #### extractMimeType?
 
-> `optional` **extractMimeType**: `string`
+> `optional` **extractMimeType?**: `string`
 
 By default extraction will auto detect the mime type of the document, this can be used to override the detection.

@@ -2,17 +2,25 @@
 
 Interface describing a document.
 
+## Extends
+
+- [`IDocumentBase`](IDocumentBase.md)
+
+## Extended by
+
+- [`IDocumentHydrated`](IDocumentHydrated.md)
+
 ## Properties
 
-### @context
+### @context {#context}
 
-> **@context**: \[`"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `"https://schema.org"`, `...IJsonLdContextDefinitionElement[]`\]
+> **@context**: \[`"https://schema.org"`, `"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `...IJsonLdContextDefinitionElement[]`\]
 
 JSON-LD Context.
 
 ***
 
-### type
+### type {#type}
 
 > **type**: `"Document"`
 
@@ -20,7 +28,7 @@ JSON-LD Type.
 
 ***
 
-### id
+### id {#id}
 
 > **id**: `string`
 
@@ -28,31 +36,7 @@ The full id of the document.
 
 ***
 
-### documentId
-
-> **documentId**: `string`
-
-The id of the document.
-
-***
-
-### documentIdFormat?
-
-> `optional` **documentIdFormat**: `string`
-
-The format of the document id.
-
-***
-
-### documentCode
-
-> **documentCode**: `string`
-
-The code for the document type.
-
-***
-
-### documentRevision
+### documentRevision {#documentrevision}
 
 > **documentRevision**: `number`
 
@@ -60,15 +44,7 @@ The revision of the document as a 0 based index.
 
 ***
 
-### annotationObject?
-
-> `optional` **annotationObject**: `IJsonLdNodeObject`
-
-Additional annotation information for the document.
-
-***
-
-### blobStorageId
+### blobStorageId {#blobstorageid}
 
 > **blobStorageId**: `string`
 
@@ -76,47 +52,23 @@ The blob storage id for the document.
 
 ***
 
-### blobHash
+### integrity {#integrity}
 
-> **blobHash**: `string`
+> **integrity**: `string`
 
-The hash of the blob data.
-
-***
-
-### blobStorageEntry?
-
-> `optional` **blobStorageEntry**: `IBlobStorageEntry`
-
-The additional JSON-LD for blob storage if it was requested.
+The integrity of the blob data.
 
 ***
 
-### extractedData?
+### attestationId? {#attestationid}
 
-> `optional` **extractedData**: `unknown`
-
-The data extracted from the document using data extraction services.
-
-***
-
-### attestationId?
-
-> `optional` **attestationId**: `string`
+> `optional` **attestationId?**: `string`
 
 The attestation for the document if one was created.
 
 ***
 
-### attestationInformation?
-
-> `optional` **attestationInformation**: `IAttestationInformation`
-
-The additional JSON-LD for attestation storage if it was requested.
-
-***
-
-### dateCreated
+### dateCreated {#datecreated}
 
 > **dateCreated**: `string`
 
@@ -124,32 +76,80 @@ The date/time of when the document was created.
 
 ***
 
-### dateModified?
+### dateModified? {#datemodified}
 
-> `optional` **dateModified**: `string`
+> `optional` **dateModified?**: `string`
 
 The date/time of when the document was modified.
 
 ***
 
-### dateDeleted?
+### dateDeleted? {#datedeleted}
 
-> `optional` **dateDeleted**: `string`
+> `optional` **dateDeleted?**: `string`
 
 The date/time of when the document was deleted, as we never actually remove items.
 
 ***
 
-### nodeIdentity
+### organizationIdentity? {#organizationidentity}
 
-> **nodeIdentity**: `string`
+> `optional` **organizationIdentity?**: `string`
 
-The node which added the document to the graph.
+The organization which added the document to the graph.
 
 ***
 
-### userIdentity
+### userIdentity? {#useridentity}
 
-> **userIdentity**: `string`
+> `optional` **userIdentity?**: `string`
 
 The user who added the document to the graph.
+
+***
+
+### documentId {#documentid}
+
+> **documentId**: `string`
+
+The id of the document.
+
+#### Inherited from
+
+[`IDocumentBase`](IDocumentBase.md).[`documentId`](IDocumentBase.md#documentid)
+
+***
+
+### documentIdFormat? {#documentidformat}
+
+> `optional` **documentIdFormat?**: `string`
+
+The format of the document id.
+
+#### Inherited from
+
+[`IDocumentBase`](IDocumentBase.md).[`documentIdFormat`](IDocumentBase.md#documentidformat)
+
+***
+
+### documentCode {#documentcode}
+
+> **documentCode**: `UneceDocumentCodeList`
+
+The code for the document type.
+
+#### Inherited from
+
+[`IDocumentBase`](IDocumentBase.md).[`documentCode`](IDocumentBase.md#documentcode)
+
+***
+
+### annotationObject? {#annotationobject}
+
+> `optional` **annotationObject?**: `IJsonLdNodeObject`
+
+Additional annotation information for the document.
+
+#### Inherited from
+
+[`IDocumentBase`](IDocumentBase.md).[`annotationObject`](IDocumentBase.md#annotationobject)

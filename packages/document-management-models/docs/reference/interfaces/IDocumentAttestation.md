@@ -4,15 +4,15 @@ Interface describing a document attestation.
 
 ## Properties
 
-### @context
+### @context {#context}
 
-> **@context**: \[`"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`, `"https://schema.org"`\]
+> **@context**: \[`"https://schema.org"`, `"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`\]
 
 JSON-LD Context.
 
 ***
 
-### type
+### type {#type}
 
 > **type**: `"DocumentAttestation"`
 
@@ -20,7 +20,7 @@ JSON-LD Type.
 
 ***
 
-### documentId
+### documentId {#documentid}
 
 > **documentId**: `string`
 
@@ -28,15 +28,15 @@ The id of the document.
 
 ***
 
-### documentCode
+### documentCode {#documentcode}
 
-> **documentCode**: `string`
+> **documentCode**: `UneceDocumentCodeList`
 
 The code for the document type.
 
 ***
 
-### documentRevision
+### documentRevision {#documentrevision}
 
 > **documentRevision**: `number`
 
@@ -44,7 +44,7 @@ The revision of the document as a 0 based index.
 
 ***
 
-### dateCreated
+### dateCreated {#datecreated}
 
 > **dateCreated**: `string`
 
@@ -52,8 +52,8 @@ The date/time of when the document was created.
 
 ***
 
-### blobHash
+### integrity {#integrity}
 
-> **blobHash**: `string`
+> **integrity**: `string`
 
-The hash of the document being attested.
+The integrity of the document being attested.

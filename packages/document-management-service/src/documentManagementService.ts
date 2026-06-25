@@ -1,18 +1,19 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import type { IAttestationComponent } from "@twin.org/attestation-models";
-import { AttestationContexts } from "@twin.org/attestation-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes,
 	type IAuditableItemGraphVertexList,
-	type IAuditableItemGraphAlias,
 	type IAuditableItemGraphComponent,
 	type IAuditableItemGraphEdge,
+	type IAuditableItemGraphPartialVertex,
+	type IAuditableItemGraphResource,
 	type IAuditableItemGraphVertex
 } from "@twin.org/auditable-item-graph-models";
 import type { IBlobStorageComponent } from "@twin.org/blob-storage-models";
 import { BlobStorageContexts } from "@twin.org/blob-storage-models";
+import { ContextIdKeys, ContextIdStore } from "@twin.org/context";
 import {
 	BaseError,
 	Coerce,
@@ -21,16 +22,22 @@ import {
 	GeneralError,
 	Guards,
 	Is,
+	Mutex,
 	NotFoundError,
 	ObjectHelper,
 	Urn
 } from "@twin.org/core";
-import { Sha256 } from "@twin.org/crypto";
-import { JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
+import { IntegrityAlgorithm, IntegrityHelper, Sha256 } from "@twin.org/crypto";
+import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
 import type { IDataProcessingComponent } from "@twin.org/data-processing-models";
 import {
 	DocumentContexts,
+	DocumentManagementMetricIds,
+	DocumentManagementMetrics,
 	DocumentTypes,
+	type IDocumentBase,
+	type IDocumentHydrated,
+	type IDocumentManagementEdgeEntry,
 	type IDocument,
 	type IDocumentAttestation,
 	type IDocumentList,
@@ -42,22 +49,18 @@ import {
 	SchemaOrgDataTypes,
 	SchemaOrgTypes
 } from "@twin.org/standards-schema-org";
-import { UneceDocumentCodes } from "@twin.org/standards-unece";
-import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions";
+import { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
+import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions.js";
 
 /**
  * Service for performing document management operations.
  */
 export class DocumentManagementService implements IDocumentManagementComponent {
 	/**
-	 * The namespace supported by the document management service.
-	 */
-	public static readonly NAMESPACE: string = "documents";
-
-	/**
 	 * Runtime name for the class.
 	 */
-	public readonly CLASS_NAME: string = nameof<DocumentManagementService>();
+	public static readonly CLASS_NAME: string = nameof<DocumentManagementService>();
 
 	/**
 	 * The component for the auditable item graph.
@@ -84,6 +87,18 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	private readonly _dataProcessingComponent: IDataProcessingComponent;
 
 	/**
+	 * The optional telemetry component used for event metrics.
+	 * @internal
+	 */
+	private readonly _telemetryComponent?: ITelemetryComponent;
+
+	/**
+	 * The timeout in milliseconds for acquiring a mutex lock.
+	 * @internal
+	 */
+	private readonly _mutexTimeoutMs?: number;
+
+	/**
 	 * Create a new instance of DocumentManagementService.
 	 * @param options The options for the service.
 	 */
@@ -100,73 +115,81 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		this._dataProcessingComponent = ComponentFactory.get<IDataProcessingComponent>(
 			options?.dataProcessingComponentType ?? "data-processing"
 		);
+		this._telemetryComponent = ComponentFactory.getIfExists<ITelemetryComponent>(
+			options?.telemetryComponentType
+		);
+		this._mutexTimeoutMs = Coerce.integer(options?.config?.mutexTimeoutMs);
 
 		SchemaOrgDataTypes.registerRedirects();
+	}
+
+	/**
+	 * Returns the class name of the component.
+	 * @returns The class name of the component.
+	 */
+	public className(): string {
+		return DocumentManagementService.CLASS_NAME;
+	}
+
+	/**
+	 * Register all document management metrics with the telemetry component.
+	 * @returns A promise that resolves when metrics have been registered.
+	 */
+	public async start(): Promise<void> {
+		if (Is.undefined(this._telemetryComponent)) {
+			return;
+		}
+		await MetricHelper.createMetrics(this._telemetryComponent, DocumentManagementMetrics);
 	}
 
 	/**
 	 * Store a document as an auditable item graph vertex and add its content to blob storage.
 	 * If the document id already exists and the blob data is different a new revision will be created.
 	 * For any other changes the current revision will be updated.
-	 * @param documentId The document id to create.
-	 * @param documentIdFormat The format of the document identifier.
-	 * @param documentCode The code for the document type.
-	 * @param blob The data to create the document with.
-	 * @param annotationObject Additional information to associate with the document.
+	 * @param document The document base properties.
+	 * @param blob The data to create the document with as bytes, or an existing blob storage entry id.
 	 * @param auditableItemGraphEdges The auditable item graph vertices to connect the document to.
 	 * @param options Additional options for the set operation.
-	 * @param options.createAttestation Flag to create an attestation for the document, defaults to false.
-	 * @param options.addAlias Flag to add the document id as an alias to the aig vertex, defaults to true.
+	 * @param options.includeAttestation Flag to include an attestation for the document, defaults to false.
+	 * @param options.includeAlias Flag to add the document id as an alias to the aig vertex, defaults to true.
 	 * @param options.aliasAnnotationObject Annotation object for the alias.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
 	 * @returns The auditable item graph vertex created for the document including its revision.
 	 */
 	public async create(
-		documentId: string,
-		documentIdFormat: string | undefined,
-		documentCode: UneceDocumentCodes,
-		blob: Uint8Array,
-		annotationObject?: IJsonLdNodeObject,
-		auditableItemGraphEdges?: {
-			id: string;
-			addAlias?: boolean;
-			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[],
+		document: IDocumentBase,
+		blob: Uint8Array | string,
+		auditableItemGraphEdges?: IDocumentManagementEdgeEntry[],
 		options?: {
-			createAttestation?: boolean;
-			addAlias?: boolean;
+			includeAttestation?: boolean;
+			includeAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
-		},
-		userIdentity?: string,
-		nodeIdentity?: string
+		}
 	): Promise<string> {
-		Guards.stringValue(this.CLASS_NAME, nameof(documentId), documentId);
+		Guards.object<IDocumentBase>(DocumentManagementService.CLASS_NAME, nameof(document), document);
+		const { documentId, documentIdFormat, documentCode, annotationObject } = document;
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 		Guards.arrayOneOf(
-			this.CLASS_NAME,
+			DocumentManagementService.CLASS_NAME,
 			nameof(documentCode),
 			documentCode,
-			Object.values(UneceDocumentCodes)
+			Object.values(UneceDocumentCodeList)
 		);
-		Guards.uint8Array(this.CLASS_NAME, nameof(blob), blob);
-		Guards.stringValue(this.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(this.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		if (!Is.uint8Array(blob) && !Is.stringValue(blob)) {
+			Guards.uint8Array(DocumentManagementService.CLASS_NAME, nameof(blob), blob);
+		}
+
+		const contextIds = await ContextIdStore.getContextIds();
 
 		try {
-			// Get the connected vertices first, if one fails we abort the create
-			const connectedVertices: { [id: string]: IAuditableItemGraphVertex } = {};
-			if (Is.arrayValue(auditableItemGraphEdges)) {
-				for (const edge of auditableItemGraphEdges) {
-					connectedVertices[edge.id] = await this._auditableItemGraphComponent.get(edge.id);
-				}
-			}
+			const documentVertex: Omit<IAuditableItemGraphVertex, "id"> = {
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				type: AuditableItemGraphTypes.Vertex
+			};
 
-			const documentVertex: Omit<IAuditableItemGraphVertex, "@context" | "id" | "type"> = {};
-
-			if (options?.addAlias ?? true) {
+			if (options?.includeAlias ?? true) {
 				documentVertex.aliases ??= [];
 				documentVertex.aliases.push({
-					"@context": AuditableItemGraphContexts.ContextRoot,
+					"@context": AuditableItemGraphContexts.Context,
 					type: AuditableItemGraphTypes.Alias,
 					id: documentId,
 					aliasFormat: documentIdFormat,
@@ -174,22 +197,24 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				});
 			}
 
-			// Add the blob to blob storage
-			const blobStorageId = await this._blobStorageComponent.create(
-				Converter.bytesToBase64(blob),
-				undefined,
-				undefined,
-				undefined,
-				undefined,
-				userIdentity,
-				nodeIdentity
-			);
+			// Resolve the blob storage id and integrity.
+			// If blob is a Uint8Array, upload the bytes; if it is a string, treat it as an
+			// existing blobStorageId and fetch the entry's stored integrity.
+			const blobIntegrity = await this.computeBlobIntegrity(blob);
+			let blobStorageId: string;
+			let blobUploaded = false;
+			if (Is.uint8Array(blob)) {
+				blobStorageId = await this._blobStorageComponent.create(Converter.bytesToBase64(blob));
+				blobUploaded = true;
+			} else {
+				blobStorageId = blob;
+			}
 
 			const currentRevision: IDocument & IJsonLdNodeObject = {
 				"@context": [
-					DocumentContexts.ContextRoot,
-					DocumentContexts.ContextRootCommon,
-					SchemaOrgContexts.ContextRoot
+					SchemaOrgContexts.Context,
+					DocumentContexts.Context,
+					DocumentContexts.ContextCommon
 				],
 				type: DocumentTypes.Document,
 				id: this.createDocumentId(documentId, 0),
@@ -198,49 +223,85 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				documentCode,
 				documentRevision: 0,
 				annotationObject,
-				blobHash: this.generateBlobHash(blob),
+				integrity: blobIntegrity,
 				blobStorageId,
 				dateCreated: new Date(Date.now()).toISOString(),
-				nodeIdentity,
-				userIdentity
+				organizationIdentity: contextIds?.[ContextIdKeys.Organization],
+				userIdentity: contextIds?.[ContextIdKeys.User]
 			};
 
-			if (options?.createAttestation ?? false) {
-				currentRevision.attestationId = await this.createAttestation(
-					currentRevision,
-					userIdentity,
-					nodeIdentity
-				);
+			if (options?.includeAttestation ?? false) {
+				currentRevision.attestationId = await this.createAttestation(currentRevision);
 			}
 
 			// Add the new revision in to the vertex
 			documentVertex.resources ??= [];
 			documentVertex.resources.push({
-				"@context": AuditableItemGraphContexts.ContextRoot,
+				"@context": AuditableItemGraphContexts.Context,
 				type: AuditableItemGraphTypes.Resource,
 				resourceObject: currentRevision
 			});
 
-			// Add the edges from the document to the items
-			this.updateEdges(documentVertex, auditableItemGraphEdges);
+			// Add the outgoing edges from the document vertex to each connected item
+			if (Is.arrayValue(auditableItemGraphEdges)) {
+				documentVertex.edges ??= [];
+				for (const aigEdge of auditableItemGraphEdges) {
+					documentVertex.edges.push({
+						"@context": AuditableItemGraphContexts.Context,
+						type: AuditableItemGraphTypes.Edge,
+						targetId: aigEdge.targetId,
+						edgeRelationships: ["document"]
+					});
+				}
+			}
 
 			// And create the vertex
 			const vertexId = await this._auditableItemGraphComponent.create(
-				documentVertex,
-				userIdentity,
-				nodeIdentity
+				ObjectHelper.removeEmptyProperties(documentVertex)
 			);
 
-			// Now add the edges to the connected vertices
-			await this.updateConnectedEdges(
-				connectedVertices,
+			// Now add the edges to the connected vertices.
+			// isCreatePath = true enables fail-fast + rollback if a target vertex is missing.
+			const failingVertexId = await this.updateConnectedEdges(
 				vertexId,
+				auditableItemGraphEdges ?? [],
 				[],
-				auditableItemGraphEdges,
 				documentId,
 				documentIdFormat,
-				userIdentity,
-				nodeIdentity
+				true
+			);
+
+			if (Is.stringValue(failingVertexId)) {
+				// At least one connected vertex was missing. Back-edges already written have been
+				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the orphaned
+				// blob (only if we uploaded it) and soft-delete the document resource so the vertex
+				// is left empty.
+				if (blobUploaded) {
+					try {
+						await this._blobStorageComponent.remove(blobStorageId);
+					} catch {}
+				}
+				try {
+					await this._auditableItemGraphComponent.updatePartial({
+						"@context": [
+							AuditableItemGraphContexts.Context,
+							AuditableItemGraphContexts.ContextCommon
+						],
+						id: vertexId,
+						resourcePatches: { remove: [currentRevision.id] }
+					});
+				} catch {}
+				throw new NotFoundError(
+					DocumentManagementService.CLASS_NAME,
+					"connectedVertexNotFound",
+					failingVertexId
+				);
+			}
+
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				DocumentManagementMetricIds.DocumentsCreated,
+				{ hasAttestation: Is.stringValue(currentRevision.attestationId) }
 			);
 
 			return vertexId;
@@ -248,7 +309,12 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "createFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"createFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -257,29 +323,47 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * If the blob data is different a new revision will be created.
 	 * For any other changes the current revision will be updated.
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
-	 * @param blob The data to update the document with.
-	 * @param annotationObject Additional information to associate with the document.
-	 * @param auditableItemGraphEdges The auditable item graph vertices to connect the document to, if undefined retains current connections.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
-	 * @returns Nothing.
+	 * @param document The document base properties to update. Only annotationObject is applied; other fields are ignored.
+	 * @param blob The data to update the document with as bytes, or an existing blob storage entry id.
+	 * @param auditableItemGraphEdges Explicit edge delta to apply. If undefined, existing connections
+	 * are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
+	 * ones by their target vertex id. To update alias metadata on an already-connected vertex, include
+	 * it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+	 * alias is updated in place without creating a duplicate back-edge.
+	 * @param auditableItemGraphEdges.add Connections to add; each creates a back-edge on the connected vertex.
+	 * @param auditableItemGraphEdges.remove Target vertex IDs to disconnect; their back-edges are removed.
+	 * @param options Additional options for the update operation.
+	 * @param options.includeAttestation Set to true to include an attestation for the document, or false to remove the existing attestation. Omit (undefined) to leave attestation state unchanged.
+	 * @param options.includeAlias Set to true to add the document id as an alias on the aig vertex, or false to remove it. Omit to leave alias state unchanged.
+	 * @param options.aliasAnnotationObject Annotation object for the alias when adding.
+	 * @returns A promise that resolves when the document has been updated.
 	 */
-	public async update(
+	public async updatePartial(
 		auditableItemGraphDocumentId: string,
-		blob?: Uint8Array,
-		annotationObject?: IJsonLdNodeObject,
+		document?: Partial<
+			Pick<IDocumentBase, "annotationObject" | "documentIdFormat" | "documentCode">
+		>,
+		blob?: Uint8Array | string,
 		auditableItemGraphEdges?: {
-			id: string;
-			addAlias?: boolean;
+			add?: IDocumentManagementEdgeEntry[];
+			remove?: string[];
+		},
+		options?: {
+			includeAttestation?: boolean;
+			includeAlias?: boolean;
 			aliasAnnotationObject?: IJsonLdNodeObject;
-		}[],
-		userIdentity?: string,
-		nodeIdentity?: string
+		}
 	): Promise<void> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.stringValue(this.CLASS_NAME, nameof(userIdentity), userIdentity);
-		Guards.stringValue(this.CLASS_NAME, nameof(nodeIdentity), nodeIdentity);
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
 
+		await Mutex.lock(auditableItemGraphDocumentId, {
+			throwOnTimeout: true,
+			timeoutMs: this._mutexTimeoutMs
+		});
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId,
@@ -287,54 +371,48 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (Is.empty(documentVertex.resources)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
-			const documents = await this.getDocumentsFromVertex(documentVertex);
-			const latestRevision: IDocument | undefined = documents.itemListElement[0];
+			const documents = await this.getDocumentsFromVertex(documentVertex, undefined, undefined, 1);
+			const latestRevision: IDocument | undefined = documents.entries.itemListElement[0];
 
 			documentVertex.resources = documentVertex.resources.filter(r => Is.empty(r.dateDeleted));
 
 			if (Is.empty(latestRevision)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
+
+			const { annotationObject, documentIdFormat, documentCode } = document ?? {};
 
 			// If auditableItemGraphEdges is undefined we are not updating the edges
 			// an empty array can be passed to remove all edges
-			const connectedVertices: { [id: string]: IAuditableItemGraphVertex } = {};
-			if (Is.array(auditableItemGraphEdges)) {
-				// Get the updated connected vertices first, if one fails we abort the update
-				for (const edge of auditableItemGraphEdges) {
-					connectedVertices[edge.id] = await this._auditableItemGraphComponent.get(edge.id);
-				}
-				// Also get the current edges in case some need disconnecting
-				if (Is.arrayValue(documents.edges)) {
-					for (const edgeId of documents.edges) {
-						// If we haven't retrieved the edge then it must be one that needs removing
-						if (Is.empty(connectedVertices[edgeId])) {
-							connectedVertices[edgeId] = await this._auditableItemGraphComponent.get(edgeId);
-						}
+
+			const resourcePatchesAdd: IAuditableItemGraphResource[] = [];
+			let blobRevisionCreated = false;
+			let newRevisionHasAttestation = false;
+
+			// If the blob is set and its hash has changed then we create a new revision.
+			// blob may be raw bytes (Uint8Array) to upload, or a string treated as an existing
+			// blobStorageId whose integrity is fetched from the blob storage entry.
+			if (Is.uint8Array(blob) || Is.stringValue(blob)) {
+				// Short-circuit: same blobStorageId reference on a live revision means the blob is
+				// unchanged — skip the network GET inside computeBlobIntegrity.
+				const blobUnchanged =
+					Is.stringValue(blob) &&
+					blob === latestRevision.blobStorageId &&
+					Is.empty(latestRevision.dateDeleted);
+				const newIntegrity = blobUnchanged
+					? latestRevision.integrity
+					: await this.computeBlobIntegrity(blob);
+
+				if (latestRevision.integrity !== newIntegrity) {
+					let blobStorageId: string;
+					if (Is.stringValue(blob)) {
+						blobStorageId = blob;
+					} else {
+						blobStorageId = await this._blobStorageComponent.create(Converter.bytesToBase64(blob));
 					}
-				}
-			}
-
-			let updatedVertex = false;
-
-			// If the blob is set and its hash has changed then we create a new revision
-			if (Is.uint8Array(blob)) {
-				const newBlobHash = this.generateBlobHash(blob);
-
-				if (latestRevision.blobHash !== newBlobHash) {
-					// Add the blob to blob storage
-					const blobStorageId = await this._blobStorageComponent.create(
-						Converter.bytesToBase64(blob),
-						undefined,
-						undefined,
-						undefined,
-						undefined,
-						userIdentity,
-						nodeIdentity
-					);
 
 					const newRevision = ObjectHelper.clone(latestRevision);
 
@@ -343,68 +421,202 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 						newRevision.documentId,
 						newRevision.documentRevision
 					);
-					newRevision.blobHash = newBlobHash;
+					newRevision.integrity = newIntegrity;
 					newRevision.blobStorageId = blobStorageId;
-					newRevision.annotationObject = annotationObject;
+					this.applyDocumentFieldPatch(newRevision, document);
 
-					if (Is.stringValue(latestRevision.attestationId)) {
-						newRevision.attestationId = await this.createAttestation(
-							newRevision,
-							userIdentity,
-							nodeIdentity
-						);
+					if (options?.includeAttestation === false) {
+						if (Is.stringValue(newRevision.attestationId)) {
+							await this._attestationComponent.destroy(newRevision.attestationId);
+						}
+						delete newRevision.attestationId;
+					} else if (Is.stringValue(latestRevision.attestationId) || options?.includeAttestation) {
+						newRevision.attestationId = await this.createAttestation(newRevision);
 					}
 
-					documentVertex.resources.push({
-						"@context": AuditableItemGraphContexts.ContextRoot,
+					resourcePatchesAdd.push({
+						"@context": AuditableItemGraphContexts.Context,
 						type: AuditableItemGraphTypes.Resource,
-						resourceObject: newRevision as unknown as IJsonLdNodeObject
+						resourceObject: JsonLdHelper.toNodeObject(newRevision)
 					});
 
-					updatedVertex = true;
+					newRevisionHasAttestation = Is.stringValue(newRevision.attestationId);
+					blobRevisionCreated = true;
+				} else if (Is.stringValue(latestRevision.dateDeleted)) {
+					// Same content as the most recent (soft-deleted) revision — restore it.
+					const restoredRevision = ObjectHelper.clone(latestRevision);
+					delete restoredRevision.dateDeleted;
+					this.applyDocumentFieldPatch(restoredRevision, document);
+
+					if (options?.includeAttestation === false) {
+						if (Is.stringValue(restoredRevision.attestationId)) {
+							await this._attestationComponent.destroy(restoredRevision.attestationId);
+						}
+						delete restoredRevision.attestationId;
+					} else if (
+						Is.stringValue(restoredRevision.attestationId) ||
+						options?.includeAttestation
+					) {
+						restoredRevision.attestationId = await this.createAttestation(restoredRevision);
+					}
+					resourcePatchesAdd.push({
+						"@context": AuditableItemGraphContexts.Context,
+						type: AuditableItemGraphTypes.Resource,
+						resourceObject: JsonLdHelper.toNodeObject(restoredRevision)
+					});
+					newRevisionHasAttestation = Is.stringValue(restoredRevision.attestationId);
+					blobRevisionCreated = true;
 				}
 			}
 
-			// If the blob wasn't updated but the annotation object has then update the current revision
-			// instead of creating a new one
-			if (
-				!updatedVertex &&
-				!ObjectHelper.equal(latestRevision.annotationObject, annotationObject)
-			) {
-				updatedVertex = true;
-				latestRevision.annotationObject = annotationObject;
-				latestRevision.dateModified = new Date(Date.now()).toISOString();
+			// If no new revision was created, apply in-place updates to the current revision:
+			// annotation changes and/or adding first-time attestation.
+			// Undefined annotationObject means "no change" in patch semantics — it does not clear it.
+			if (!blobRevisionCreated) {
+				const annotationChanged =
+					!Is.empty(annotationObject) &&
+					!ObjectHelper.equal(latestRevision.annotationObject, annotationObject);
+				const documentIdFormatChanged =
+					!Is.empty(documentIdFormat) && latestRevision.documentIdFormat !== documentIdFormat;
+				const documentCodeChanged =
+					!Is.empty(documentCode) && latestRevision.documentCode !== documentCode;
+				const addingAttestation =
+					options?.includeAttestation === true && !Is.stringValue(latestRevision.attestationId);
+				const removingAttestation =
+					options?.includeAttestation === false && Is.stringValue(latestRevision.attestationId);
+
+				if (
+					annotationChanged ||
+					documentIdFormatChanged ||
+					documentCodeChanged ||
+					addingAttestation ||
+					removingAttestation
+				) {
+					if (annotationChanged) {
+						latestRevision.annotationObject = annotationObject;
+					}
+					if (documentIdFormatChanged) {
+						latestRevision.documentIdFormat = documentIdFormat;
+					}
+					if (documentCodeChanged) {
+						latestRevision.documentCode = documentCode;
+					}
+					if (addingAttestation) {
+						latestRevision.attestationId = await this.createAttestation(latestRevision);
+					}
+					if (removingAttestation && Is.stringValue(latestRevision.attestationId)) {
+						await this._attestationComponent.destroy(latestRevision.attestationId);
+						delete latestRevision.attestationId;
+					}
+					latestRevision.dateModified = new Date(Date.now()).toISOString();
+					resourcePatchesAdd.push(
+						ObjectHelper.removeEmptyProperties({
+							"@context": AuditableItemGraphContexts.Context,
+							type: AuditableItemGraphTypes.Resource,
+							resourceObject: JsonLdHelper.toNodeObject(latestRevision)
+						})
+					);
+				}
 			}
 
-			const existingEdgeIds = documentVertex.edges?.map(e => e.id) ?? [];
+			// Build document-vertex edge patches directly from the explicit delta.
+			const edgesToAdd = auditableItemGraphEdges?.add ?? [];
+			const edgeTargetIdsToRemove = auditableItemGraphEdges?.remove ?? [];
+			const hasEdgeChanges =
+				!Is.empty(auditableItemGraphEdges) &&
+				(edgesToAdd.length > 0 || edgeTargetIdsToRemove.length > 0);
 
-			// Update the edges from the document to the items
-			const edgesUpdated = this.updateEdges(documentVertex, auditableItemGraphEdges);
-			if (edgesUpdated) {
-				updatedVertex = true;
+			const addingAlias = options?.includeAlias === true;
+			const removingAlias = options?.includeAlias === false;
+			const hasAliasChange = addingAlias || removingAlias;
+
+			const documentEdgePatchesAdd: IAuditableItemGraphEdge[] = edgesToAdd.map(aigEdge => ({
+				"@context": AuditableItemGraphContexts.Context,
+				type: AuditableItemGraphTypes.Edge,
+				targetId: aigEdge.targetId,
+				edgeRelationships: ["document"]
+			}));
+
+			// Resolve remove targetIds to stored edge IDs for the document vertex patch.
+			const documentEdgePatchesRemove: string[] = edgeTargetIdsToRemove
+				.map(
+					targetId =>
+						documentVertex.edges?.find(e => e.targetId === targetId && Is.empty(e.dateDeleted))?.id
+				)
+				.filter((id): id is string => Is.stringValue(id));
+
+			if (resourcePatchesAdd.length > 0 || hasEdgeChanges || hasAliasChange) {
+				const partial: IAuditableItemGraphPartialVertex = {
+					"@context": [
+						AuditableItemGraphContexts.Context,
+						AuditableItemGraphContexts.ContextCommon
+					],
+					id: auditableItemGraphDocumentId
+				};
+				if (resourcePatchesAdd.length > 0) {
+					partial.resourcePatches = { add: resourcePatchesAdd };
+				}
+				if (hasEdgeChanges) {
+					partial.edgePatches = {
+						...(documentEdgePatchesAdd.length > 0 ? { add: documentEdgePatchesAdd } : {}),
+						...(documentEdgePatchesRemove.length > 0 ? { remove: documentEdgePatchesRemove } : {})
+					};
+				}
+				if (addingAlias) {
+					partial.aliasPatches = {
+						add: [
+							ObjectHelper.removeEmptyProperties({
+								"@context": AuditableItemGraphContexts.Context,
+								type: AuditableItemGraphTypes.Alias,
+								id: latestRevision.documentId,
+								aliasFormat: latestRevision.documentIdFormat,
+								annotationObject: options?.aliasAnnotationObject
+							})
+						]
+					};
+				} else if (removingAlias) {
+					partial.aliasPatches = { remove: [latestRevision.documentId] };
+				}
+				await this._auditableItemGraphComponent.updatePartial(partial);
 			}
 
-			if (updatedVertex) {
-				await this._auditableItemGraphComponent.update(documentVertex, userIdentity, nodeIdentity);
-			}
-
-			if (edgesUpdated) {
+			if (hasEdgeChanges) {
 				await this.updateConnectedEdges(
-					connectedVertices,
 					auditableItemGraphDocumentId,
-					existingEdgeIds,
-					auditableItemGraphEdges,
+					edgesToAdd,
+					edgeTargetIdsToRemove,
 					latestRevision.documentId,
-					latestRevision.documentIdFormat,
-					userIdentity,
-					nodeIdentity
+					latestRevision.documentIdFormat
+				);
+			}
+
+			const updatedVertex = resourcePatchesAdd.length > 0 || hasEdgeChanges || hasAliasChange;
+			if (blobRevisionCreated) {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					DocumentManagementMetricIds.RevisionsCreated,
+					{ hasAttestation: newRevisionHasAttestation }
+				);
+			}
+			if (updatedVertex) {
+				await MetricHelper.metricIncrement(
+					this._telemetryComponent,
+					DocumentManagementMetricIds.DocumentsUpdated,
+					{ hasNewRevision: blobRevisionCreated }
 				);
 			}
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "updateFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"updateFailed",
+				undefined,
+				error
+			);
+		} finally {
+			Mutex.unlock(auditableItemGraphDocumentId);
 		}
 	}
 
@@ -416,12 +628,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeBlobStorageData Flag to include the blob storage data for the document, defaults to false.
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
 	 * @param options.includeRemoved Flag to include deleted documents, defaults to false.
+	 * @param options.includeDeletedEdges Flag to include soft-deleted edges in the response, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
-	 * @param pageSize Page size of items to return, defaults to 1 so only most recent is returned.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
+	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
 	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
 	 */
 	public async get(
@@ -431,38 +642,53 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			includeBlobStorageData?: boolean;
 			includeAttestation?: boolean;
 			includeRemoved?: boolean;
+			includeDeletedEdges?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		pageSize?: number,
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<IDocumentList> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
+		limit?: number
+	): Promise<{
+		entries: IDocumentList;
+		cursor?: string;
+	}> {
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId,
-				{ includeDeleted: options?.includeRemoved }
+				{
+					includeDeleted:
+						(options?.includeRemoved ?? false) || (options?.includeDeletedEdges ?? false)
+				}
 			);
+
+			// If we fetched deleted items to expose edges but the caller did not ask for deleted
+			// documents, strip the deleted resources so they don't appear in the output.
+			if ((options?.includeDeletedEdges ?? false) && !(options?.includeRemoved ?? false)) {
+				documentVertex.resources = documentVertex.resources?.filter(r => Is.empty(r.dateDeleted));
+			}
 
 			// Populate the document and revisions with the options set
-			const documents = await this.getDocumentsFromVertex(
-				documentVertex,
-				options,
-				cursor,
-				pageSize,
-				userIdentity,
-				nodeIdentity
-			);
+			const documents = await this.getDocumentsFromVertex(documentVertex, options, cursor, limit);
 
-			return JsonLdProcessor.compact(documents, documents["@context"]);
+			const result = await JsonLdProcessor.compact(
+				documents.entries,
+				documents.entries["@context"]
+			);
+			return {
+				entries: result,
+				cursor: documents.cursor
+			};
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "getFailed", undefined, error);
+			throw new GeneralError(DocumentManagementService.CLASS_NAME, "getFailed", undefined, error);
 		}
 	}
 
@@ -476,9 +702,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
-	 * @returns The documents and revisions if requested, ordered by revision descending, cursor is set if there are more document revisions.
+	 * @returns The document for the specified revision.
 	 */
 	public async getRevision(
 		auditableItemGraphDocumentId: string,
@@ -489,12 +713,14 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			includeAttestation?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
-		},
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<IDocument> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.integer(this.CLASS_NAME, nameof(revision), revision);
+		}
+	): Promise<IDocumentHydrated> {
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.integer(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
 
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
@@ -503,7 +729,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (Is.empty(documentVertex.resources)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
 			documentVertex.resources = documentVertex.resources.filter(
@@ -511,28 +737,31 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (documentVertex.resources.length === 0) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNotFound", revision.toString());
+				throw new NotFoundError(
+					DocumentManagementService.CLASS_NAME,
+					"documentRevisionNotFound",
+					revision.toString()
+				);
 			}
 
 			// Populate the document and revisions with the options set
-			const docList = await this.getDocumentsFromVertex(
-				documentVertex,
-				options,
-				undefined,
-				undefined,
-				userIdentity,
-				nodeIdentity
-			);
+			const docList = await this.getDocumentsFromVertex(documentVertex, options);
 
-			return JsonLdProcessor.compact(
-				docList.itemListElement[0],
-				docList.itemListElement[0]["@context"]
+			const result = await JsonLdProcessor.compact(
+				docList.entries.itemListElement[0],
+				docList.entries.itemListElement[0]["@context"]
 			);
+			return result;
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "getRevisionFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"getRevisionFailed",
+				undefined,
+				error
+			);
 		}
 	}
 
@@ -541,26 +770,30 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * The document dateDeleted will be set, but can still be queried with the includeRemoved flag.
 	 * @param auditableItemGraphDocumentId The auditable item graph vertex id which contains the document.
 	 * @param revision The revision of the document to remove.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
-	 * @returns Nothing.
+	 * @returns A promise that resolves when the revision has been removed.
 	 */
 	public async removeRevision(
 		auditableItemGraphDocumentId: string,
-		revision: number,
-		userIdentity?: string,
-		nodeIdentity?: string
+		revision: number
 	): Promise<void> {
-		Urn.guard(this.CLASS_NAME, nameof(auditableItemGraphDocumentId), auditableItemGraphDocumentId);
-		Guards.number(this.CLASS_NAME, nameof(revision), revision);
+		Urn.guard(
+			DocumentManagementService.CLASS_NAME,
+			nameof(auditableItemGraphDocumentId),
+			auditableItemGraphDocumentId
+		);
+		Guards.integer(DocumentManagementService.CLASS_NAME, nameof(revision), revision);
 
+		await Mutex.lock(auditableItemGraphDocumentId, {
+			throwOnTimeout: true,
+			timeoutMs: this._mutexTimeoutMs
+		});
 		try {
 			const documentVertex = await this._auditableItemGraphComponent.get(
 				auditableItemGraphDocumentId
 			);
 
 			if (Is.empty(documentVertex.resources)) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNone");
+				throw new NotFoundError(DocumentManagementService.CLASS_NAME, "documentRevisionNone");
 			}
 
 			const docRevisionIndex = documentVertex.resources.findIndex(
@@ -568,17 +801,45 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			if (docRevisionIndex === -1) {
-				throw new NotFoundError(this.CLASS_NAME, "documentRevisionNotFound", revision.toString());
+				throw new NotFoundError(
+					DocumentManagementService.CLASS_NAME,
+					"documentRevisionNotFound",
+					revision.toString()
+				);
 			}
 
-			documentVertex.resources.splice(docRevisionIndex, 1);
+			const revisionResourceId =
+				(documentVertex.resources[docRevisionIndex].resourceObject?.id as string | undefined) ??
+				(documentVertex.resources[docRevisionIndex].resourceObject?.["@id"] as string | undefined);
 
-			await this._auditableItemGraphComponent.update(documentVertex, userIdentity, nodeIdentity);
+			if (!Is.stringValue(revisionResourceId)) {
+				// The revision exists but its stored resource-id is unresolvable — integrity anomaly.
+				throw new GeneralError(DocumentManagementService.CLASS_NAME, "documentRevisionMissingId", {
+					revision
+				});
+			}
+
+			await this._auditableItemGraphComponent.updatePartial({
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				id: auditableItemGraphDocumentId,
+				resourcePatches: { remove: [revisionResourceId] }
+			});
+			await MetricHelper.metricIncrement(
+				this._telemetryComponent,
+				DocumentManagementMetricIds.RevisionsRemoved
+			);
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "removeRevisionFailed", undefined, error);
+			throw new GeneralError(
+				DocumentManagementService.CLASS_NAME,
+				"removeRevisionFailed",
+				undefined,
+				error
+			);
+		} finally {
+			Mutex.unlock(auditableItemGraphDocumentId);
 		}
 	}
 
@@ -586,22 +847,21 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * Find all the document with a specific id.
 	 * @param documentId The document id to find in the graph.
 	 * @param cursor The cursor to get the next chunk of documents.
-	 * @param pageSize The page size to get the next chunk of documents.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
+	 * @param limit The limit to get the next chunk of documents.
 	 * @returns The graph vertices that contain documents referencing the specified document id.
 	 */
 	public async query(
 		documentId: string,
 		cursor?: string,
-		pageSize?: number,
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<IAuditableItemGraphVertexList> {
-		Guards.stringValue(this.CLASS_NAME, nameof(documentId), documentId);
+		limit?: number
+	): Promise<{
+		entries: IAuditableItemGraphVertexList;
+		cursor?: string;
+	}> {
+		Guards.stringValue(DocumentManagementService.CLASS_NAME, nameof(documentId), documentId);
 
 		try {
-			return this._auditableItemGraphComponent.query(
+			const result = await this._auditableItemGraphComponent.query(
 				{
 					id: documentId,
 					idMode: "both",
@@ -612,201 +872,173 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				undefined,
 				["id", "dateCreated", "dateModified", "aliases", "annotationObject", "resources", "edges"],
 				cursor,
-				pageSize
+				limit
 			);
+			return result;
 		} catch (error) {
 			if (BaseError.someErrorName(error, nameof<NotFoundError>())) {
 				throw error;
 			}
-			throw new GeneralError(this.CLASS_NAME, "queryFailed", undefined, error);
+			throw new GeneralError(DocumentManagementService.CLASS_NAME, "queryFailed", undefined, error);
 		}
 	}
 
 	/**
-	 * Update the edges of the document vertex.
-	 * @param documentVertex The document vertex to update.
-	 * @param auditableItemGraphEdges The list of edges to use.
-	 * @returns True if the edges were updated.
-	 * @internal
-	 */
-	private updateEdges(
-		documentVertex: Omit<IAuditableItemGraphVertex, "@context" | "id" | "type">,
-		auditableItemGraphEdges:
-			| { id: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
-			| undefined
-	): boolean {
-		let changed = false;
-
-		const existingEdgeIds = documentVertex.edges?.map(e => e.id) ?? [];
-
-		if (Is.array(auditableItemGraphEdges)) {
-			for (const aigEdge of auditableItemGraphEdges) {
-				const existingIndex = existingEdgeIds.indexOf(aigEdge.id);
-				if (existingIndex !== -1) {
-					// If the edge already exists then we don't need to add it again
-					// We just need to remove it from the list of existing ids
-					// any remaining after this loop will be need to be removed
-					existingEdgeIds.splice(existingIndex, 1);
-				} else {
-					const vertexEdge: IAuditableItemGraphEdge = {
-						"@context": AuditableItemGraphContexts.ContextRoot,
-						type: AuditableItemGraphTypes.Edge,
-						id: aigEdge.id,
-						edgeRelationships: ["document"]
-					};
-
-					documentVertex.edges ??= [];
-					documentVertex.edges?.push(vertexEdge);
-					changed = true;
-				}
-			}
-
-			// Anything left in the existingEdgeIds array means they need to be removed
-			if (existingEdgeIds.length > 0 && Is.array(documentVertex.edges)) {
-				for (const existingEdgeId of existingEdgeIds) {
-					const existingIndex = documentVertex.edges.findIndex(e => e.id === existingEdgeId);
-					if (existingIndex !== -1) {
-						documentVertex.edges.splice(existingIndex, 1);
-						changed = true;
-					}
-				}
-			}
-		}
-
-		return changed;
-	}
-
-	/**
-	 * Update the edges.
-	 * @param connectedVertices The connected vertices for the edges.
+	 * Update the edges on connected vertices using non-destructive patch operations.
+	 * Uses updatePartial so AIG's per-vertex Mutex serialises concurrent callers.
+	 *
+	 * On the **create path** (`isCreatePath = true`) the method is fail-fast:
+	 * if any back-edge write fails (target vertex does not exist), all back-edges
+	 * already written in this call are removed (best-effort rollback) and the
+	 * failing target vertex ID is returned so the caller can surface a meaningful error.
+	 *
+	 * On the **update path** each missing vertex is caught individually; the remaining
+	 * updates continue and `undefined` is always returned.
 	 * @param auditableItemGraphDocumentId The document id to use.
-	 * @param documentVertex The document vertex to update.
-	 * @param auditableItemGraphEdges The list of edges to use.
+	 * @param edgesToAdd Connections to add — each connected vertex receives a new back-edge.
+	 * @param edgeTargetIdsToRemove Target vertex IDs to disconnect — their back-edges are removed.
 	 * @param documentId The document identifier.
 	 * @param documentIdFormat The format of the document identifier.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
+	 * @param isCreatePath When true, enables fail-fast + rollback semantics.
+	 * @returns The failing target vertex ID when `isCreatePath` is true and a write fails;
+	 * `undefined` on success or when called from the update path.
 	 * @internal
 	 */
 	private async updateConnectedEdges(
-		connectedVertices: { [id: string]: IAuditableItemGraphVertex },
 		auditableItemGraphDocumentId: string,
-		existingEdgeIds: string[],
-		auditableItemGraphEdges:
-			| { id: string; addAlias?: boolean; aliasAnnotationObject?: IJsonLdNodeObject }[]
-			| undefined,
+		edgesToAdd: IDocumentManagementEdgeEntry[],
+		edgeTargetIdsToRemove: string[],
 		documentId: string,
 		documentIdFormat: string | undefined,
-		userIdentity: string,
-		nodeIdentity: string
-	): Promise<void> {
-		if (Is.array(auditableItemGraphEdges)) {
-			for (const aigEdge of auditableItemGraphEdges) {
-				const connected = connectedVertices[aigEdge.id];
+		isCreatePath: boolean = false
+	): Promise<string | undefined> {
+		// Track which target IDs received a successful back-edge write so we can roll back
+		// if a later write fails (create path only).
+		const writtenTargetIds: string[] = [];
 
-				if (!Is.empty(connected)) {
-					let updatedConnected = false;
-
-					const existingIndex = existingEdgeIds.indexOf(aigEdge.id);
-					if (existingIndex !== -1) {
-						// If the edge already exists we remove it from the list of existing ids
-						// any remaining after this loop will be need to be disconnected
-						existingEdgeIds.splice(existingIndex, 1);
-					}
-
-					// Add the edge with the document vertex id if it doesn't already exist
-					const hasEdge = connected.edges?.some(e => e.id === auditableItemGraphDocumentId);
-					if (!hasEdge) {
-						const vertexEdge: IAuditableItemGraphEdge = {
-							"@context": AuditableItemGraphContexts.ContextRoot,
+		// Add back-edges to each newly connected vertex.
+		for (const aigEdge of edgesToAdd) {
+			const partial: IAuditableItemGraphPartialVertex = {
+				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+				id: aigEdge.targetId,
+				edgePatches: {
+					add: [
+						{
+							"@context": AuditableItemGraphContexts.Context,
 							type: AuditableItemGraphTypes.Edge,
-							id: auditableItemGraphDocumentId,
+							targetId: auditableItemGraphDocumentId,
 							edgeRelationships: ["document"]
-						};
-
-						connected.edges ??= [];
-						connected.edges?.push(vertexEdge);
-						updatedConnected = true;
-					}
-
-					// Add alias with the document id if option flag is set and it doesn't already exist
-					if (aigEdge.addAlias) {
-						const alias = connected.aliases?.find(a => a.id === documentId);
-						if (Is.empty(alias)) {
-							// No existing alias, so create one
-							const vertexAlias: IAuditableItemGraphAlias = {
-								"@context": AuditableItemGraphContexts.ContextRoot,
-								type: AuditableItemGraphTypes.Alias,
-								id: documentId,
-								aliasFormat: documentIdFormat,
-								annotationObject: aigEdge.aliasAnnotationObject
-							};
-
-							connected.aliases ??= [];
-							connected.aliases?.push(vertexAlias);
-							updatedConnected = true;
-						} else if (
-							!ObjectHelper.equal(alias.annotationObject, aigEdge.aliasAnnotationObject) ||
-							documentIdFormat !== alias.aliasFormat
-						) {
-							// The alias already exists, but the format or annotation object has changed
-							alias.annotationObject = aigEdge.aliasAnnotationObject;
-							alias.aliasFormat = documentIdFormat;
-							updatedConnected = true;
 						}
-					}
+					]
+				}
+			};
 
-					if (updatedConnected) {
-						await this._auditableItemGraphComponent.update(connected, userIdentity, nodeIdentity);
-					}
+			if (aigEdge.includeAlias) {
+				partial.aliasPatches = {
+					add: [
+						{
+							"@context": AuditableItemGraphContexts.Context,
+							type: AuditableItemGraphTypes.Alias,
+							id: documentId,
+							aliasFormat: documentIdFormat,
+							annotationObject: aigEdge.aliasAnnotationObject
+						}
+					]
+				};
+			}
+
+			if (isCreatePath) {
+				try {
+					await this._auditableItemGraphComponent.updatePartial(partial);
+					writtenTargetIds.push(aigEdge.targetId);
+				} catch {
+					// Rollback all back-edges already written before this failure.
+					await this.rollbackConnectedEdges(
+						auditableItemGraphDocumentId,
+						writtenTargetIds,
+						documentId
+					);
+					return aigEdge.targetId;
+				}
+			} else {
+				try {
+					await this._auditableItemGraphComponent.updatePartial(partial);
+				} catch {
+					// Best-effort on the update path — swallow to avoid interrupting remaining back-edge writes.
 				}
 			}
 		}
 
-		// Anything left in the existingEdgeIds array means they need to be removed
-		if (existingEdgeIds.length > 0) {
-			for (const existingEdgeId of existingEdgeIds) {
-				const connected = connectedVertices[existingEdgeId];
+		// Remove back-edges from disconnected vertices.
+		for (const staleTargetId of edgeTargetIdsToRemove) {
+			await this.removeBackEdgeFromVertex(staleTargetId, auditableItemGraphDocumentId, documentId);
+		}
 
-				if (!Is.empty(connected)) {
-					let updatedConnected = false;
+		return undefined;
+	}
 
-					// Remove the edge from the connected vertex
-					if (Is.arrayValue(connected.edges)) {
-						const existingIndex = connected.edges.findIndex(
-							e => e.id === auditableItemGraphDocumentId
-						);
-						if (existingIndex !== -1) {
-							connected.edges.splice(existingIndex, 1);
-							updatedConnected = true;
-						}
-					}
-
-					// Remove the alias from the connected vertex
-					if (Is.arrayValue(connected.aliases)) {
-						const existingIndex = connected.aliases.findIndex(e => e.id === documentId);
-						if (existingIndex !== -1) {
-							connected.aliases.splice(existingIndex, 1);
-							updatedConnected = true;
-						}
-					}
-
-					if (updatedConnected) {
-						await this._auditableItemGraphComponent.update(connected, userIdentity, nodeIdentity);
-					}
-				}
+	/**
+	 * Best-effort removal of back-edges that were written during a failed create operation.
+	 * Errors are silently swallowed to avoid masking the original failure.
+	 * @param auditableItemGraphDocumentId The document vertex whose back-edges should be removed.
+	 * @param targetIds The connected vertex IDs that received a back-edge.
+	 * @param documentId The document identifier used for alias cleanup.
+	 * @internal
+	 */
+	private async rollbackConnectedEdges(
+		auditableItemGraphDocumentId: string,
+		targetIds: string[],
+		documentId: string
+	): Promise<void> {
+		for (const targetId of targetIds) {
+			try {
+				await this.removeBackEdgeFromVertex(targetId, auditableItemGraphDocumentId, documentId);
+			} catch {
+				// Best-effort — do not let cleanup errors mask the original failure.
 			}
 		}
 	}
 
 	/**
-	 * Generate a hash for the blob data.
-	 * @param blob The blob data to hash.
-	 * @returns The hash.
+	 * Remove the back-edge and alias that a connected vertex holds pointing at the document vertex.
+	 * Fetches the connected vertex to resolve the stored edge ID, then issues a single updatePartial.
+	 * No-ops silently if neither edge nor alias is found.
+	 * @param targetId The connected vertex to patch.
+	 * @param documentVertexId The document vertex whose back-edge should be removed.
+	 * @param documentId The document id used for alias cleanup.
 	 * @internal
 	 */
-	private generateBlobHash(blob: Uint8Array): string {
-		return `sha256:${Converter.bytesToBase64(Sha256.sum256(blob))}`;
+	private async removeBackEdgeFromVertex(
+		targetId: string,
+		documentVertexId: string,
+		documentId: string
+	): Promise<void> {
+		const connected = await this._auditableItemGraphComponent.get(targetId);
+
+		const edgeId = connected.edges?.find(
+			e => Is.empty(e.dateDeleted) && e.targetId === documentVertexId
+		)?.id;
+
+		const hasAlias =
+			Is.arrayValue(connected.aliases) &&
+			connected.aliases.some(a => Is.empty(a.dateDeleted) && a.id === documentId);
+
+		const partial: IAuditableItemGraphPartialVertex = {
+			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
+			id: targetId
+		};
+
+		if (hasAlias) {
+			partial.aliasPatches = { remove: [documentId] };
+		}
+
+		if (Is.stringValue(edgeId)) {
+			partial.edgePatches = { remove: [edgeId] };
+		}
+
+		if (hasAlias || Is.stringValue(edgeId)) {
+			await this._auditableItemGraphComponent.updatePartial(partial);
+		}
 	}
 
 	/**
@@ -816,12 +1048,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param options.includeBlobStorageMetadata Flag to include the blob storage metadata for the document, defaults to false.
 	 * @param options.includeBlobStorageData Flag to include the blob storage data for the document, defaults to false.
 	 * @param options.includeAttestation Flag to include the attestation information for the document, defaults to false.
+	 * @param options.includeDeletedEdges Flag to include soft-deleted edges in the response, defaults to false.
 	 * @param options.extractRuleGroupId If provided will extract data from the document using the specified rule group id.
 	 * @param options.extractMimeType By default extraction will auto detect the mime type of the document, this can be used to override the detection.
 	 * @param cursor The cursor to get the next chunk of revisions.
-	 * @param pageSize Page size of items to return, defaults to 1 so only most recent is returned.
-	 * @param userIdentity The identity to perform the auditable item graph operation with.
-	 * @param nodeIdentity The node identity to use for vault operations.
+	 * @param limit Limit the number of items to return, defaults to 1 so only most recent is returned.
 	 * @returns The finalised list of documents.
 	 * @internal
 	 */
@@ -831,23 +1062,27 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			includeBlobStorageMetadata?: boolean;
 			includeBlobStorageData?: boolean;
 			includeAttestation?: boolean;
+			includeDeletedEdges?: boolean;
 			extractRuleGroupId?: string;
 			extractMimeType?: string;
 		},
 		cursor?: string,
-		pageSize?: number,
-		userIdentity?: string,
-		nodeIdentity?: string
-	): Promise<IDocumentList> {
+		limit?: number
+	): Promise<{
+		entries: IDocumentList;
+		cursor?: string;
+	}> {
 		const docList: IDocumentList = {
 			"@context": [
-				SchemaOrgContexts.ContextRoot,
-				DocumentContexts.ContextRoot,
-				DocumentContexts.ContextRootCommon
+				SchemaOrgContexts.Context,
+				DocumentContexts.Context,
+				DocumentContexts.ContextCommon
 			],
 			type: SchemaOrgTypes.ItemList,
 			[SchemaOrgTypes.ItemListElement]: []
 		};
+
+		let nextCursor: string | undefined;
 
 		if (Is.arrayValue(documentVertex.resources)) {
 			// Sort by newest revision first
@@ -858,10 +1093,9 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			const startIndex = Coerce.integer(cursor) ?? 0;
-			const endIndex = Math.min(startIndex + (pageSize ?? 1), documentVertex.resources.length);
+			const endIndex = Math.min(startIndex + (limit ?? 1), documentVertex.resources.length);
 			const slicedResources = documentVertex.resources.slice(startIndex, endIndex);
-			docList[SchemaOrgTypes.NextItem] =
-				documentVertex.resources.length > endIndex ? (endIndex + 1).toString() : undefined;
+			nextCursor = documentVertex.resources.length > endIndex ? endIndex.toString() : undefined;
 
 			const includeBlobStorageMetadata = options?.includeBlobStorageMetadata ?? false;
 			const includeBlobStorageData = options?.includeBlobStorageData ?? false;
@@ -869,28 +1103,26 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			const extractData = Is.stringValue(options?.extractRuleGroupId);
 
 			for (let i = 0; i < slicedResources.length; i++) {
-				const document = slicedResources[i].resourceObject as unknown as IDocument;
-				if (Is.object(document)) {
+				const document = slicedResources[i].resourceObject as unknown as IDocumentHydrated;
+				if (Is.object(document) && document.type === DocumentTypes.Document) {
 					document.dateDeleted = slicedResources[i].dateDeleted;
 
 					docList[SchemaOrgTypes.ItemListElement].push(document);
 
 					const blobRequired = includeBlobStorageMetadata || includeBlobStorageData;
 					if (blobRequired || extractData) {
-						const blobEntry = await this._blobStorageComponent.get(
-							document.blobStorageId,
-							{
-								includeContent: includeBlobStorageData || extractData
-							},
-							userIdentity,
-							nodeIdentity
-						);
+						const blobEntry = await this._blobStorageComponent.get(document.blobStorageId, {
+							includeContent: includeBlobStorageData || extractData
+						});
 
 						if (blobRequired) {
 							document.blobStorageEntry = blobEntry;
+							if (Is.object(document.blobStorageEntry)) {
+								ObjectHelper.propertyDelete(document.blobStorageEntry, "@context");
+							}
 
-							if (!docList["@context"].includes(BlobStorageContexts.ContextRoot)) {
-								docList["@context"].push(BlobStorageContexts.ContextRoot);
+							if (!docList["@context"].includes(BlobStorageContexts.Context)) {
+								docList["@context"].push(BlobStorageContexts.Context);
 							}
 						}
 
@@ -918,8 +1150,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 							document.attestationId
 						);
 						document.attestationInformation = attestationInformation;
-						if (!docList["@context"].includes(AttestationContexts.ContextRoot)) {
-							docList["@context"].push(AttestationContexts.ContextRoot);
+						if (Is.object(document.attestationInformation)) {
+							ObjectHelper.propertyDelete(document.attestationInformation, "@context");
 						}
 					}
 				}
@@ -930,32 +1162,72 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			docList.edges ??= [];
 
 			for (const edge of documentVertex.edges) {
-				if (Is.object(edge)) {
-					docList.edges.push(edge.id);
+				if (
+					Is.object(edge) &&
+					((options?.includeDeletedEdges ?? false) || Is.empty(edge.dateDeleted))
+				) {
+					docList.edges.push(edge.targetId);
 				}
 			}
 		}
 
-		return docList;
+		return {
+			entries: docList,
+			cursor: nextCursor
+		};
+	}
+
+	/**
+	 * Compute the integrity hash for a blob.
+	 * For a Uint8Array the hash is computed locally; for a string blobStorageId the stored
+	 * integrity is fetched from blob storage (one network call, no content download).
+	 * @param blob The blob bytes or an existing blob storage entry id.
+	 * @returns The SHA-256 integrity string.
+	 * @internal
+	 */
+	private async computeBlobIntegrity(blob: Uint8Array | string): Promise<string> {
+		if (Is.uint8Array(blob)) {
+			return IntegrityHelper.generate(IntegrityAlgorithm.Sha256, blob);
+		}
+		const blobEntry = await this._blobStorageComponent.get(blob, { includeContent: false });
+		return blobEntry.integrity;
+	}
+
+	/**
+	 * Apply a partial document field patch in-place to a revision object.
+	 * Only non-empty values overwrite the existing fields; undefined means no change.
+	 * @param revision The revision to mutate.
+	 * @param patch The field values to apply.
+	 * @internal
+	 */
+	private applyDocumentFieldPatch(
+		revision: IDocument,
+		patch?: Partial<Pick<IDocumentBase, "annotationObject" | "documentIdFormat" | "documentCode">>
+	): void {
+		const { annotationObject, documentIdFormat, documentCode } = patch ?? {};
+		if (!Is.empty(annotationObject)) {
+			revision.annotationObject = annotationObject;
+		}
+		if (!Is.empty(documentIdFormat)) {
+			revision.documentIdFormat = documentIdFormat;
+		}
+		if (!Is.empty(documentCode)) {
+			revision.documentCode = documentCode;
+		}
 	}
 
 	/**
 	 * Create an attestation for the document.
 	 * @param document The document to create the attestation for.
-	 * @param userIdentity The identity to perform the attestation operation with.
-	 * @param nodeIdentity The node identity to perform attestation operation with.
 	 * @returns The attestation identifier.
+	 * @internal
 	 */
-	private async createAttestation(
-		document: IDocument,
-		userIdentity: string,
-		nodeIdentity: string
-	): Promise<string> {
+	private async createAttestation(document: IDocument): Promise<string> {
 		const documentAttestation: IDocumentAttestation & IJsonLdNodeObject = {
 			"@context": [
-				DocumentContexts.ContextRoot,
-				DocumentContexts.ContextRootCommon,
-				SchemaOrgContexts.ContextRoot
+				SchemaOrgContexts.Context,
+				DocumentContexts.Context,
+				DocumentContexts.ContextCommon
 			],
 			type: DocumentTypes.DocumentAttestation,
 			id: document.id,
@@ -963,14 +1235,14 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			documentCode: document.documentCode,
 			documentRevision: document.documentRevision,
 			dateCreated: document.dateCreated,
-			blobHash: document.blobHash
+			integrity: document.integrity
 		};
-		return this._attestationComponent.create(
-			documentAttestation,
-			undefined,
-			userIdentity,
-			nodeIdentity
+		const attestationId = await this._attestationComponent.create(documentAttestation);
+		await MetricHelper.metricIncrement(
+			this._telemetryComponent,
+			DocumentManagementMetricIds.AttestationsCreated
 		);
+		return attestationId;
 	}
 
 	/**

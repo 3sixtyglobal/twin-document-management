@@ -4,5 +4,9 @@
 /**
  * Configuration for the document management service.
  */
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface IDocumentManagementServiceConfig {}
+export interface IDocumentManagementServiceConfig {
+	/**
+	 * The timeout in milliseconds for acquiring a mutex lock.
+	 */
+	mutexTimeoutMs?: number;
+}

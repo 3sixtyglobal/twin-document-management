@@ -1,6 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IDocumentManagementServiceConfig } from "./IDocumentManagementServiceConfig";
+import type { IDocumentManagementServiceConfig } from "./IDocumentManagementServiceConfig.js";
 
 /**
  * Options for the document management Service constructor.
@@ -29,6 +29,11 @@ export interface IDocumentManagementServiceConstructorOptions {
 	 * @default data-processing
 	 */
 	dataProcessingComponentType?: string;
+
+	/**
+	 * The type of the telemetry component used for event metrics.
+	 */
+	telemetryComponentType?: string;
 
 	/**
 	 * The configuration for the service.
