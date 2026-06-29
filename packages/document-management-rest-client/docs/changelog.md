@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.1-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.1-next.1...document-management-rest-client-v0.9.1-next.2) (2026-06-29)
+
+
+### Features
+
+* enhanced rest testing ([#72](https://github.com/iotaledger/twin-document-management/issues/72)) ([ce03c4c](https://github.com/iotaledger/twin-document-management/commit/ce03c4c95dfed7628585c9f7d753835786a83f14))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.9.1-next.1 to 0.9.1-next.2
+
 ## [0.9.1-next.1](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.1-next.0...document-management-rest-client-v0.9.1-next.1) (2026-06-26)
 
 
