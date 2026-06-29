@@ -1,10 +1,11 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import { BaseRestClient } from "@twin.org/api-core";
-import type {
-	IBaseRestClientConfig,
-	ICreatedResponse,
-	INoContentResponse
+import {
+	HttpHeaderHelper,
+	type IBaseRestClientConfig,
+	type ICreatedResponse,
+	type INoContentResponse
 } from "@twin.org/api-models";
 import type { IAuditableItemGraphVertexList } from "@twin.org/auditable-item-graph-models";
 import { Coerce, Converter, Guards, Is, Urn } from "@twin.org/core";
@@ -26,7 +27,7 @@ import type {
 	IDocumentManagementUpdatePartialRequest
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
-import { HeaderHelper, HeaderTypes } from "@twin.org/web";
+import { HttpMethod } from "@twin.org/web";
 
 /**
  * Client for performing document management through to REST endpoints.
@@ -90,7 +91,7 @@ export class DocumentManagementRestClient
 
 		const response = await this.fetch<IDocumentManagementCreateRequest, ICreatedResponse>(
 			"/",
-			"POST",
+			HttpMethod.POST,
 			{
 				body: {
 					document,
@@ -101,7 +102,7 @@ export class DocumentManagementRestClient
 			}
 		);
 
-		return response.headers.location;
+		return HttpHeaderHelper.extractId(response.headers);
 	}
 
 	/**
@@ -148,7 +149,7 @@ export class DocumentManagementRestClient
 
 		await this.fetch<IDocumentManagementUpdatePartialRequest, INoContentResponse>(
 			"/:auditableItemGraphDocumentId",
-			"PATCH",
+			HttpMethod.PATCH,
 			{
 				pathParams: {
 					auditableItemGraphDocumentId
@@ -204,7 +205,7 @@ export class DocumentManagementRestClient
 		const response = await this.fetch<
 			IDocumentManagementGetRequest,
 			IDocumentManagementGetResponse
-		>("/:auditableItemGraphDocumentId", "GET", {
+		>("/:auditableItemGraphDocumentId", HttpMethod.GET, {
 			pathParams: {
 				auditableItemGraphDocumentId
 			},
@@ -223,8 +224,7 @@ export class DocumentManagementRestClient
 
 		return {
 			entries: response.body,
-			cursor: HeaderHelper.extractLinkHeaderRelation(response.headers?.[HeaderTypes.Link], "next")
-				?.urlQueryParams?.cursor
+			cursor: HttpHeaderHelper.extractCursor(response.headers)
 		};
 	}
 
@@ -261,7 +261,7 @@ export class DocumentManagementRestClient
 		const response = await this.fetch<
 			IDocumentManagementGetRevisionRequest,
 			IDocumentManagementGetRevisionResponse
-		>("/:auditableItemGraphDocumentId/:revision", "GET", {
+		>("/:auditableItemGraphDocumentId/:revision", HttpMethod.GET, {
 			pathParams: {
 				auditableItemGraphDocumentId,
 				revision: revision.toString()
@@ -298,7 +298,7 @@ export class DocumentManagementRestClient
 
 		await this.fetch<IDocumentManagementRemoveRequest, INoContentResponse>(
 			"/:auditableItemGraphDocumentId/:revision",
-			"DELETE",
+			HttpMethod.DELETE,
 			{
 				pathParams: {
 					auditableItemGraphDocumentId,
@@ -328,7 +328,7 @@ export class DocumentManagementRestClient
 		const response = await this.fetch<
 			IDocumentManagementQueryRequest,
 			IDocumentManagementQueryResponse
-		>("/", "GET", {
+		>("/", HttpMethod.GET, {
 			query: {
 				documentId,
 				cursor,
@@ -338,8 +338,7 @@ export class DocumentManagementRestClient
 
 		return {
 			entries: response.body,
-			cursor: HeaderHelper.extractLinkHeaderRelation(response.headers?.[HeaderTypes.Link], "next")
-				?.urlQueryParams?.cursor
+			cursor: HttpHeaderHelper.extractCursor(response.headers)
 		};
 	}
 }
