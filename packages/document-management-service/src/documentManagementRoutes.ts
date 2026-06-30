@@ -3,6 +3,7 @@
 import {
 	HttpContextIdKeys,
 	HttpHeaderHelper,
+	HttpUrlHelper,
 	type ICreatedResponse,
 	type IHttpRequestContext,
 	type INoContentResponse,
@@ -71,7 +72,7 @@ export function generateRestRoutesDocumentManagement(
 		method: "POST",
 		path: `${baseRouteName}/`,
 		handler: async (httpRequestContext, request) =>
-			documentManagementCreate(httpRequestContext, componentName, request),
+			documentManagementCreate(httpRequestContext, componentName, request, baseRouteName),
 		requestType: {
 			type: nameof<IDocumentManagementCreateRequest>(),
 			examples: [
@@ -536,12 +537,14 @@ export function generateRestRoutesDocumentManagement(
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
+ * @param baseRouteName The base route name for constructing URLs.
  * @returns The response object with additional http response properties.
  */
 export async function documentManagementCreate(
 	httpRequestContext: IHttpRequestContext,
 	componentName: string,
-	request: IDocumentManagementCreateRequest
+	request: IDocumentManagementCreateRequest,
+	baseRouteName: string
 ): Promise<ICreatedResponse> {
 	Guards.object<IDocumentManagementCreateRequest>(ROUTES_SOURCE, nameof(request), request);
 	Guards.object<IDocumentManagementCreateRequest["body"]>(
@@ -570,11 +573,19 @@ export async function documentManagementCreate(
 		}
 	);
 
+	const contextIds = await ContextIdStore.getContextIds();
+	const publicOrigin = contextIds?.[HttpContextIdKeys.PublicOrigin];
+
+	const headers: IHttpHeaders = {};
+	HttpHeaderHelper.buildId(
+		headers,
+		id,
+		HttpUrlHelper.combineOriginPath(publicOrigin, `${baseRouteName}/:id`)
+	);
+
 	return {
 		statusCode: HttpStatusCode.created,
-		headers: {
-			location: id
-		}
+		headers
 	};
 }
 

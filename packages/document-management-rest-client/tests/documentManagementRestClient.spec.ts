@@ -35,6 +35,8 @@ const DOC_URN = "urn:dm:doc001";
 const DOC_ID = "DOC-2024-001";
 const REVISION = 1;
 
+const LOCATION = `${ENDPOINT}/${PREFIX}/${DOC_URN}`;
+
 const TEST_DOCUMENT_BASE: IDocumentBase = {
 	documentId: DOC_ID,
 	documentCode: UneceDocumentCodeList.CommercialInvoice
@@ -95,7 +97,7 @@ describe("DocumentManagementRestClient", () => {
 		});
 
 		test("sends POST to /{prefix}", async () => {
-			fetchMock.mockResolvedValueOnce(createdResponse(DOC_URN));
+			fetchMock.mockResolvedValueOnce(createdResponse(LOCATION));
 
 			await client.create(TEST_DOCUMENT_BASE, "dGVzdA==");
 
@@ -105,7 +107,7 @@ describe("DocumentManagementRestClient", () => {
 		});
 
 		test("sends document and string blob in the request body", async () => {
-			fetchMock.mockResolvedValueOnce(createdResponse(DOC_URN));
+			fetchMock.mockResolvedValueOnce(createdResponse(LOCATION));
 
 			await client.create(TEST_DOCUMENT_BASE, "dGVzdA==");
 
@@ -117,7 +119,7 @@ describe("DocumentManagementRestClient", () => {
 		});
 
 		test("converts Uint8Array blob to a base64 string in the request body", async () => {
-			fetchMock.mockResolvedValueOnce(createdResponse(DOC_URN));
+			fetchMock.mockResolvedValueOnce(createdResponse(LOCATION));
 
 			await client.create(TEST_DOCUMENT_BASE, new Uint8Array([116, 101, 115, 116]));
 
@@ -128,7 +130,7 @@ describe("DocumentManagementRestClient", () => {
 		});
 
 		test("sends auditableItemGraphEdges in the request body when provided", async () => {
-			fetchMock.mockResolvedValueOnce(createdResponse(DOC_URN));
+			fetchMock.mockResolvedValueOnce(createdResponse(LOCATION));
 			const edges = [{ targetId: "urn:aig:vertex001" }];
 
 			await client.create(TEST_DOCUMENT_BASE, "dGVzdA==", edges);
@@ -139,7 +141,7 @@ describe("DocumentManagementRestClient", () => {
 		});
 
 		test("returns the Location header value as the new document id", async () => {
-			fetchMock.mockResolvedValueOnce(createdResponse(DOC_URN));
+			fetchMock.mockResolvedValueOnce(createdResponse(LOCATION));
 
 			const id = await client.create(TEST_DOCUMENT_BASE, "dGVzdA==");
 
