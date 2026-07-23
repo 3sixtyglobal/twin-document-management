@@ -678,7 +678,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			const result = await JsonLdProcessor.compact(
 				documents.entries,
-				documents.entries["@context"]
+				documents.entries["@context"],
+				{ compactArrays: false }
 			);
 			return {
 				entries: result,
@@ -749,7 +750,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			const result = await JsonLdProcessor.compact(
 				docList.entries.itemListElement[0],
-				docList.entries.itemListElement[0]["@context"]
+				docList.entries.itemListElement[0]["@context"],
+				{ compactArrays: false }
 			);
 			return result;
 		} catch (error) {
