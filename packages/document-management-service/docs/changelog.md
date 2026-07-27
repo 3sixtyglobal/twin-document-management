@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.9.1](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.9.1...document-management-service-v0.9.1) (2026-07-27)
+
+
+### Features
+
+* release to production ([a009526](https://github.com/iotaledger/twin-document-management/commit/a009526032a0ee6e6b74f476a01fbe5f4c7fd4da))
+* release to production ([#65](https://github.com/iotaledger/twin-document-management/issues/65)) ([ec864da](https://github.com/iotaledger/twin-document-management/commit/ec864da16d1644882181cb6b156cff8aef86cb26))
+* release to production ([#68](https://github.com/iotaledger/twin-document-management/issues/68)) ([e15f56c](https://github.com/iotaledger/twin-document-management/commit/e15f56c67a1fb85cef6a5f2dbf345f9dce890ff7))
+* release to production ([#78](https://github.com/iotaledger/twin-document-management/issues/78)) ([ace0fa4](https://github.com/iotaledger/twin-document-management/commit/ace0fa44014618271aa2569407a5124e3ecfabbc))
+
+
+### Bug Fixes
+
+* tests ([0307736](https://github.com/iotaledger/twin-document-management/commit/03077361997a7b0eb83144f44ea656147e4b727c))
+
 ## [0.9.1-next.3](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.9.1-next.2...document-management-service-v0.9.1-next.3) (2026-06-30)
 
 
