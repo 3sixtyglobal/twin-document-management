@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0.
 import {
 	HttpContextIdKeys,
+	HttpHeaderHelper,
 	HttpUrlHelper,
 	type ICreatedResponse,
 	type IHttpRequestContext,
@@ -33,7 +34,7 @@ import {
 import { nameof } from "@twin.org/nameof";
 import { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
-import { HeaderHelper, HeaderTypes, HttpStatusCode, MimeTypes } from "@twin.org/web";
+import { HeaderTypes, HttpStatusCode, type IHttpHeaders, MimeTypes } from "@twin.org/web";
 
 /**
  * The source used when communicating about these routes.
@@ -71,7 +72,7 @@ export function generateRestRoutesDocumentManagement(
 		method: "POST",
 		path: `${baseRouteName}/`,
 		handler: async (httpRequestContext, request) =>
-			documentManagementCreate(httpRequestContext, componentName, request),
+			documentManagementCreate(httpRequestContext, componentName, request, baseRouteName),
 		requestType: {
 			type: nameof<IDocumentManagementCreateRequest>(),
 			examples: [
@@ -536,12 +537,14 @@ export function generateRestRoutesDocumentManagement(
  * @param httpRequestContext The request context for the API.
  * @param componentName The name of the component to use in the routes.
  * @param request The request.
+ * @param baseRouteName The base route name for constructing URLs.
  * @returns The response object with additional http response properties.
  */
 export async function documentManagementCreate(
 	httpRequestContext: IHttpRequestContext,
 	componentName: string,
-	request: IDocumentManagementCreateRequest
+	request: IDocumentManagementCreateRequest,
+	baseRouteName: string
 ): Promise<ICreatedResponse> {
 	Guards.object<IDocumentManagementCreateRequest>(ROUTES_SOURCE, nameof(request), request);
 	Guards.object<IDocumentManagementCreateRequest["body"]>(
@@ -570,11 +573,19 @@ export async function documentManagementCreate(
 		}
 	);
 
+	const contextIds = await ContextIdStore.getContextIds();
+	const publicOrigin = contextIds?.[HttpContextIdKeys.PublicOrigin];
+
+	const headers: IHttpHeaders = {};
+	HttpHeaderHelper.buildId(
+		headers,
+		id,
+		HttpUrlHelper.combineOriginPath(publicOrigin, `${baseRouteName}/:id`)
+	);
+
 	return {
 		statusCode: HttpStatusCode.created,
-		headers: {
-			location: id
-		}
+		headers
 	};
 }
 
@@ -619,22 +630,16 @@ export async function documentManagementGet(
 		Coerce.integer(request.query?.limit)
 	);
 
-	const headers: IDocumentManagementGetResponse["headers"] = {
-		[HeaderTypes.ContentType]:
-			request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? MimeTypes.JsonLd : MimeTypes.Json
-	};
+	const headers: IHttpHeaders = {};
+	HttpHeaderHelper.buildJsonContentType(headers, request.headers);
 
-	if (Is.stringValue(result.cursor)) {
-		const contextIds = await ContextIdStore.getContextIds();
-		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			HttpUrlHelper.replaceOrigin(
-				httpRequestContext.serverRequest.url,
-				contextIds?.[HttpContextIdKeys.PublicOrigin]
-			),
-			{ cursor: result.cursor },
-			"next"
-		);
-	}
+	const contextIds = await ContextIdStore.getContextIds();
+	HttpHeaderHelper.buildCursor(
+		headers,
+		httpRequestContext.serverRequest.url,
+		contextIds?.[HttpContextIdKeys.PublicOrigin],
+		result.cursor
+	);
 
 	return {
 		headers,
@@ -683,13 +688,11 @@ export async function documentManagementGetRevision(
 		}
 	);
 
+	const headers: IHttpHeaders = {};
+	HttpHeaderHelper.buildJsonContentType(headers, request.headers);
+
 	return {
-		headers: {
-			[HeaderTypes.ContentType]:
-				request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd
-					? MimeTypes.JsonLd
-					: MimeTypes.Json
-		},
+		headers,
 		body: result
 	};
 }
@@ -807,22 +810,16 @@ export async function documentManagementQuery(
 		Coerce.integer(request.query?.limit)
 	);
 
-	const headers: IDocumentManagementQueryResponse["headers"] = {
-		[HeaderTypes.ContentType]:
-			request.headers?.[HeaderTypes.Accept] === MimeTypes.JsonLd ? MimeTypes.JsonLd : MimeTypes.Json
-	};
+	const headers: IHttpHeaders = {};
+	HttpHeaderHelper.buildJsonContentType(headers, request.headers);
 
-	if (Is.stringValue(result.cursor)) {
-		const contextIds = await ContextIdStore.getContextIds();
-		headers[HeaderTypes.Link] = HeaderHelper.createLinkHeader(
-			HttpUrlHelper.replaceOrigin(
-				httpRequestContext.serverRequest.url,
-				contextIds?.[HttpContextIdKeys.PublicOrigin]
-			),
-			{ cursor: result.cursor },
-			"next"
-		);
-	}
+	const contextIds = await ContextIdStore.getContextIds();
+	HttpHeaderHelper.buildCursor(
+		headers,
+		httpRequestContext.serverRequest.url,
+		contextIds?.[HttpContextIdKeys.PublicOrigin],
+		result.cursor
+	);
 
 	return {
 		headers,

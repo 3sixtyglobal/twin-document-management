@@ -1,5 +1,57 @@
 # Changelog
 
+## [0.9.1-next.3](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.9.1-next.2...document-management-models-v0.9.1-next.3) (2026-06-30)
+
+
+### Miscellaneous Chores
+
+* **document-management-models:** Synchronize repo versions
+
+## [0.9.1-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.9.1-next.1...document-management-models-v0.9.1-next.2) (2026-06-29)
+
+
+### Miscellaneous Chores
+
+* **document-management-models:** Synchronize repo versions
+
+## [0.9.1-next.1](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.9.1-next.0...document-management-models-v0.9.1-next.1) (2026-06-26)
+
+
+### Features
+
+* add context id features ([#24](https://github.com/iotaledger/twin-document-management/issues/24)) ([83f65f1](https://github.com/iotaledger/twin-document-management/commit/83f65f15e55f2293f5ca0d9d1e4679ba67c4ec8d))
+* add event-driven telemetry metrics ([#46](https://github.com/iotaledger/twin-document-management/issues/46)) ([2cc4933](https://github.com/iotaledger/twin-document-management/commit/2cc49338a05972279ee8e68027506a796e96766e))
+* add ts-to-jsonld-context tool ([da11115](https://github.com/iotaledger/twin-document-management/commit/da111155614dc7f7789480c8b0d2f03c66a16ae4))
+* add validate-locales ([b6b6f9e](https://github.com/iotaledger/twin-document-management/commit/b6b6f9e9d66c17af3d030247ca168ac0b5844bdc))
+* blobHash to integrity ([#38](https://github.com/iotaledger/twin-document-management/issues/38)) ([2d45756](https://github.com/iotaledger/twin-document-management/commit/2d457565ba61d260ace12a762e592b6b1a65788d))
+* data type registration use fully qualified names ([18d27d0](https://github.com/iotaledger/twin-document-management/commit/18d27d0c21d0f652b7df4b409bb2d3c66cf22f84))
+* document get can perform extraction ([#6](https://github.com/iotaledger/twin-document-management/issues/6)) ([5ce6d37](https://github.com/iotaledger/twin-document-management/commit/5ce6d37432ad271ca5783f422846f4be98ec2215))
+* eslint migration to flat config ([98635aa](https://github.com/iotaledger/twin-document-management/commit/98635aa24ebafba265e989e461fe98104f683191))
+* get document revision ([080eddc](https://github.com/iotaledger/twin-document-management/commit/080eddcc024c622dda6bb36f60f5fa80a86cf5bb))
+* improve comments ([4d2f094](https://github.com/iotaledger/twin-document-management/commit/4d2f094b23e3320cb739917246c1ee5f6ad41c11))
+* replace nextItem property with Link header ([#34](https://github.com/iotaledger/twin-document-management/issues/34)) ([3f04c3f](https://github.com/iotaledger/twin-document-management/commit/3f04c3fb5c9ec0c56f213089a15cc247fbfbd59c))
+* store document as a vertex ([#2](https://github.com/iotaledger/twin-document-management/issues/2)) ([7febedc](https://github.com/iotaledger/twin-document-management/commit/7febedc3fb31de9c19565d6326341046834f2c74))
+* typescript 6 update ([35631d8](https://github.com/iotaledger/twin-document-management/commit/35631d88551380933009443d77b1a844b631a98e))
+* update background task service ([5c380dc](https://github.com/iotaledger/twin-document-management/commit/5c380dca3114254201768f184f9486828501ff66))
+* update contexts ([#32](https://github.com/iotaledger/twin-document-management/issues/32)) ([2fc1d92](https://github.com/iotaledger/twin-document-management/commit/2fc1d9200ecd8b755efb552c5f84f996cb61e64a))
+* update contexts and namespaces ([#29](https://github.com/iotaledger/twin-document-management/issues/29)) ([ef7abc0](https://github.com/iotaledger/twin-document-management/commit/ef7abc01d10b3f9528be8afaa21dbd00181939ae))
+* update dependencies ([f9d8641](https://github.com/iotaledger/twin-document-management/commit/f9d86417dba24027699225ec7473296e361dcb00))
+* update framework core ([f991a59](https://github.com/iotaledger/twin-document-management/commit/f991a59d25ec228bcdd7a5b6bd55578985b55a84))
+* update schemas ([310261d](https://github.com/iotaledger/twin-document-management/commit/310261d620254d9c00dfa8fbb470948af9101778))
+* update to latest aig method shapes ([497e895](https://github.com/iotaledger/twin-document-management/commit/497e8954f24774db628e057ebb9d158a1fd9d92a))
+* update ts-to-schema generation ([01a5335](https://github.com/iotaledger/twin-document-management/commit/01a5335372f6a4764a74d56c446d669724a308aa))
+* update unece dependencies ([a27548c](https://github.com/iotaledger/twin-document-management/commit/a27548cdebbe1d9577fc8341166538c2f07348a3))
+* updated API surface ([#58](https://github.com/iotaledger/twin-document-management/issues/58)) ([e811d22](https://github.com/iotaledger/twin-document-management/commit/e811d22e27d905ff4dbee43273f6195c7386491b))
+* use standard list json ld types ([20ea04b](https://github.com/iotaledger/twin-document-management/commit/20ea04b05fd4bc4fcedce8f66958942c3c2fa303))
+* use targetId in AIG for edges ([82dec81](https://github.com/iotaledger/twin-document-management/commit/82dec8190d8b523b350ef133bdcf648cab1023b0))
+* use updated unece types ([c141a89](https://github.com/iotaledger/twin-document-management/commit/c141a895138cb45fa0b1e95c42f56e31708c846c))
+
+
+### Bug Fixes
+
+* query params force coercion ([d667d0f](https://github.com/iotaledger/twin-document-management/commit/d667d0f195accca2887a5ca732e9790063763996))
+* replace destructive update() with updatePartial() for edge linking ([#50](https://github.com/iotaledger/twin-document-management/issues/50)) ([c1d2c33](https://github.com/iotaledger/twin-document-management/commit/c1d2c337c371bdcc1f23cac482393468ef84f0d7))
+
 ## [0.9.0](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.9.0...document-management-models-v0.9.0) (2026-06-25)
 
 

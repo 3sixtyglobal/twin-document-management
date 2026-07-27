@@ -1,6 +1,6 @@
 # Function: documentManagementCreate()
 
-> **documentManagementCreate**(`httpRequestContext`, `componentName`, `request`): `Promise`\<`ICreatedResponse`\>
+> **documentManagementCreate**(`httpRequestContext`, `componentName`, `request`, `baseRouteName`): `Promise`\<`ICreatedResponse`\>
 
 Create a document as an auditable item graph vertex.
 
@@ -23,6 +23,12 @@ The name of the component to use in the routes.
 `IDocumentManagementCreateRequest`
 
 The request.
+
+### baseRouteName
+
+`string`
+
+The base route name for constructing URLs.
 
 ## Returns
 
