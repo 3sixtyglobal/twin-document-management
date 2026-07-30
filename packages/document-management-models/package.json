@@ -1,6 +1,6 @@
 {
 	"name": "@twin.org/document-management-models",
-	"version": "0.9.2-next.0",
+	"version": "0.9.2-next.1",
 	"description": "Shared data models, schemas, and context definitions for document lifecycle records.",
 	"repository": {
 		"type": "git",
