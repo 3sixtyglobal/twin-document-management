@@ -24,6 +24,7 @@ import {
 	Is,
 	Mutex,
 	NotFoundError,
+	NumberHelper,
 	ObjectHelper,
 	Urn
 } from "@twin.org/core";
@@ -202,10 +203,17 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			// existing blobStorageId and fetch the entry's stored integrity.
 			const blobIntegrity = await this.computeBlobIntegrity(blob);
 			let blobStorageId: string;
-			let blobUploaded = false;
+			const blobCreateCorrelationId = Is.uint8Array(blob) ? crypto.randomUUID() : undefined;
 			if (Is.uint8Array(blob)) {
-				blobStorageId = await this._blobStorageComponent.create(Converter.bytesToBase64(blob));
-				blobUploaded = true;
+				blobStorageId = await this._blobStorageComponent.create(
+					Converter.bytesToBase64(blob),
+					undefined,
+					undefined,
+					{
+						"@context": SchemaOrgContexts.Context,
+						identifier: blobCreateCorrelationId
+					}
+				);
 			} else {
 				blobStorageId = blob;
 			}
@@ -273,13 +281,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			if (Is.stringValue(failingVertexId)) {
 				// At least one connected vertex was missing. Back-edges already written have been
-				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the orphaned
-				// blob (only if we uploaded it) and soft-delete the document resource so the vertex
-				// is left empty.
-				if (blobUploaded) {
-					try {
-						await this._blobStorageComponent.remove(blobStorageId);
-					} catch {}
+				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the blob
+				// only if this request can prove ownership via a create correlation id in
+				// blob metadata, then soft-delete the document resource so the vertex is left empty.
+				if (Is.stringValue(blobCreateCorrelationId)) {
+					await this.removeBlobIfCreatedByRequest(blobStorageId, blobCreateCorrelationId);
 				}
 				try {
 					await this._auditableItemGraphComponent.updatePartial({
@@ -1095,7 +1101,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			const startIndex = Coerce.integer(cursor) ?? 0;
-			const endIndex = Math.min(startIndex + (limit ?? 1), documentVertex.resources.length);
+			const safeLimit = NumberHelper.clamp(limit ?? 1, 1);
+			const endIndex = Math.min(startIndex + safeLimit, documentVertex.resources.length);
 			const slicedResources = documentVertex.resources.slice(startIndex, endIndex);
 			nextCursor = documentVertex.resources.length > endIndex ? endIndex.toString() : undefined;
 
@@ -1193,6 +1200,34 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		}
 		const blobEntry = await this._blobStorageComponent.get(blob, { includeContent: false });
 		return blobEntry.integrity;
+	}
+
+	/**
+	 * Remove a blob on rollback only when its metadata proves this request created it.
+	 * Uses the create-correlation identifier set during blob upload.
+	 * @param blobStorageId The blob id to check and potentially remove.
+	 * @param correlationId The request correlation id to match against blob metadata.
+	 * @internal
+	 */
+	private async removeBlobIfCreatedByRequest(
+		blobStorageId: string,
+		correlationId: string
+	): Promise<void> {
+		try {
+			const blobEntry = await this._blobStorageComponent.get(blobStorageId, {
+				includeContent: false
+			});
+			const metadataIdentifier = (blobEntry.metadata as { identifier?: unknown } | undefined)
+				?.identifier;
+
+			if (Is.stringValue(metadataIdentifier) && metadataIdentifier === correlationId) {
+				try {
+					await this._blobStorageComponent.remove(blobStorageId);
+				} catch {}
+			}
+		} catch {
+			// Best-effort cleanup only.
+		}
 	}
 
 	/**

@@ -295,17 +295,20 @@ describe("document-management-service", async () => {
 		expect(nftStore).toEqual([]);
 
 		const blobStore = await blobEntryEntityStorage.getStore();
-		expect(blobStore).toEqual([
-			{
-				blobSize: 11,
-				integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
-				dateCreated: "2024-08-22T04:13:20.000Z",
-				encodingFormat: "text/plain",
-				fileExtension: "txt",
-				id: "blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
-				isEncrypted: false
+		expect(blobStore).toHaveLength(1);
+		expect(blobStore[0]).toMatchObject({
+			blobSize: 11,
+			integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+			dateCreated: "2024-08-22T04:13:20.000Z",
+			encodingFormat: "text/plain",
+			fileExtension: "txt",
+			id: "blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+			isEncrypted: false,
+			metadata: {
+				"@context": "https://schema.org",
+				identifier: expect.any(String)
 			}
-		]);
+		});
 
 		const aigStore = await vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
@@ -403,17 +406,20 @@ describe("document-management-service", async () => {
 		]);
 
 		const blobStore = await blobEntryEntityStorage.getStore();
-		expect(blobStore).toEqual([
-			{
-				blobSize: 11,
-				integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
-				dateCreated: "2024-08-22T04:13:20.000Z",
-				encodingFormat: "text/plain",
-				fileExtension: "txt",
-				id: "blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
-				isEncrypted: false
+		expect(blobStore).toHaveLength(1);
+		expect(blobStore[0]).toMatchObject({
+			blobSize: 11,
+			integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+			dateCreated: "2024-08-22T04:13:20.000Z",
+			encodingFormat: "text/plain",
+			fileExtension: "txt",
+			id: "blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
+			isEncrypted: false,
+			metadata: {
+				"@context": "https://schema.org",
+				identifier: expect.any(String)
 			}
-		]);
+		});
 
 		const aigStore = await vertexEntityStorage.getStore();
 		expect(aigStore).toEqual([
@@ -1108,6 +1114,9 @@ describe("document-management-service", async () => {
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						encodingFormat: "text/plain",
 						fileExtension: "txt",
+						metadata: {
+							identifier: expect.any(String)
+						},
 						isEncrypted: false
 					}
 				}
@@ -1170,6 +1179,9 @@ describe("document-management-service", async () => {
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						encodingFormat: "text/plain",
 						fileExtension: "txt",
+						metadata: {
+							identifier: expect.any(String)
+						},
 						blob: "SGVsbG8gV29ybGQ=",
 						isEncrypted: false
 					}
@@ -1252,6 +1264,9 @@ describe("document-management-service", async () => {
 						blobSize: 11,
 						fileExtension: "txt",
 						integrity: "sha256-pZGm1Av0IEBKARczz7exkNYsZb8LzaMrV7J32a2fFG4=",
+						metadata: {
+							identifier: expect.any(String)
+						},
 						isEncrypted: false
 					},
 					blobStorageId:
@@ -1368,6 +1383,46 @@ describe("document-management-service", async () => {
 		expect(docs.cursor).toEqual("30");
 
 		docs = await service.get(documentId, undefined, docs.cursor, 10);
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
+		expect(docs.cursor).toBeUndefined();
+	});
+
+	test("clamps limit=0 to 1 so cursor pagination advances and terminates", async () => {
+		const service = new DocumentManagementService();
+
+		const documentId = await service.create(
+			{
+				documentId: "test-doc-id:limit-zero",
+				documentCode: UneceDocumentCodeList.BillOfLading,
+				annotationObject: { type: "DigitalDocument", name: "bill-of-lading" }
+			},
+			Converter.utf8ToBytes("Hello World"),
+			undefined,
+			{
+				includeAttestation: false
+			}
+		);
+
+		for (let i = 0; i < 2; i++) {
+			await service.updatePartial(
+				documentId,
+				{ annotationObject: { type: "DigitalDocument", name: "bill-of-lading" } },
+				Converter.utf8ToBytes(`Hello World${i}`)
+			);
+		}
+
+		let docs = await service.get(documentId, undefined, undefined, 0);
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(2);
+		expect(docs.cursor).toEqual("1");
+
+		docs = await service.get(documentId, undefined, docs.cursor, 0);
+		expect(docs.entries.itemListElement.length).toEqual(1);
+		expect(docs.entries.itemListElement[0].documentRevision).toEqual(1);
+		expect(docs.cursor).toEqual("2");
+
+		docs = await service.get(documentId, undefined, docs.cursor, 0);
 		expect(docs.entries.itemListElement.length).toEqual(1);
 		expect(docs.entries.itemListElement[0].documentRevision).toEqual(0);
 		expect(docs.cursor).toBeUndefined();
@@ -1906,7 +1961,7 @@ describe("document-management-service", async () => {
 			SharedStore.set("mutexLocks", {});
 		});
 
-		test("blob is removed from storage when create fails due to missing target vertex", async () => {
+		test("blob is removed when create fails and the blob was created by the same request", async () => {
 			const service = new DocumentManagementService();
 
 			await expect(
@@ -1920,8 +1975,47 @@ describe("document-management-service", async () => {
 				)
 			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
 
-			// The blob created during the attempt must have been removed.
+			// The blob created during this failed attempt is removed because the metadata
+			// correlation id proves this request created the entry.
 			expect(await blobEntryEntityStorage.getStore()).toHaveLength(0);
+		});
+
+		test("failed create does not delete a shared blob used by another document", async () => {
+			const service = new DocumentManagementService();
+			const sharedBytes = Converter.utf8ToBytes("Shared content blob");
+
+			const documentAId = await service.create(
+				{
+					documentId: "shared-blob-doc-a",
+					documentCode: UneceDocumentCodeList.BillOfLading
+				},
+				sharedBytes
+			);
+
+			const before = await service.get(documentAId, { includeBlobStorageData: true });
+			expect(before.entries.itemListElement).toHaveLength(1);
+			expect(before.entries.itemListElement[0].blobStorageEntry?.blob).toBeDefined();
+
+			await expect(
+				service.create(
+					{
+						documentId: "shared-blob-doc-b",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
+					sharedBytes,
+					[{ targetId: "aig:does-not-exist-shared-blob" }]
+				)
+			).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+
+			// Document A must remain readable with blob content after B fails.
+			const after = await service.get(documentAId, { includeBlobStorageData: true });
+			expect(after.entries.itemListElement).toHaveLength(1);
+			expect(after.entries.itemListElement[0].blobStorageEntry?.blob).toEqual(
+				before.entries.itemListElement[0].blobStorageEntry?.blob
+			);
+
+			// Memory blob connector is content-addressed, so identical content should exist once.
+			expect(await blobEntryEntityStorage.getStore()).toHaveLength(1);
 		});
 
 		test("document vertex resource is soft-deleted when create fails due to missing target vertex", async () => {
