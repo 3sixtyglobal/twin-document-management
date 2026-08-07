@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.2-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.2-next.1...document-management-rest-client-v0.9.2-next.2) (2026-08-07)
+
+
+### Features
+
+* health provider ([#85](https://github.com/iotaledger/twin-document-management/issues/85)) ([7814534](https://github.com/iotaledger/twin-document-management/commit/7814534d09725e2ced6baa3bf57a43098f26e59c))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @twin.org/document-management-models bumped from 0.9.2-next.1 to 0.9.2-next.2
+
 ## [0.9.2-next.1](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.2-next.0...document-management-rest-client-v0.9.2-next.1) (2026-07-30)
 
 

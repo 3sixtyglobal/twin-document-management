@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.9.2-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.9.2-next.1...document-management-models-v0.9.2-next.2) (2026-08-07)
+
+
+### Features
+
+* health provider ([#85](https://github.com/iotaledger/twin-document-management/issues/85)) ([7814534](https://github.com/iotaledger/twin-document-management/commit/7814534d09725e2ced6baa3bf57a43098f26e59c))
+
 ## [0.9.2-next.1](https://github.com/iotaledger/twin-document-management/compare/document-management-models-v0.9.2-next.0...document-management-models-v0.9.2-next.1) (2026-07-30)
 
 
