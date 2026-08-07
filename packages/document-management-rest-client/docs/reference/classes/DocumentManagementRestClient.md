@@ -157,7 +157,7 @@ The data to update the document with as bytes, or an existing blob storage entry
 Explicit edge delta to apply. If undefined, existing connections
 are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
 ones by their target vertex id. To update alias metadata on an already-connected vertex, include
-it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+it in `add` with the updated `aliasAnnotationObject` - AIG's alias patch is an upsert, so the
 alias is updated in place without creating a duplicate back-edge.
 
 ###### add?

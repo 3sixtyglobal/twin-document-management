@@ -5,6 +5,7 @@ Service for performing document management operations.
 ## Implements
 
 - `IDocumentManagementComponent`
+- `IHealthProviderComponent`
 
 ## Constructors
 
@@ -51,6 +52,33 @@ The class name of the component.
 #### Implementation of
 
 `IDocumentManagementComponent.className`
+
+***
+
+### healthApplication() {#healthapplication}
+
+> **healthApplication**(`callback`): `Promise`\<`IHealth`[] \| `undefined`\>
+
+Runs a blob lifecycle (create, get, remove) against the blob storage component to verify
+the service is operational.
+
+#### Parameters
+
+##### callback
+
+`HealthApplicationCallback`
+
+The callback to invoke when a deferred health result is ready.
+
+#### Returns
+
+`Promise`\<`IHealth`[] \| `undefined`\>
+
+The health status of the service.
+
+#### Implementation of
+
+`IHealthProviderComponent.healthApplication`
 
 ***
 
@@ -167,7 +195,7 @@ The data to update the document with as bytes, or an existing blob storage entry
 Explicit edge delta to apply. If undefined, existing connections
 are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
 ones by their target vertex id. To update alias metadata on an already-connected vertex, include
-it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+it in `add` with the updated `aliasAnnotationObject` - AIG's alias patch is an upsert, so the
 alias is updated in place without creating a duplicate back-edge.
 
 ###### add?
