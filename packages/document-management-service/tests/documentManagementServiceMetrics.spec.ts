@@ -128,7 +128,7 @@ function makeMockTelemetry(): {
 	return { component, created, values };
 }
 
-describe("DocumentManagementService — metrics", () => {
+describe("DocumentManagementService - metrics", () => {
 	beforeAll(async () => {
 		await setupTestEnv();
 
@@ -200,6 +200,22 @@ describe("DocumentManagementService — metrics", () => {
 			"notarization",
 			() => new EntityStorageNotarizationConnector()
 		);
+
+		ComponentFactory.register("platform", () => ({
+			className: () => "MockPlatform",
+			isMultiTenant: () => false,
+			execute: async (method: () => Promise<void>) => method(),
+			getLocalOriginContext: async () => undefined
+		}));
+
+		ComponentFactory.register("task-scheduler", () => ({
+			className: () => "task-scheduler",
+			addTask: async (taskId: string, times: unknown, taskCallback: () => Promise<void>) => {
+				await taskCallback();
+			},
+			removeTask: async () => {},
+			tasksInfo: async () => ({ tasks: {} })
+		}));
 
 		const immutableProofService = new ImmutableProofService();
 		ComponentFactory.register("immutable-proof", () => immutableProofService);
@@ -290,7 +306,7 @@ describe("DocumentManagementService — metrics", () => {
 		expect(ids).toContain(DocumentManagementMetricIds.AttestationsCreated);
 	});
 
-	test("start() is idempotent — AlreadyExistsError is swallowed", async () => {
+	test("start() is idempotent - AlreadyExistsError is swallowed", async () => {
 		let callCount = 0;
 		const component: ITelemetryComponent = {
 			...makeMockTelemetry().component,
@@ -507,7 +523,7 @@ describe("DocumentManagementService — metrics", () => {
 		);
 	});
 
-	test("service without telemetryComponentType — all operations succeed, no errors thrown", async () => {
+	test("service without telemetryComponentType - all operations succeed, no errors thrown", async () => {
 		const service = new DocumentManagementService();
 
 		const vertexId = await service.create(

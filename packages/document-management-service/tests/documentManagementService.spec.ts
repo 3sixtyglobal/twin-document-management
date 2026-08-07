@@ -1,5 +1,6 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import { HealthCategory, HealthStatus, type IHealth } from "@twin.org/api-models";
 import { TenantIdContextIdHandler } from "@twin.org/api-tenant-processor";
 import { NftAttestationConnector } from "@twin.org/attestation-connector-nft";
 import { AttestationConnectorFactory } from "@twin.org/attestation-models";
@@ -155,6 +156,22 @@ describe("document-management-service", async () => {
 			"notarization",
 			() => new EntityStorageNotarizationConnector()
 		);
+
+		ComponentFactory.register("platform", () => ({
+			className: () => "MockPlatform",
+			isMultiTenant: () => false,
+			execute: async (method: () => Promise<void>) => method(),
+			getLocalOriginContext: async () => undefined
+		}));
+
+		ComponentFactory.register("task-scheduler", () => ({
+			className: () => "task-scheduler",
+			addTask: async (taskId: string, times: unknown, taskCallback: () => Promise<void>) => {
+				await taskCallback();
+			},
+			removeTask: async () => {},
+			tasksInfo: async () => ({ tasks: {} })
+		}));
 
 		immutableProofComponent = new ImmutableProofService();
 		ComponentFactory.register("immutable-proof", () => immutableProofComponent);
@@ -2113,7 +2130,7 @@ describe("document-management-service", async () => {
 				Converter.utf8ToBytes("Best-effort edge test")
 			);
 
-			// Adding one valid and one non-existent target — the failed back-edge is swallowed.
+			// Adding one valid and one non-existent target - the failed back-edge is swallowed.
 			await expect(
 				service.updatePartial(documentId, undefined, undefined, {
 					add: [{ targetId: validTarget }, { targetId: "aig:does-not-exist-best-effort" }]
@@ -2144,7 +2161,7 @@ describe("document-management-service", async () => {
 			{ includeAttestation: false }
 		);
 
-		// Update blob only — annotationObject is undefined (no change intended).
+		// Update blob only - annotationObject is undefined (no change intended).
 		await service.updatePartial(documentId, undefined, Converter.utf8ToBytes("Version 2"));
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
@@ -2190,7 +2207,7 @@ describe("document-management-service", async () => {
 	test("removing an edge to a vertex that was connected without includeAlias succeeds without error", async () => {
 		const service = new DocumentManagementService();
 
-		// Create a target vertex — it will NOT receive an alias when connected.
+		// Create a target vertex - it will NOT receive an alias when connected.
 		const targetId = await auditableItemGraphComponent.create({
 			"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
 			type: AuditableItemGraphTypes.Vertex
@@ -2202,7 +2219,7 @@ describe("document-management-service", async () => {
 				documentCode: UneceDocumentCodeList.BillOfLading
 			},
 			Converter.utf8ToBytes("No alias remove test"),
-			[{ targetId }] // includeAlias is not set — no alias on targetId
+			[{ targetId }] // includeAlias is not set - no alias on targetId
 		);
 
 		// Removing the edge must not throw even though there is no alias to remove.
@@ -2402,7 +2419,7 @@ describe("document-management-service", async () => {
 		expect(revBefore.attestationId).toBeUndefined();
 		expect(revBefore.documentRevision).toEqual(0);
 
-		// Call updatePartial with only the includeAttestation flag — no blob, no annotation, no edges.
+		// Call updatePartial with only the includeAttestation flag - no blob, no annotation, no edges.
 		await service.updatePartial(documentId, undefined, undefined, undefined, {
 			includeAttestation: true
 		});
@@ -2410,7 +2427,7 @@ describe("document-management-service", async () => {
 		// Fetch again and verify attestation was added.
 		const after = await service.get(documentId, undefined, undefined, 10);
 
-		// Still only one revision — no new revision was created.
+		// Still only one revision - no new revision was created.
 		expect(after.entries.itemListElement).toHaveLength(1);
 
 		const revAfter = after.entries.itemListElement[0];
@@ -2429,12 +2446,12 @@ describe("document-management-service", async () => {
 		expect(revAfter.dateCreated).toEqual(revBefore.dateCreated);
 	});
 
-	describe("concurrent document create — shared connected vertex", () => {
+	describe("concurrent document create - shared connected vertex", () => {
 		const PARALLEL_CREATE_COUNT = 10;
 
 		beforeEach(() => {
 			// Force a fresh mutex key for each test so the TOCTOU window in
-			// Mutex.getOrFetchLock is exercised — mirroring the AIG regression tests.
+			// Mutex.getOrFetchLock is exercised - mirroring the AIG regression tests.
 			SharedStore.set("mutexLocks", {});
 		});
 
@@ -2729,7 +2746,7 @@ describe("document-management-service", async () => {
 
 		expect(documentId).toMatch(/^aig:/);
 
-		// Only one blob entry — we referenced, not uploaded.
+		// Only one blob entry - we referenced, not uploaded.
 		const blobStore = await blobEntryEntityStorage.getStore();
 		expect(blobStore).toHaveLength(1);
 		expect(blobStore[0].id).toEqual(blobStorageId);
@@ -2783,7 +2800,7 @@ describe("document-management-service", async () => {
 			{ includeAlias: false }
 		);
 
-		// Pass the same blobStorageId back — must be a no-op for revisions.
+		// Pass the same blobStorageId back - must be a no-op for revisions.
 		await service.updatePartial(documentId, undefined, blobStorageId);
 
 		const docs = await service.get(documentId, undefined, undefined, 10);
@@ -2844,7 +2861,7 @@ describe("document-management-service", async () => {
 		// Soft-delete the only revision.
 		await service.removeRevision(documentId, 0);
 
-		// Pass the same blobStorageId via string — the matching blob on the deleted revision
+		// Pass the same blobStorageId via string - the matching blob on the deleted revision
 		// should be restored rather than creating a new revision.
 		await service.updatePartial(documentId, undefined, blobV0Id);
 
@@ -2913,5 +2930,35 @@ describe("document-management-service", async () => {
 		expect(after.entries.itemListElement[0].attestationId).toBeUndefined();
 		// Original revision 0 still has its attestation.
 		expect(after.entries.itemListElement[1].attestationId).toBeDefined();
+	});
+
+	describe("DocumentManagementService health checks", () => {
+		beforeEach(() => {
+			ContextIdStore.getContextIds = vi.fn().mockReturnValue({
+				[ContextIdKeys.Node]: TEST_NODE_IDENTITY,
+				[ContextIdKeys.Tenant]: TEST_TENANT_IDENTITY,
+				[ContextIdKeys.Organization]: TEST_ORGANIZATION_IDENTITY,
+				[ContextIdKeys.User]: TEST_USER_IDENTITY
+			});
+		});
+
+		test("health check returns ok status when blob storage is accessible", async () => {
+			const service = new DocumentManagementService();
+			const results = await service.healthApplication(vi.fn());
+			expect(results).toHaveLength(1);
+			const result = (results as IHealth[])[0];
+			expect(result.category).toBe(HealthCategory.Application);
+			expect(result.status).toBe(HealthStatus.Ok);
+		});
+
+		test("health check returns empty results without org context", async () => {
+			ContextIdStore.getContextIds = vi.fn().mockReturnValue({
+				[ContextIdKeys.Node]: TEST_NODE_IDENTITY,
+				[ContextIdKeys.Tenant]: TEST_TENANT_IDENTITY
+			});
+			const service = new DocumentManagementService();
+			const results = await service.healthApplication(vi.fn());
+			expect(results).toHaveLength(0);
+		});
 	});
 });

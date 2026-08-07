@@ -12,5 +12,11 @@
 			"documentRevisionMissingId": "Revision {revision} was found but has no resolvable resource id — possible data integrity issue",
 			"removeRevisionFailed": "Failed to remove document revision"
 		}
+	},
+	"health": {
+		"documentManagementService": {
+			"healthDescription": "Document management service application health check",
+			"getBlobFailed": "Failed to retrieve the health check blob"
+		}
 	}
 }
