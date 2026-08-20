@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.2-next.3](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.9.2-next.2...document-management-service-v0.9.2-next.3) (2026-08-20)
+
+
+### Features
+
+* allow large payloads on the document create and update routes ([#89](https://github.com/iotaledger/twin-document-management/issues/89)) ([b1392dc](https://github.com/iotaledger/twin-document-management/commit/b1392dc88f97f1da328b368cb2e00819d9c02aab))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.9.2-next.2 to 0.9.2-next.3
+
 ## [0.9.2-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.9.2-next.1...document-management-service-v0.9.2-next.2) (2026-08-07)
 
 

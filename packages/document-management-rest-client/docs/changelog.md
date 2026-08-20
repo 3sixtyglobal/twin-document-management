@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.9.2-next.3](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.2-next.2...document-management-rest-client-v0.9.2-next.3) (2026-08-20)
+
+
+### Miscellaneous Chores
+
+* **document-management-rest-client:** Synchronize repo versions
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * devDependencies
+    * @twin.org/document-management-models bumped from 0.9.2-next.2 to 0.9.2-next.3
+
 ## [0.9.2-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.2-next.1...document-management-rest-client-v0.9.2-next.2) (2026-08-07)
 
 
