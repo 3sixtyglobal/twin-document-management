@@ -626,8 +626,8 @@ export class DocumentManagementService
 				}
 				if (hasEdgeChanges) {
 					partial.edgePatches = {
-						...(documentEdgePatchesAdd.length > 0 ? { add: documentEdgePatchesAdd } : {}),
-						...(documentEdgePatchesRemove.length > 0 ? { remove: documentEdgePatchesRemove } : {})
+						add: documentEdgePatchesAdd.length > 0 ? documentEdgePatchesAdd : undefined,
+						remove: documentEdgePatchesRemove.length > 0 ? documentEdgePatchesRemove : undefined
 					};
 				}
 				if (addingAlias) {
