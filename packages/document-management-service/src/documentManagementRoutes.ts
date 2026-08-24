@@ -1,6 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
 import {
+	HttpBodyLimit,
 	HttpContextIdKeys,
 	HttpHeaderHelper,
 	HttpUrlHelper,
@@ -71,6 +72,7 @@ export function generateRestRoutesDocumentManagement(
 		tag: tagsDocumentManagement[0].name,
 		method: "POST",
 		path: `${baseRouteName}/`,
+		bodyLimit: HttpBodyLimit.Large,
 		handler: async (httpRequestContext, request) =>
 			documentManagementCreate(httpRequestContext, componentName, request, baseRouteName),
 		requestType: {
@@ -125,6 +127,7 @@ export function generateRestRoutesDocumentManagement(
 		tag: tagsDocumentManagement[0].name,
 		method: "PATCH",
 		path: `${baseRouteName}/:auditableItemGraphDocumentId`,
+		bodyLimit: HttpBodyLimit.Large,
 		handler: async (httpRequestContext, request) =>
 			documentManagementUpdatePartial(httpRequestContext, componentName, request),
 		requestType: {

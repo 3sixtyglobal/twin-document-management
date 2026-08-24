@@ -1,15 +1,22 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import {
+	HealthCategory,
+	HealthStatus,
+	type HealthApplicationCallback,
+	type IHealth,
+	type IHealthProviderComponent
+} from "@twin.org/api-models";
 import type { IAttestationComponent } from "@twin.org/attestation-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes,
-	type IAuditableItemGraphVertexList,
 	type IAuditableItemGraphComponent,
 	type IAuditableItemGraphEdge,
 	type IAuditableItemGraphPartialVertex,
 	type IAuditableItemGraphResource,
-	type IAuditableItemGraphVertex
+	type IAuditableItemGraphVertex,
+	type IAuditableItemGraphVertexList
 } from "@twin.org/auditable-item-graph-models";
 import type { IBlobStorageComponent } from "@twin.org/blob-storage-models";
 import { BlobStorageContexts } from "@twin.org/blob-storage-models";
@@ -24,7 +31,9 @@ import {
 	Is,
 	Mutex,
 	NotFoundError,
+	NumberHelper,
 	ObjectHelper,
+	RandomHelper,
 	Urn
 } from "@twin.org/core";
 import { IntegrityAlgorithm, IntegrityHelper, Sha256 } from "@twin.org/crypto";
@@ -35,13 +44,13 @@ import {
 	DocumentManagementMetricIds,
 	DocumentManagementMetrics,
 	DocumentTypes,
-	type IDocumentBase,
-	type IDocumentHydrated,
-	type IDocumentManagementEdgeEntry,
 	type IDocument,
 	type IDocumentAttestation,
+	type IDocumentBase,
+	type IDocumentHydrated,
 	type IDocumentList,
-	type IDocumentManagementComponent
+	type IDocumentManagementComponent,
+	type IDocumentManagementEdgeEntry
 } from "@twin.org/document-management-models";
 import { nameof } from "@twin.org/nameof";
 import {
@@ -51,12 +60,15 @@ import {
 } from "@twin.org/standards-schema-org";
 import { UneceDocumentCodeList } from "@twin.org/standards-unece";
 import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
+import { MimeTypes } from "@twin.org/web";
 import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions.js";
 
 /**
  * Service for performing document management operations.
  */
-export class DocumentManagementService implements IDocumentManagementComponent {
+export class DocumentManagementService
+	implements IDocumentManagementComponent, IHealthProviderComponent
+{
 	/**
 	 * Runtime name for the class.
 	 */
@@ -132,6 +144,57 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	}
 
 	/**
+	 * Runs a blob lifecycle (create, get, remove) against the blob storage component to verify
+	 * the service is operational.
+	 * @param callback The callback to invoke when a deferred health result is ready.
+	 * @returns The health status of the service.
+	 */
+	public async healthApplication(
+		callback: HealthApplicationCallback
+	): Promise<IHealth[] | undefined> {
+		const contextIds = (await ContextIdStore.getContextIds()) ?? {};
+		const orgId = contextIds[ContextIdKeys.Organization];
+		if (!Is.stringValue(orgId)) {
+			return [];
+		}
+		try {
+			const blobId = await this._blobStorageComponent.create(
+				Converter.bytesToBase64(RandomHelper.generate(32)),
+				MimeTypes.OctetStream,
+				undefined,
+				{
+					"@context": "https://schema.org/",
+					"@type": "Thing",
+					description: "health"
+				},
+				{ disableEncryption: true }
+			);
+			const entry = await this._blobStorageComponent.get(blobId);
+			await this._blobStorageComponent.remove(blobId);
+			return [
+				{
+					source: DocumentManagementService.CLASS_NAME,
+					category: HealthCategory.Application,
+					status: Is.object(entry) ? HealthStatus.Ok : HealthStatus.Error,
+					description: "healthDescription",
+					message: Is.object(entry) ? undefined : "getBlobFailed"
+				}
+			];
+		} catch (error) {
+			return [
+				{
+					source: DocumentManagementService.CLASS_NAME,
+					category: HealthCategory.Application,
+					status: HealthStatus.Error,
+					description: "healthDescription",
+					message: "getBlobFailed",
+					error: BaseError.fromError(error)
+				}
+			];
+		}
+	}
+
+	/**
 	 * Register all document management metrics with the telemetry component.
 	 * @returns A promise that resolves when metrics have been registered.
 	 */
@@ -202,10 +265,17 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			// existing blobStorageId and fetch the entry's stored integrity.
 			const blobIntegrity = await this.computeBlobIntegrity(blob);
 			let blobStorageId: string;
-			let blobUploaded = false;
+			const blobCreateCorrelationId = Is.uint8Array(blob) ? crypto.randomUUID() : undefined;
 			if (Is.uint8Array(blob)) {
-				blobStorageId = await this._blobStorageComponent.create(Converter.bytesToBase64(blob));
-				blobUploaded = true;
+				blobStorageId = await this._blobStorageComponent.create(
+					Converter.bytesToBase64(blob),
+					undefined,
+					undefined,
+					{
+						"@context": SchemaOrgContexts.Context,
+						identifier: blobCreateCorrelationId
+					}
+				);
 			} else {
 				blobStorageId = blob;
 			}
@@ -273,13 +343,11 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			if (Is.stringValue(failingVertexId)) {
 				// At least one connected vertex was missing. Back-edges already written have been
-				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the orphaned
-				// blob (only if we uploaded it) and soft-delete the document resource so the vertex
-				// is left empty.
-				if (blobUploaded) {
-					try {
-						await this._blobStorageComponent.remove(blobStorageId);
-					} catch {}
+				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the blob
+				// only if this request can prove ownership via a create correlation id in
+				// blob metadata, then soft-delete the document resource so the vertex is left empty.
+				if (Is.stringValue(blobCreateCorrelationId)) {
+					await this.removeBlobIfCreatedByRequest(blobStorageId, blobCreateCorrelationId);
 				}
 				try {
 					await this._auditableItemGraphComponent.updatePartial({
@@ -328,7 +396,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * @param auditableItemGraphEdges Explicit edge delta to apply. If undefined, existing connections
 	 * are retained unchanged. Use `add` to create new connections and `remove` to disconnect existing
 	 * ones by their target vertex id. To update alias metadata on an already-connected vertex, include
-	 * it in `add` with the updated `aliasAnnotationObject` — AIG's alias patch is an upsert, so the
+	 * it in `add` with the updated `aliasAnnotationObject` - AIG's alias patch is an upsert, so the
 	 * alias is updated in place without creating a duplicate back-edge.
 	 * @param auditableItemGraphEdges.add Connections to add; each creates a back-edge on the connected vertex.
 	 * @param auditableItemGraphEdges.remove Target vertex IDs to disconnect; their back-edges are removed.
@@ -397,7 +465,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			// blobStorageId whose integrity is fetched from the blob storage entry.
 			if (Is.uint8Array(blob) || Is.stringValue(blob)) {
 				// Short-circuit: same blobStorageId reference on a live revision means the blob is
-				// unchanged — skip the network GET inside computeBlobIntegrity.
+				// unchanged - skip the network GET inside computeBlobIntegrity.
 				const blobUnchanged =
 					Is.stringValue(blob) &&
 					blob === latestRevision.blobStorageId &&
@@ -443,7 +511,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 					newRevisionHasAttestation = Is.stringValue(newRevision.attestationId);
 					blobRevisionCreated = true;
 				} else if (Is.stringValue(latestRevision.dateDeleted)) {
-					// Same content as the most recent (soft-deleted) revision — restore it.
+					// Same content as the most recent (soft-deleted) revision - restore it.
 					const restoredRevision = ObjectHelper.clone(latestRevision);
 					delete restoredRevision.dateDeleted;
 					this.applyDocumentFieldPatch(restoredRevision, document);
@@ -471,7 +539,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 
 			// If no new revision was created, apply in-place updates to the current revision:
 			// annotation changes and/or adding first-time attestation.
-			// Undefined annotationObject means "no change" in patch semantics — it does not clear it.
+			// Undefined annotationObject means "no change" in patch semantics - it does not clear it.
 			if (!blobRevisionCreated) {
 				const annotationChanged =
 					!Is.empty(annotationObject) &&
@@ -558,8 +626,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				}
 				if (hasEdgeChanges) {
 					partial.edgePatches = {
-						...(documentEdgePatchesAdd.length > 0 ? { add: documentEdgePatchesAdd } : {}),
-						...(documentEdgePatchesRemove.length > 0 ? { remove: documentEdgePatchesRemove } : {})
+						add: documentEdgePatchesAdd.length > 0 ? documentEdgePatchesAdd : undefined,
+						remove: documentEdgePatchesRemove.length > 0 ? documentEdgePatchesRemove : undefined
 					};
 				}
 				if (addingAlias) {
@@ -815,7 +883,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				(documentVertex.resources[docRevisionIndex].resourceObject?.["@id"] as string | undefined);
 
 			if (!Is.stringValue(revisionResourceId)) {
-				// The revision exists but its stored resource-id is unresolvable — integrity anomaly.
+				// The revision exists but its stored resource-id is unresolvable - integrity anomaly.
 				throw new GeneralError(DocumentManagementService.CLASS_NAME, "documentRevisionMissingId", {
 					revision
 				});
@@ -897,8 +965,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 	 * On the **update path** each missing vertex is caught individually; the remaining
 	 * updates continue and `undefined` is always returned.
 	 * @param auditableItemGraphDocumentId The document id to use.
-	 * @param edgesToAdd Connections to add — each connected vertex receives a new back-edge.
-	 * @param edgeTargetIdsToRemove Target vertex IDs to disconnect — their back-edges are removed.
+	 * @param edgesToAdd Connections to add - each connected vertex receives a new back-edge.
+	 * @param edgeTargetIdsToRemove Target vertex IDs to disconnect - their back-edges are removed.
 	 * @param documentId The document identifier.
 	 * @param documentIdFormat The format of the document identifier.
 	 * @param isCreatePath When true, enables fail-fast + rollback semantics.
@@ -966,7 +1034,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 				try {
 					await this._auditableItemGraphComponent.updatePartial(partial);
 				} catch {
-					// Best-effort on the update path — swallow to avoid interrupting remaining back-edge writes.
+					// Best-effort on the update path - swallow to avoid interrupting remaining back-edge writes.
 				}
 			}
 		}
@@ -996,7 +1064,7 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			try {
 				await this.removeBackEdgeFromVertex(targetId, auditableItemGraphDocumentId, documentId);
 			} catch {
-				// Best-effort — do not let cleanup errors mask the original failure.
+				// Best-effort - do not let cleanup errors mask the original failure.
 			}
 		}
 	}
@@ -1095,7 +1163,8 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 			);
 
 			const startIndex = Coerce.integer(cursor) ?? 0;
-			const endIndex = Math.min(startIndex + (limit ?? 1), documentVertex.resources.length);
+			const safeLimit = NumberHelper.clamp(limit ?? 1, 1);
+			const endIndex = Math.min(startIndex + safeLimit, documentVertex.resources.length);
 			const slicedResources = documentVertex.resources.slice(startIndex, endIndex);
 			nextCursor = documentVertex.resources.length > endIndex ? endIndex.toString() : undefined;
 
@@ -1193,6 +1262,34 @@ export class DocumentManagementService implements IDocumentManagementComponent {
 		}
 		const blobEntry = await this._blobStorageComponent.get(blob, { includeContent: false });
 		return blobEntry.integrity;
+	}
+
+	/**
+	 * Remove a blob on rollback only when its metadata proves this request created it.
+	 * Uses the create-correlation identifier set during blob upload.
+	 * @param blobStorageId The blob id to check and potentially remove.
+	 * @param correlationId The request correlation id to match against blob metadata.
+	 * @internal
+	 */
+	private async removeBlobIfCreatedByRequest(
+		blobStorageId: string,
+		correlationId: string
+	): Promise<void> {
+		try {
+			const blobEntry = await this._blobStorageComponent.get(blobStorageId, {
+				includeContent: false
+			});
+			const metadataIdentifier = (blobEntry.metadata as { identifier?: unknown } | undefined)
+				?.identifier;
+
+			if (Is.stringValue(metadataIdentifier) && metadataIdentifier === correlationId) {
+				try {
+					await this._blobStorageComponent.remove(blobStorageId);
+				} catch {}
+			}
+		} catch {
+			// Best-effort cleanup only.
+		}
 	}
 
 	/**
