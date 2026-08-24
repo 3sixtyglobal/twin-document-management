@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.9.2](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.2...document-management-rest-client-v0.9.2) (2026-08-24)
+
+
+### Features
+
+* release to production ([a009526](https://github.com/iotaledger/twin-document-management/commit/a009526032a0ee6e6b74f476a01fbe5f4c7fd4da))
+* release to production ([#65](https://github.com/iotaledger/twin-document-management/issues/65)) ([ec864da](https://github.com/iotaledger/twin-document-management/commit/ec864da16d1644882181cb6b156cff8aef86cb26))
+* release to production ([#68](https://github.com/iotaledger/twin-document-management/issues/68)) ([e15f56c](https://github.com/iotaledger/twin-document-management/commit/e15f56c67a1fb85cef6a5f2dbf345f9dce890ff7))
+* release to production ([#78](https://github.com/iotaledger/twin-document-management/issues/78)) ([ace0fa4](https://github.com/iotaledger/twin-document-management/commit/ace0fa44014618271aa2569407a5124e3ecfabbc))
+* release to production ([#93](https://github.com/iotaledger/twin-document-management/issues/93)) ([9ef0519](https://github.com/iotaledger/twin-document-management/commit/9ef0519d511bf9f854fba450fe2dec40a142f4de))
+
 ## [0.9.2-next.3](https://github.com/iotaledger/twin-document-management/compare/document-management-rest-client-v0.9.2-next.2...document-management-rest-client-v0.9.2-next.3) (2026-08-20)
 
 
