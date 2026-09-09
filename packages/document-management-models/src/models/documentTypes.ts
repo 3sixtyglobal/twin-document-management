@@ -12,9 +12,19 @@ export const DocumentTypes = {
 	Document: "Document",
 
 	/**
+	 * Represents a document hydrated.
+	 */
+	DocumentHydrated: "DocumentHydrated",
+
+	/**
 	 * Represents a document attestation.
 	 */
-	DocumentAttestation: "DocumentAttestation"
+	DocumentAttestation: "DocumentAttestation",
+
+	/**
+	 * Represents a document list.
+	 */
+	DocumentList: "DocumentList"
 } as const;
 
 /**
