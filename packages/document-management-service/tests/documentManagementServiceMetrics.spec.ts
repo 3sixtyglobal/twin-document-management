@@ -28,7 +28,7 @@ import {
 	ContextIdStore,
 	type IContextIds
 } from "@twin.org/context";
-import { AlreadyExistsError, ComponentFactory, Converter, RandomHelper } from "@twin.org/core";
+import { AlreadyExistsError, ComponentFactory, Converter, Is, RandomHelper } from "@twin.org/core";
 import { JsonConverterConnector } from "@twin.org/data-processing-converters";
 import { JsonPathExtractorConnector } from "@twin.org/data-processing-extractors";
 import {
@@ -107,13 +107,19 @@ function makeMockTelemetry(): {
 		start: async () => {},
 		stop: async () => {},
 		createMetric: async m => {
-			created.push({ ...m });
+			for (const metric of Is.array(m) ? m : [m]) {
+				created.push({ ...metric });
+			}
 		},
 		getMetric: async () => ({ metric: {} as never, value: {} as never }),
 		updateMetric: async () => {},
 		addMetricValue: async (id, value, customData) => {
 			values.push({ id, value, customData });
 			return "v";
+		},
+		addMetricValues: async entries => {
+			values.push(...entries);
+			return entries.map(() => "v");
 		},
 		getMetricValue: async (id, valueId) => ({
 			id: valueId,
