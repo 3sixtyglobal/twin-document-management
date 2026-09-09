@@ -26,7 +26,7 @@ The body parameters.
 
 #### document?
 
-> `optional` **document?**: `Partial`\<`Pick`\<[`IDocumentBase`](IDocumentBase.md), `"annotationObject"` \| `"documentIdFormat"` \| `"documentCode"`\>\>
+> `optional` **document?**: `Partial`\<`Pick`\<[`IDocumentBase`](IDocumentBase.md), `"documentCode"` \| `"annotationObject"` \| `"documentIdFormat"`\>\>
 
 The document base properties to update. annotationObject, documentIdFormat and documentCode are applied in-place to the current revision.
 

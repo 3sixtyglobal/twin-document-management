@@ -84,7 +84,7 @@ The auditable item graph vertex id which contains the document.
 
 ##### document?
 
-`Partial`\<`Pick`\<[`IDocumentBase`](IDocumentBase.md), `"annotationObject"` \| `"documentIdFormat"` \| `"documentCode"`\>\>
+`Partial`\<`Pick`\<[`IDocumentBase`](IDocumentBase.md), `"documentCode"` \| `"annotationObject"` \| `"documentIdFormat"`\>\>
 
 The document base properties to update. annotationObject, documentIdFormat and documentCode are applied in-place to the current revision.
 
