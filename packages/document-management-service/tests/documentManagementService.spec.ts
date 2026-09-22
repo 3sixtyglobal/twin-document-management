@@ -13,6 +13,7 @@ import {
 	type AuditableItemGraphChangeset,
 	AuditableItemGraphService,
 	type AuditableItemGraphVertex,
+	type AuditableItemGraphVertexIndex,
 	initSchema as initSchemaAuditableItemGraph
 } from "@twin.org/auditable-item-graph-service";
 import {
@@ -33,7 +34,13 @@ import {
 	ContextIdStore,
 	type IContextIds
 } from "@twin.org/context";
-import { ComponentFactory, Converter, RandomHelper, SharedStore } from "@twin.org/core";
+import {
+	ComponentFactory,
+	Converter,
+	ObjectHelper,
+	RandomHelper,
+	SharedStore
+} from "@twin.org/core";
 import { JsonConverterConnector } from "@twin.org/data-processing-converters";
 import { JsonPathExtractorConnector } from "@twin.org/data-processing-extractors";
 import {
@@ -45,6 +52,7 @@ import {
 	type ExtractionRuleGroup,
 	initSchema as initSchemaDataProcessing
 } from "@twin.org/data-processing-service";
+import { DocumentTypes } from "@twin.org/document-management-models";
 import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
 import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
 import { DidContextIdHandler } from "@twin.org/identity-models";
@@ -99,10 +107,28 @@ let attestationComponent: AttestationService;
 let attestationConnector: NftAttestationConnector;
 let auditableItemGraphComponent: AuditableItemGraphService;
 let vertexEntityStorage: MemoryEntityStorageConnector<AuditableItemGraphVertex>;
+let vertexIndexEntityStorage: MemoryEntityStorageConnector<AuditableItemGraphVertexIndex>;
 let changesetEntityStorage: MemoryEntityStorageConnector<AuditableItemGraphChangeset>;
 let extractionRuleGroupEntityStorage: MemoryEntityStorageConnector<ExtractionRuleGroup>;
 let dataProcessingComponent: DataProcessingService;
 let notarizationStorage: MemoryEntityStorageConnector<Notarization>;
+
+/**
+ * Find the vertex which holds the document resources.
+ * @param store The vertex store to search.
+ * @returns The document vertex if one is present.
+ */
+function findDocumentVertex(
+	store: AuditableItemGraphVertex[]
+): AuditableItemGraphVertex | undefined {
+	return store.find(vertex =>
+		vertex.resources?.some(
+			resource =>
+				ObjectHelper.extractProperty<string>(resource.resourceObject, ["@type", "type"], false) ===
+				DocumentTypes.Document
+		)
+	);
+}
 
 describe("document-management-service", async () => {
 	beforeAll(async () => {
@@ -183,6 +209,15 @@ describe("document-management-service", async () => {
 		EntityStorageConnectorFactory.register(
 			"auditable-item-graph-vertex",
 			() => vertexEntityStorage
+		);
+
+		vertexIndexEntityStorage = new MemoryEntityStorageConnector<AuditableItemGraphVertexIndex>({
+			entitySchema: "AuditableItemGraphVertexIndex",
+			config: { storageKey: "auditable-item-graph-vertex-index" }
+		});
+		EntityStorageConnectorFactory.register(
+			"auditable-item-graph-vertex-index",
+			() => vertexIndexEntityStorage
 		);
 
 		changesetEntityStorage = new MemoryEntityStorageConnector<AuditableItemGraphChangeset>({
@@ -282,6 +317,7 @@ describe("document-management-service", async () => {
 		await notarizationStorage.teardown();
 		await backgroundTaskStorage.teardown();
 		await vertexEntityStorage.teardown();
+		await vertexIndexEntityStorage.teardown();
 		await changesetEntityStorage.teardown();
 		await blobEntryEntityStorage.teardown();
 		await extractionRuleGroupEntityStorage.teardown();
@@ -333,7 +369,6 @@ describe("document-management-service", async () => {
 				id: "01917849fb0071018101010101010101",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
-				resourceTypeIndex: "||document||",
 				resources: [
 					{
 						dateCreated: "2024-08-22T04:13:20.000Z",
@@ -404,12 +439,12 @@ describe("document-management-service", async () => {
 				includeAttestation: true
 			}
 		);
-		expect(documentId).toEqual("aig:01917849fb007a0a8a0a0a0a0a0a0a0a");
+		expect(documentId).toEqual("aig:01917849fb007c0c8c0c0c0c0c0c0c0c");
 
 		const nftStore = await nftEntityStorage.getStore();
 		expect(nftStore).toEqual([
 			{
-				id: "0909090909090909090909090909090909090909090909090909090909090909",
+				id: "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
 				immutableMetadata: {
 					proof:
 						"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOiJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJEb2N1bWVudEF0dGVzdGF0aW9uIiwiZG9jdW1lbnRJZCI6InRlc3QtZG9jLWlkOmFhYSIsImRvY3VtZW50Q29kZSI6InVuZWNlOkRvY3VtZW50Q29kZUxpc3QjNzA1IiwiZG9jdW1lbnRSZXZpc2lvbiI6MCwiZGF0ZUNyZWF0ZWQiOiIyMDI0LTA4LTIyVDA0OjEzOjIwLjAwMFoiLCJpbnRlZ3JpdHkiOiJzaGEyNTYtcFpHbTFBdjBJRUJLQVJjeno3ZXhrTllzWmI4THphTXJWN0ozMmEyZkZHND0ifX19.IGBqgKp8OJeQHSgpWRdUGpgKOoHlvMqLDDcVpnqPnm9bSxkq9mHxsiV9MmHRBmzyGz1n9g0El9fGrwDVFeEQAw",
@@ -459,24 +494,23 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0070109010101010101010",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb0075159515151515151515",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			},
 			{
-				id: "01917849fb0075058505050505050505",
+				id: "01917849fb0076068606060606060606",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
 				edges: [
 					{
-						id: "01917849fb0074149414141414141414",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb007a1a9a1a1a1a1a1a1a1a",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -484,10 +518,9 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
+				id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
-				resourceTypeIndex: "||document||",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -520,7 +553,7 @@ describe("document-management-service", async () => {
 							},
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGI=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -528,19 +561,18 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
+						id: "01917849fb007d0d8d0d0d0d0d0d0d0d",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					},
 					{
-						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
-						targetId: "aig:01917849fb0075058505050505050505",
+						id: "01917849fb007e0e8e0e0e0e0e0e0e0e",
+						targetId: "aig:01917849fb0076068606060606060606",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 0
 			}
 		]);
@@ -593,7 +625,6 @@ describe("document-management-service", async () => {
 				id: "01917849fb0072028202020202020202",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
-				resourceTypeIndex: "||document||",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -638,7 +669,6 @@ describe("document-management-service", async () => {
 					}
 				],
 				dateModified: "2024-08-22T04:13:20.000Z",
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			}
 		]);
@@ -755,17 +785,16 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0070109010101010101010",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb0075159515151515151515",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			},
 			{
-				id: "01917849fb0075058505050505050505",
+				id: "01917849fb0076068606060606060606",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -783,20 +812,18 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0074149414141414141414",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb007a1a9a1a1a1a1a1a1a1a",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			},
 			{
-				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
+				id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
-				resourceTypeIndex: "||document||",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -829,7 +856,7 @@ describe("document-management-service", async () => {
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGI=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -837,19 +864,18 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
+						id: "01917849fb007d0d8d0d0d0d0d0d0d0d",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					},
 					{
-						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
-						targetId: "aig:01917849fb0075058505050505050505",
+						id: "01917849fb007e0e8e0e0e0e0e0e0e0e",
+						targetId: "aig:01917849fb0076068606060606060606",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 0
 			}
 		]);
@@ -889,17 +915,16 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0070109010101010101010",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb0075159515151515151515",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			},
 			{
-				id: "01917849fb0075058505050505050505",
+				id: "01917849fb0076068606060606060606",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -918,8 +943,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0074149414141414141414",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb007a1a9a1a1a1a1a1a1a1a",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
 						dateDeleted: "2024-08-22T04:13:20.000Z"
@@ -928,11 +953,10 @@ describe("document-management-service", async () => {
 				version: 2
 			},
 			{
-				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
+				id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
-				resourceTypeIndex: "||document||",
 				aliases: [
 					{
 						id: "test-doc-id:aaa",
@@ -965,7 +989,7 @@ describe("document-management-service", async () => {
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGI=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -973,30 +997,29 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
+						id: "01917849fb007d0d8d0d0d0d0d0d0d0d",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					},
 					{
-						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
-						targetId: "aig:01917849fb0075058505050505050505",
+						id: "01917849fb007e0e8e0e0e0e0e0e0e0e",
+						targetId: "aig:01917849fb0076068606060606060606",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
 						dateDeleted: "2024-08-22T04:13:20.000Z"
 					},
 					{
-						id: "01917849fb007c1c9c1c1c1c1c1c1c1c",
-						targetId: "aig:01917849fb0078189818181818181818",
+						id: "01917849fb007424a424242424242424",
+						targetId: "aig:01917849fb007f1f9f1f1f1f1f1f1f1f",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			},
 			{
-				id: "01917849fb0078189818181818181818",
+				id: "01917849fb007f1f9f1f1f1f1f1f1f1f",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -1009,13 +1032,12 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007020a020202020202020",
-						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
+						id: "01917849fb007828a828282828282828",
+						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
 				],
-				aliasIndex: "||test-doc-id:aaa||",
 				version: 1
 			}
 		]);
@@ -2051,7 +2073,7 @@ describe("document-management-service", async () => {
 
 			// The created document vertex must exist but its resource must be soft-deleted.
 			const aigStore = await vertexEntityStorage.getStore();
-			const docVertex = aigStore.find(v => v.resourceTypeIndex?.includes("document"));
+			const docVertex = findDocumentVertex(aigStore);
 			expect(docVertex).toBeDefined();
 			expect(docVertex?.resources?.[0]?.dateDeleted).toBeDefined();
 		});
@@ -2566,7 +2588,7 @@ describe("document-management-service", async () => {
 		);
 
 		const storeBefore = await vertexEntityStorage.getStore();
-		const vertexBefore = storeBefore.find(v => v.resourceTypeIndex?.includes("document"));
+		const vertexBefore = findDocumentVertex(storeBefore);
 		expect((vertexBefore?.aliases ?? []).filter(a => !a.dateDeleted)).toHaveLength(0);
 
 		await service.updatePartial(documentId, undefined, undefined, undefined, {
@@ -2574,7 +2596,7 @@ describe("document-management-service", async () => {
 		});
 
 		const storeAfter = await vertexEntityStorage.getStore();
-		const vertexAfter = storeAfter.find(v => v.resourceTypeIndex?.includes("document"));
+		const vertexAfter = findDocumentVertex(storeAfter);
 		const activeAliases = (vertexAfter?.aliases ?? []).filter(a => !a.dateDeleted);
 		expect(activeAliases).toHaveLength(1);
 		expect(activeAliases[0].id).toEqual("alias-add-test");
@@ -2593,7 +2615,7 @@ describe("document-management-service", async () => {
 		);
 
 		const storeBefore = await vertexEntityStorage.getStore();
-		const vertexBefore = storeBefore.find(v => v.resourceTypeIndex?.includes("document"));
+		const vertexBefore = findDocumentVertex(storeBefore);
 		expect((vertexBefore?.aliases ?? []).filter(a => !a.dateDeleted)).toHaveLength(1);
 
 		await service.updatePartial(documentId, undefined, undefined, undefined, {
@@ -2601,7 +2623,7 @@ describe("document-management-service", async () => {
 		});
 
 		const storeAfter = await vertexEntityStorage.getStore();
-		const vertexAfter = storeAfter.find(v => v.resourceTypeIndex?.includes("document"));
+		const vertexAfter = findDocumentVertex(storeAfter);
 		expect((vertexAfter?.aliases ?? []).filter(a => !a.dateDeleted)).toHaveLength(0);
 	});
 
@@ -2629,7 +2651,7 @@ describe("document-management-service", async () => {
 		});
 
 		const storeAfter = await vertexEntityStorage.getStore();
-		const vertexAfter = storeAfter.find(v => v.resourceTypeIndex?.includes("document"));
+		const vertexAfter = findDocumentVertex(storeAfter);
 		const activeAliases = (vertexAfter?.aliases ?? []).filter(a => !a.dateDeleted);
 		expect(activeAliases).toHaveLength(1);
 		expect(activeAliases[0].annotationObject).toEqual(aliasAnnotation);

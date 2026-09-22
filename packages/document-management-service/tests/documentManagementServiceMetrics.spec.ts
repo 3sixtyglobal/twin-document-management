@@ -8,7 +8,8 @@ import {
 	AuditableItemGraphService,
 	initSchema as initSchemaAuditableItemGraph,
 	type AuditableItemGraphChangeset,
-	type AuditableItemGraphVertex
+	type AuditableItemGraphVertex,
+	type AuditableItemGraphVertexIndex
 } from "@twin.org/auditable-item-graph-service";
 import {
 	type BackgroundTask,
@@ -232,6 +233,15 @@ describe("DocumentManagementService - metrics", () => {
 			config: { storageKey: "auditable-item-graph-vertex" }
 		});
 		EntityStorageConnectorFactory.register("auditable-item-graph-vertex", () => vertexStorage);
+
+		const vertexIndexStorage = new MemoryEntityStorageConnector<AuditableItemGraphVertexIndex>({
+			entitySchema: "AuditableItemGraphVertexIndex",
+			config: { storageKey: "auditable-item-graph-vertex-index" }
+		});
+		EntityStorageConnectorFactory.register(
+			"auditable-item-graph-vertex-index",
+			() => vertexIndexStorage
+		);
 
 		const changesetStorage = new MemoryEntityStorageConnector<AuditableItemGraphChangeset>({
 			entitySchema: "AuditableItemGraphChangeset",
