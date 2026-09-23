@@ -75,6 +75,12 @@ export class DocumentManagementService
 	public static readonly CLASS_NAME: string = nameof<DocumentManagementService>();
 
 	/**
+	 * Prefix for the mutex key serialising creates of identical content.
+	 * @internal
+	 */
+	private static readonly _BLOB_INTEGRITY_LOCK_PREFIX: string = "blob-integrity:";
+
+	/**
 	 * The component for the auditable item graph.
 	 * @internal
 	 */
@@ -243,6 +249,10 @@ export class DocumentManagementService
 
 		const contextIds = await ContextIdStore.getContextIds();
 
+		// Serialises creates of identical content, so the rollback below cannot remove a blob
+		// another request has deduplicated onto.
+		let blobIntegrityLockKey: string | undefined;
+
 		try {
 			const documentVertex: Omit<IAuditableItemGraphVertex, "id"> = {
 				"@context": [AuditableItemGraphContexts.Context, AuditableItemGraphContexts.ContextCommon],
@@ -264,6 +274,17 @@ export class DocumentManagementService
 			// If blob is a Uint8Array, upload the bytes; if it is a string, treat it as an
 			// existing blobStorageId and fetch the entry's stored integrity.
 			const blobIntegrity = await this.computeBlobIntegrity(blob);
+
+			if (Is.uint8Array(blob)) {
+				const lockKey = `${DocumentManagementService._BLOB_INTEGRITY_LOCK_PREFIX}${blobIntegrity}`;
+				await Mutex.lock(lockKey, {
+					throwOnTimeout: true,
+					timeoutMs: this._mutexTimeoutMs
+				});
+				// Recorded only once held, so a timeout never releases another caller's key.
+				blobIntegrityLockKey = lockKey;
+			}
+
 			let blobStorageId: string;
 			const blobCreateCorrelationId = Is.uint8Array(blob) ? crypto.randomUUID() : undefined;
 			if (Is.uint8Array(blob)) {
@@ -343,9 +364,10 @@ export class DocumentManagementService
 
 			if (Is.stringValue(failingVertexId)) {
 				// At least one connected vertex was missing. Back-edges already written have been
-				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the blob
-				// only if this request can prove ownership via a create correlation id in
-				// blob metadata, then soft-delete the document resource so the vertex is left empty.
+				// rolled back by updateConnectedEdges. Best-effort cleanup: remove the blob only
+				// if this request can prove ownership via a create correlation id in blob
+				// metadata, which the integrity lock keeps exclusive, then soft-delete the
+				// document resource so the vertex is left empty.
 				if (Is.stringValue(blobCreateCorrelationId)) {
 					await this.removeBlobIfCreatedByRequest(blobStorageId, blobCreateCorrelationId);
 				}
@@ -383,6 +405,10 @@ export class DocumentManagementService
 				undefined,
 				error
 			);
+		} finally {
+			if (Is.stringValue(blobIntegrityLockKey)) {
+				Mutex.unlock(blobIntegrityLockKey);
+			}
 		}
 	}
 

@@ -2057,6 +2057,81 @@ describe("document-management-service", async () => {
 			expect(await blobEntryEntityStorage.getStore()).toHaveLength(1);
 		});
 
+		test("a create holding the integrity lock blocks a concurrent create of the same content", async () => {
+			const serviceA = new DocumentManagementService();
+			const serviceB = new DocumentManagementService();
+			const sharedContent = Converter.utf8ToBytes("Concurrent shared content");
+			const settle = async (): Promise<void> => {
+				for (let i = 0; i < 5; i++) {
+					await new Promise(resolve => setTimeout(resolve, 10));
+				}
+			};
+
+			// Hold A at its vertex create, after its upload and while it holds the lock.
+			let releaseA: () => void = () => {};
+			const aHeld = new Promise<void>(resolve => {
+				releaseA = resolve;
+			});
+			let firstVertexCreate = true;
+			const originalCreate = auditableItemGraphComponent.create.bind(auditableItemGraphComponent);
+			const vertexCreateSpy = vi
+				.spyOn(auditableItemGraphComponent, "create")
+				.mockImplementation(async vertex => {
+					if (firstVertexCreate) {
+						firstVertexCreate = false;
+						await aHeld;
+					}
+					return originalCreate(vertex);
+				});
+			const blobCreateSpy = vi.spyOn(blobStorageComponent, "create");
+
+			try {
+				const promiseA = serviceA.create(
+					{
+						documentId: "concurrent-failing-doc",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
+					sharedContent,
+					[{ targetId: "aig:does-not-exist-concurrent" }],
+					{ includeAlias: false }
+				);
+				await settle();
+				expect(blobCreateSpy).toHaveBeenCalledTimes(1);
+
+				// B must not reach its own upload while A holds the lock.
+				const promiseB = serviceB.create(
+					{
+						documentId: "concurrent-surviving-doc",
+						documentCode: UneceDocumentCodeList.BillOfLading
+					},
+					sharedContent,
+					undefined,
+					{ includeAlias: false }
+				);
+				await settle();
+				expect(blobCreateSpy).toHaveBeenCalledTimes(1);
+
+				releaseA();
+				await expect(promiseA).rejects.toSatisfy((e: Error) => e.name === "NotFoundError");
+
+				const documentIdB = await promiseB;
+				expect(blobCreateSpy).toHaveBeenCalledTimes(2);
+
+				// B uploaded after A's rollback, so its content survives.
+				const docs = await serviceB.get(documentIdB, {
+					includeBlobStorageMetadata: true,
+					includeBlobStorageData: true
+				});
+				expect(docs.entries.itemListElement).toHaveLength(1);
+				expect(docs.entries.itemListElement[0].blobStorageEntry?.blob).toEqual(
+					Converter.bytesToBase64(sharedContent)
+				);
+			} finally {
+				vertexCreateSpy.mockRestore();
+				blobCreateSpy.mockRestore();
+			}
+		});
+
 		test("document vertex resource is soft-deleted when create fails due to missing target vertex", async () => {
 			const service = new DocumentManagementService();
 
