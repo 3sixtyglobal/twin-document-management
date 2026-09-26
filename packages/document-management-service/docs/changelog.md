@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.10.1-next.2](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.10.1-next.1...document-management-service-v0.10.1-next.2) (2026-09-26)
+
+
+### Features
+
+* compiled schemas ([9abdf9f](https://github.com/iotaledger/twin-document-management/commit/9abdf9fdb95536f3e501862366cca7cdae8ed832))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * @twin.org/document-management-models bumped from 0.10.1-next.1 to 0.10.1-next.2
+
 ## [0.10.1-next.1](https://github.com/iotaledger/twin-document-management/compare/document-management-service-v0.10.1-next.0...document-management-service-v0.10.1-next.1) (2026-09-23)
 
 

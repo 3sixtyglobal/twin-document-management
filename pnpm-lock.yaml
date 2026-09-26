@@ -349,7 +349,7 @@ importers:
         version: 0.10.1-next.12
     devDependencies:
       '@twin.org/document-management-models':
-        specifier: 0.10.1-next.1
+        specifier: 0.10.1-next.2
         version: link:../document-management-models
       '@twin.org/nameof-transformer':
         specifier: next
@@ -427,7 +427,7 @@ importers:
         specifier: next
         version: 0.10.1-next.1
       '@twin.org/document-management-models':
-        specifier: 0.10.1-next.1
+        specifier: 0.10.1-next.2
         version: link:../document-management-models
       '@twin.org/entity':
         specifier: next
@@ -456,7 +456,7 @@ importers:
         version: 0.10.1-next.1(typescript@6.0.3)
       '@twin.org/attestation-service':
         specifier: next
-        version: 0.9.3-next.1(typescript@6.0.3)
+        version: 0.10.1-next.1(typescript@6.0.3)
       '@twin.org/auditable-item-graph-service':
         specifier: next
         version: 0.10.1-next.6(typescript@6.0.3)
@@ -1338,12 +1338,8 @@ packages:
     resolution: {integrity: sha512-mOu3ZqeG5cG62eLDMNDTqaRogbmk9e4ODuzaYI4zNplBHBScUJLecMvwt7TkKUMg53rINgBW5Pj01qybkipSCg==}
     engines: {node: '>=24.0.0'}
 
-  '@twin.org/attestation-models@0.9.3-next.1':
-    resolution: {integrity: sha512-Z0YbeMitEvDRWirwHxVLXtt5Urq4lEWWuS20c4XOx00LR6PUuD5v4BlXPf9Ta0eS7+CWyJ5cHmXaAvU/4atUIQ==}
-    engines: {node: '>=24.0.0'}
-
-  '@twin.org/attestation-service@0.9.3-next.1':
-    resolution: {integrity: sha512-+hGyDeYuBZm1ERKFgOmTcyqqKaaAFgav1UvnoW5dLMB+Uo+mLhEBltjdco+mOOWH9H600eAy+ZAfiR6dSt43Zw==}
+  '@twin.org/attestation-service@0.10.1-next.1':
+    resolution: {integrity: sha512-F44qIFK44wuHedRkOVqvdHUsopMEUTbPHs7LP7VFKwb4nLWqi2amKn+fljXQkQsS1UshWcw+4OGqnjta6uI5Ig==}
     engines: {node: '>=24.0.0'}
 
   '@twin.org/auditable-item-graph-models@0.10.1-next.6':
@@ -4726,24 +4722,10 @@ snapshots:
     transitivePeerDependencies:
       - typescript
 
-  '@twin.org/attestation-models@0.9.3-next.1(typescript@6.0.3)':
-    dependencies:
-      '@twin.org/core': 0.10.1-next.12
-      '@twin.org/data-core': 0.10.1-next.2
-      '@twin.org/data-json-ld': 0.10.1-next.2
-      '@twin.org/entity': 0.10.1-next.12
-      '@twin.org/nameof': 0.10.1-next.12
-      '@twin.org/standards-schema-org': 0.10.1-next.1(typescript@6.0.3)
-      '@twin.org/standards-w3c-did': 0.10.1-next.1
-      '@twin.org/telemetry-models': 0.10.1-next.1
-      '@twin.org/web': 0.10.1-next.12
-    transitivePeerDependencies:
-      - typescript
-
-  '@twin.org/attestation-service@0.9.3-next.1(typescript@6.0.3)':
+  '@twin.org/attestation-service@0.10.1-next.1(typescript@6.0.3)':
     dependencies:
       '@twin.org/api-models': 0.10.1-next.8
-      '@twin.org/attestation-models': 0.9.3-next.1(typescript@6.0.3)
+      '@twin.org/attestation-models': 0.10.1-next.1(typescript@6.0.3)
       '@twin.org/context': 0.10.1-next.12
       '@twin.org/core': 0.10.1-next.12
       '@twin.org/data-json-ld': 0.10.1-next.2
