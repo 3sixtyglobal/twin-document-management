@@ -31,6 +31,11 @@
 
 ## Variables
 
+- [CompiledDocument](variables/CompiledDocument.md)
+- [CompiledDocumentAttestation](variables/CompiledDocumentAttestation.md)
+- [CompiledDocumentBase](variables/CompiledDocumentBase.md)
+- [CompiledDocumentHydrated](variables/CompiledDocumentHydrated.md)
+- [CompiledDocumentList](variables/CompiledDocumentList.md)
 - [DocumentContexts](variables/DocumentContexts.md)
 - [DocumentManagementMetricIds](variables/DocumentManagementMetricIds.md)
 - [DocumentManagementMetrics](variables/DocumentManagementMetrics.md)
