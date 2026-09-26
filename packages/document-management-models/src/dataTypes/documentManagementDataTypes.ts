@@ -1,6 +1,11 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
+import { AttestationDataTypes } from "@twin.org/attestation-models";
+import { BlobStorageDataTypes } from "@twin.org/blob-storage-models";
 import { DataTypeHelper } from "@twin.org/data-core";
+import { JsonLdDataTypes } from "@twin.org/data-json-ld";
+import { UneceDataTypes } from "@twin.org/standards-unece";
+import * as CompiledValidators from "../compiled/validators.js";
 import { DocumentContexts } from "../models/documentContexts.js";
 import { DocumentTypes } from "../models/documentTypes.js";
 import DocumentSchema from "../schemas/Document.json" with { type: "json" };
@@ -17,33 +22,40 @@ export class DocumentManagementDataTypes {
 	 * Register all the data types.
 	 */
 	public static registerTypes(): void {
+		// Register the types referenced by the schemas, which are only registered once.
+		JsonLdDataTypes.registerTypes();
+		AttestationDataTypes.registerTypes();
+		BlobStorageDataTypes.registerTypes();
+		UneceDataTypes.registerTypes();
+
 		const types = [
 			{
 				type: DocumentTypes.Document,
-				schema: DocumentSchema
+				schema: DocumentSchema,
+				compiledValidator: CompiledValidators.CompiledDocument
 			},
 			{
 				type: DocumentTypes.DocumentAttestation,
-				schema: DocumentAttestationSchema
+				schema: DocumentAttestationSchema,
+				compiledValidator: CompiledValidators.CompiledDocumentAttestation
 			},
 			{
 				type: "DocumentBase",
-				schema: DocumentBaseSchema
+				schema: DocumentBaseSchema,
+				compiledValidator: CompiledValidators.CompiledDocumentBase
 			},
 			{
 				type: DocumentTypes.DocumentHydrated,
-				schema: DocumentHydratedSchema
+				schema: DocumentHydratedSchema,
+				compiledValidator: CompiledValidators.CompiledDocumentHydrated
 			},
 			{
 				type: DocumentTypes.DocumentList,
-				schema: DocumentListSchema
+				schema: DocumentListSchema,
+				compiledValidator: CompiledValidators.CompiledDocumentList
 			}
 		];
 
-		DataTypeHelper.registerTypes(
-			DocumentContexts.Namespace,
-			DocumentContexts.JsonLdContext,
-			types.map(t => ({ type: t.type, schema: t.schema }))
-		);
+		DataTypeHelper.registerTypes(DocumentContexts.Namespace, DocumentContexts.JsonLdContext, types);
 	}
 }

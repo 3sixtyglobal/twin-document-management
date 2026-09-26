@@ -439,12 +439,12 @@ describe("document-management-service", async () => {
 				includeAttestation: true
 			}
 		);
-		expect(documentId).toEqual("aig:01917849fb007c0c8c0c0c0c0c0c0c0c");
+		expect(documentId).toEqual("aig:01917849fb007a0a8a0a0a0a0a0a0a0a");
 
 		const nftStore = await nftEntityStorage.getStore();
 		expect(nftStore).toEqual([
 			{
-				id: "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+				id: "0909090909090909090909090909090909090909090909090909090909090909",
 				immutableMetadata: {
 					proof:
 						"eyJraWQiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyI2F0dGVzdGF0aW9uLWFzc2VydGlvbiIsInR5cCI6IkpXVCIsImFsZyI6IkVkRFNBIn0.eyJpc3MiOiJkaWQ6ZW50aXR5LXN0b3JhZ2U6MHgwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyMDIwMjAyIiwibmJmIjoxNzI0MzAwMDAwLCJzdWIiOiJkb2N1bWVudDpyd1FVcnpfYUx0dm1ZV2pJb2xMVTFQTkhEVFhkMjRSVVZKSDE0SkRlNUs4OjAiLCJ2YyI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSIsImh0dHBzOi8vc2NoZW1hLm9yZyIsImh0dHBzOi8vc2NoZW1hLnR3aW5kZXYub3JnL2RvY3VtZW50cy8iLCJodHRwczovL3NjaGVtYS50d2luZGV2Lm9yZy9jb21tb24vIl0sInR5cGUiOiJWZXJpZmlhYmxlQ3JlZGVudGlhbCIsImNyZWRlbnRpYWxTdWJqZWN0Ijp7InR5cGUiOiJEb2N1bWVudEF0dGVzdGF0aW9uIiwiZG9jdW1lbnRJZCI6InRlc3QtZG9jLWlkOmFhYSIsImRvY3VtZW50Q29kZSI6InVuZWNlOkRvY3VtZW50Q29kZUxpc3QjNzA1IiwiZG9jdW1lbnRSZXZpc2lvbiI6MCwiZGF0ZUNyZWF0ZWQiOiIyMDI0LTA4LTIyVDA0OjEzOjIwLjAwMFoiLCJpbnRlZ3JpdHkiOiJzaGEyNTYtcFpHbTFBdjBJRUJLQVJjeno3ZXhrTllzWmI4THphTXJWN0ozMmEyZkZHND0ifX19.IGBqgKp8OJeQHSgpWRdUGpgKOoHlvMqLDDcVpnqPnm9bSxkq9mHxsiV9MmHRBmzyGz1n9g0El9fGrwDVFeEQAw",
@@ -494,8 +494,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0075159515151515151515",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb0070109010101010101010",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -503,14 +503,14 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb0076068606060606060606",
+				id: "01917849fb0075058505050505050505",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
 				edges: [
 					{
-						id: "01917849fb007a1a9a1a1a1a1a1a1a1a",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb0074149414141414141414",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -518,7 +518,7 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				aliases: [
@@ -553,7 +553,7 @@ describe("document-management-service", async () => {
 							},
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGI=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -561,14 +561,14 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007d0d8d0d0d0d0d0d0d0d",
+						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					},
 					{
-						id: "01917849fb007e0e8e0e0e0e0e0e0e0e",
-						targetId: "aig:01917849fb0076068606060606060606",
+						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -785,8 +785,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0075159515151515151515",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb0070109010101010101010",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -794,7 +794,7 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb0076068606060606060606",
+				id: "01917849fb0075058505050505050505",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -812,8 +812,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007a1a9a1a1a1a1a1a1a1a",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb0074149414141414141414",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -821,7 +821,7 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				aliases: [
@@ -856,7 +856,7 @@ describe("document-management-service", async () => {
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGI=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -864,14 +864,14 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007d0d8d0d0d0d0d0d0d0d",
+						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					},
 					{
-						id: "01917849fb007e0e8e0e0e0e0e0e0e0e",
-						targetId: "aig:01917849fb0076068606060606060606",
+						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -915,8 +915,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb0075159515151515151515",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb0070109010101010101010",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -924,7 +924,7 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb0076068606060606060606",
+				id: "01917849fb0075058505050505050505",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -943,8 +943,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007a1a9a1a1a1a1a1a1a1a",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb0074149414141414141414",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
 						dateDeleted: "2024-08-22T04:13:20.000Z"
@@ -953,7 +953,7 @@ describe("document-management-service", async () => {
 				version: 2
 			},
 			{
-				id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+				id: "01917849fb007a0a8a0a0a0a0a0a0a0a",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -989,7 +989,7 @@ describe("document-management-service", async () => {
 								"blob:memory:a591a6d40bf420404a011733cfb7b190d62c65bf0bcda32b57b277d9ad9f146e",
 							dateCreated: "2024-08-22T04:13:20.000Z",
 							attestationId:
-								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGIwYjBiMGI=",
+								"attestation:nft:bmZ0OmVudGl0eS1zdG9yYWdlOjA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDkwOTA5MDk=",
 							organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 							userIdentity: TEST_USER_IDENTITY
 						}
@@ -997,21 +997,21 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007d0d8d0d0d0d0d0d0d0d",
+						id: "01917849fb007b0b8b0b0b0b0b0b0b0b",
 						targetId: "aig:01917849fb0071018101010101010101",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					},
 					{
-						id: "01917849fb007e0e8e0e0e0e0e0e0e0e",
-						targetId: "aig:01917849fb0076068606060606060606",
+						id: "01917849fb007c0c8c0c0c0c0c0c0c0c",
+						targetId: "aig:01917849fb0075058505050505050505",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"],
 						dateDeleted: "2024-08-22T04:13:20.000Z"
 					},
 					{
-						id: "01917849fb007424a424242424242424",
-						targetId: "aig:01917849fb007f1f9f1f1f1f1f1f1f1f",
+						id: "01917849fb007c1c9c1c1c1c1c1c1c1c",
+						targetId: "aig:01917849fb0078189818181818181818",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
@@ -1019,7 +1019,7 @@ describe("document-management-service", async () => {
 				version: 1
 			},
 			{
-				id: "01917849fb007f1f9f1f1f1f1f1f1f1f",
+				id: "01917849fb0078189818181818181818",
 				organizationIdentity: TEST_ORGANIZATION_IDENTITY,
 				dateCreated: "2024-08-22T04:13:20.000Z",
 				dateModified: "2024-08-22T04:13:20.000Z",
@@ -1032,8 +1032,8 @@ describe("document-management-service", async () => {
 				],
 				edges: [
 					{
-						id: "01917849fb007828a828282828282828",
-						targetId: "aig:01917849fb007c0c8c0c0c0c0c0c0c0c",
+						id: "01917849fb007020a020202020202020",
+						targetId: "aig:01917849fb007a0a8a0a0a0a0a0a0a0a",
 						dateCreated: "2024-08-22T04:13:20.000Z",
 						edgeRelationships: ["document"]
 					}
