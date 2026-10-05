@@ -4,7 +4,7 @@
 	"description": "Service-side document lifecycle operations and REST route generation for server integrations.",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/iotaledger/twin-document-management.git",
+		"url": "git+https://github.com/3sixtyglobal/twin-document-management.git",
 		"directory": "packages/document-management-service"
 	},
 	"author": "martyn.janes@iota.org",
@@ -123,7 +123,7 @@
 		"business-logic"
 	],
 	"bugs": {
-		"url": "git+https://github.com/iotaledger/twin-document-management/issues"
+		"url": "git+https://github.com/3sixtyglobal/twin-document-management/issues"
 	},
 	"homepage": "https://twindev.org"
 }
