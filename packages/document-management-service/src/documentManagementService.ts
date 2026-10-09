@@ -6,8 +6,8 @@ import {
 	type HealthApplicationCallback,
 	type IHealth,
 	type IHealthProviderComponent
-} from "@twin.org/api-models";
-import type { IAttestationComponent } from "@twin.org/attestation-models";
+} from "@3sixty/api-models";
+import type { IAttestationComponent } from "@3sixty/attestation-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes,
@@ -17,10 +17,10 @@ import {
 	type IAuditableItemGraphResource,
 	type IAuditableItemGraphVertex,
 	type IAuditableItemGraphVertexList
-} from "@twin.org/auditable-item-graph-models";
-import type { IBlobStorageComponent } from "@twin.org/blob-storage-models";
-import { BlobStorageContexts } from "@twin.org/blob-storage-models";
-import { ContextIdKeys, ContextIdStore } from "@twin.org/context";
+} from "@3sixty/auditable-item-graph-models";
+import type { IBlobStorageComponent } from "@3sixty/blob-storage-models";
+import { BlobStorageContexts } from "@3sixty/blob-storage-models";
+import { ContextIdKeys, ContextIdStore } from "@3sixty/context";
 import {
 	BaseError,
 	Coerce,
@@ -35,10 +35,10 @@ import {
 	ObjectHelper,
 	RandomHelper,
 	Urn
-} from "@twin.org/core";
-import { IntegrityAlgorithm, IntegrityHelper, Sha256 } from "@twin.org/crypto";
-import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { IDataProcessingComponent } from "@twin.org/data-processing-models";
+} from "@3sixty/core";
+import { IntegrityAlgorithm, IntegrityHelper, Sha256 } from "@3sixty/crypto";
+import { JsonLdHelper, JsonLdProcessor, type IJsonLdNodeObject } from "@3sixty/data-json-ld";
+import type { IDataProcessingComponent } from "@3sixty/data-processing-models";
 import {
 	DocumentContexts,
 	DocumentManagementMetricIds,
@@ -51,16 +51,16 @@ import {
 	type IDocumentList,
 	type IDocumentManagementComponent,
 	type IDocumentManagementEdgeEntry
-} from "@twin.org/document-management-models";
-import { nameof } from "@twin.org/nameof";
+} from "@3sixty/document-management-models";
+import { nameof } from "@3sixty/nameof";
 import {
 	SchemaOrgContexts,
 	SchemaOrgDataTypes,
 	SchemaOrgTypes
-} from "@twin.org/standards-schema-org";
-import { UneceDocumentCodeList } from "@twin.org/standards-unece";
-import { MetricHelper, type ITelemetryComponent } from "@twin.org/telemetry-models";
-import { MimeTypes } from "@twin.org/web";
+} from "@3sixty/standards-schema-org";
+import { UneceDocumentCodeList } from "@3sixty/standards-unece";
+import { MetricHelper, type ITelemetryComponent } from "@3sixty/telemetry-models";
+import { MimeTypes } from "@3sixty/web";
 import type { IDocumentManagementServiceConstructorOptions } from "./models/IDocumentManagementStorageServiceConstructorOptions.js";
 
 /**

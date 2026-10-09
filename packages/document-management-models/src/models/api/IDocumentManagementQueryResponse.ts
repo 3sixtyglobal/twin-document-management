@@ -1,7 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IAuditableItemGraphVertexList } from "@twin.org/auditable-item-graph-models";
-import type { HeaderTypes, MimeTypes } from "@twin.org/web";
+import type { IAuditableItemGraphVertexList } from "@3sixty/auditable-item-graph-models";
+import type { HeaderTypes, MimeTypes } from "@3sixty/web";
 
 /**
  * Response to query the documents from an auditable item graph vertex.

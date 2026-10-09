@@ -1,5 +1,5 @@
 {
-	"baseUrl": "https://schema.twindev.org/documents/",
+	"baseUrl": "https://schema.3sixty.global/documents/",
 	"types": [
 		"./src/models/IDocument.ts",
 		"./src/models/IDocumentAttestation.ts",
@@ -8,9 +8,9 @@
 		"./src/models/IDocumentList.ts"
 	],
 	"externalReferences": {
-		"JsonLd(.*)": "https://schema.twindev.org/json-ld/JsonLd$1",
-		"Attestation(.*)": "https://schema.twindev.org/attestation/Attestation$1",
-		"Blob(.*)": "https://schema.twindev.org/blob-storage/Blob$1",
-		"Unece(.*)": "https://schema.twindev.org/unece/Unece$1"
+		"JsonLd(.*)": "https://schema.3sixty.global/json-ld/JsonLd$1",
+		"Attestation(.*)": "https://schema.3sixty.global/attestation/Attestation$1",
+		"Blob(.*)": "https://schema.3sixty.global/blob-storage/Blob$1",
+		"Unece(.*)": "https://schema.3sixty.global/unece/Unece$1"
 	}
 }

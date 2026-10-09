@@ -9,32 +9,32 @@ export const DocumentContexts = {
 	/**
 	 * The canonical RDF namespace URI for Document Management.
 	 */
-	Namespace: "https://schema.twindev.org/documents/",
+	Namespace: "https://schema.3sixty.global/documents/",
 
 	/**
 	 * The value to use in context for Document Management.
 	 */
-	Context: "https://schema.twindev.org/documents/",
+	Context: "https://schema.3sixty.global/documents/",
 
 	/**
 	 * The JSON-LD Context URL for Document Management.
 	 */
-	JsonLdContext: "https://schema.twindev.org/documents/types.jsonld",
+	JsonLdContext: "https://schema.3sixty.global/documents/types.jsonld",
 
 	/**
 	 * The canonical RDF namespace URI for TWIN Common.
 	 */
-	NamespaceCommon: "https://schema.twindev.org/common/",
+	NamespaceCommon: "https://schema.3sixty.global/common/",
 
 	/**
 	 * The value to use in JSON-LD context for TWIN Common.
 	 */
-	ContextCommon: "https://schema.twindev.org/common/",
+	ContextCommon: "https://schema.3sixty.global/common/",
 
 	/**
 	 * The JSON-LD Context URL for TWIN Common.
 	 */
-	JsonLdContextCommon: "https://schema.twindev.org/common/types.jsonld"
+	JsonLdContextCommon: "https://schema.3sixty.global/common/types.jsonld"
 } as const;
 
 /**

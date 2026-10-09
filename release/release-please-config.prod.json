@@ -8,6 +8,7 @@
 	"release-type": "node",
 	"initial-version": "0.0.1",
 	"versioning": "default",
+	"last-release-sha": "19c04364f8cad1645f5cc97d0132c401f7b79b23",
 	"packages": {
 		"packages/document-management-models": {
 			"package-name": "document-management-models",

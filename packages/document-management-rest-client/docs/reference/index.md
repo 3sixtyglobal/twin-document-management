@@ -1,4 +1,4 @@
-# @twin.org/document-management-rest-client
+# @3sixty/document-management-rest-client
 
 ## Classes
 

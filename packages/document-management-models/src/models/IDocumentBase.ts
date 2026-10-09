@@ -1,7 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IJsonLdNodeObject } from "@twin.org/data-json-ld";
-import type { UneceDocumentCodeList } from "@twin.org/standards-unece";
+import type { IJsonLdNodeObject } from "@3sixty/data-json-ld";
+import type { UneceDocumentCodeList } from "@3sixty/standards-unece";
 
 /**
  * Interface describing a document base.

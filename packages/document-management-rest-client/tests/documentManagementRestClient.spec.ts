@@ -3,21 +3,21 @@
 import type {
 	IAuditableItemGraphVertex,
 	IAuditableItemGraphVertexList
-} from "@twin.org/auditable-item-graph-models";
+} from "@3sixty/auditable-item-graph-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes
-} from "@twin.org/auditable-item-graph-models";
-import { GuardError } from "@twin.org/core";
+} from "@3sixty/auditable-item-graph-models";
+import { GuardError } from "@3sixty/core";
 import type {
 	IDocumentBase,
 	IDocumentHydrated,
 	IDocumentList
-} from "@twin.org/document-management-models";
-import { DocumentContexts, DocumentTypes } from "@twin.org/document-management-models";
-import { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
-import { UneceDocumentCodeList } from "@twin.org/standards-unece";
-import { HttpMethod } from "@twin.org/web";
+} from "@3sixty/document-management-models";
+import { DocumentContexts, DocumentTypes } from "@3sixty/document-management-models";
+import { SchemaOrgContexts, SchemaOrgTypes } from "@3sixty/standards-schema-org";
+import { UneceDocumentCodeList } from "@3sixty/standards-unece";
+import { HttpMethod } from "@3sixty/web";
 import { DocumentManagementRestClient } from "../src/documentManagementRestClient.js";
 import {
 	createdResponse,

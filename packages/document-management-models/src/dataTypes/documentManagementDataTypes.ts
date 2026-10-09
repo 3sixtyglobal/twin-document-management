@@ -1,10 +1,10 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { AttestationDataTypes } from "@twin.org/attestation-models";
-import { BlobStorageDataTypes } from "@twin.org/blob-storage-models";
-import { DataTypeHelper } from "@twin.org/data-core";
-import { JsonLdDataTypes } from "@twin.org/data-json-ld";
-import { UneceDataTypes } from "@twin.org/standards-unece";
+import { AttestationDataTypes } from "@3sixty/attestation-models";
+import { BlobStorageDataTypes } from "@3sixty/blob-storage-models";
+import { DataTypeHelper } from "@3sixty/data-core";
+import { JsonLdDataTypes } from "@3sixty/data-json-ld";
+import { UneceDataTypes } from "@3sixty/standards-unece";
 import * as CompiledValidators from "../compiled/validators.js";
 import { DocumentContexts } from "../models/documentContexts.js";
 import { DocumentTypes } from "../models/documentTypes.js";

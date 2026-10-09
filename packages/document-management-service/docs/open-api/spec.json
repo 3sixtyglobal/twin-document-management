@@ -1,8 +1,8 @@
 {
 	"openapi": "3.1.1",
 	"info": {
-		"title": "TWIN - Test Endpoints",
-		"description": "REST API for TWIN - Test Endpoints.",
+		"title": "3Sixty - Test Endpoints",
+		"description": "REST API for 3Sixty - Test Endpoints.",
 		"version": "1.0.0",
 		"license": {
 			"name": "Apache 2.0 License",
@@ -191,14 +191,14 @@
 						"content": {
 							"application/json": {
 								"schema": {
-									"$ref": "https://schema.twindev.org/aig/AuditableItemGraphVertexList"
+									"$ref": "https://schema.3sixty.global/aig/AuditableItemGraphVertexList"
 								},
 								"examples": {
 									"DocumentManagementQueryResponseExample": {
 										"value": {
 											"@context": [
 												"https://schema.org",
-												"https://schema.twindev.org/aig/"
+												"https://schema.3sixty.global/aig/"
 											],
 											"type": [
 												"ItemList",
@@ -207,8 +207,8 @@
 											"itemListElement": [
 												{
 													"@context": [
-														"https://schema.twindev.org/aig/",
-														"https://schema.twindev.org/common/"
+														"https://schema.3sixty.global/aig/",
+														"https://schema.3sixty.global/common/"
 													],
 													"id": "aig:c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7",
 													"type": "AuditableItemGraphVertex",
@@ -216,7 +216,7 @@
 													"aliases": [
 														{
 															"@context": [
-																"https://schema.twindev.org/aig/"
+																"https://schema.3sixty.global/aig/"
 															],
 															"id": "test-id-0",
 															"type": "AuditableItemGraphAlias",
@@ -225,13 +225,13 @@
 													],
 													"resources": [
 														{
-															"@context": "https://schema.twindev.org/aig/",
+															"@context": "https://schema.3sixty.global/aig/",
 															"type": "AuditableItemGraphResource",
 															"dateCreated": "2024-08-22T04:13:20.000Z",
 															"resourceObject": {
 																"@context": [
-																	"https://schema.twindev.org/documents/",
-																	"https://schema.twindev.org/common/",
+																	"https://schema.3sixty.global/documents/",
+																	"https://schema.3sixty.global/common/",
 																	"https://schema.org"
 																],
 																"type": "Document",
@@ -560,16 +560,16 @@
 										"value": {
 											"@context": [
 												"https://schema.org",
-												"https://schema.twindev.org/documents/",
-												"https://schema.twindev.org/common/"
+												"https://schema.3sixty.global/documents/",
+												"https://schema.3sixty.global/common/"
 											],
 											"type": "ItemList",
 											"itemListElement": [
 												{
 													"@context": [
 														"https://schema.org",
-														"https://schema.twindev.org/documents/",
-														"https://schema.twindev.org/common/"
+														"https://schema.3sixty.global/documents/",
+														"https://schema.3sixty.global/common/"
 													],
 													"type": "Document",
 													"id": "2721000:0",
@@ -602,16 +602,16 @@
 										"value": {
 											"@context": [
 												"https://schema.org",
-												"https://schema.twindev.org/documents/",
-												"https://schema.twindev.org/common/"
+												"https://schema.3sixty.global/documents/",
+												"https://schema.3sixty.global/common/"
 											],
 											"type": "ItemList",
 											"itemListElement": [
 												{
 													"@context": [
 														"https://schema.org",
-														"https://schema.twindev.org/documents/",
-														"https://schema.twindev.org/common/"
+														"https://schema.3sixty.global/documents/",
+														"https://schema.3sixty.global/common/"
 													],
 													"type": "Document",
 													"id": "2721000:0",
@@ -767,8 +767,8 @@
 										"value": {
 											"@context": [
 												"https://schema.org",
-												"https://schema.twindev.org/documents/",
-												"https://schema.twindev.org/common/"
+												"https://schema.3sixty.global/documents/",
+												"https://schema.3sixty.global/common/"
 											],
 											"type": "Document",
 											"id": "2721000:0",
@@ -799,8 +799,8 @@
 										"value": {
 											"@context": [
 												"https://schema.org",
-												"https://schema.twindev.org/documents/",
-												"https://schema.twindev.org/common/"
+												"https://schema.3sixty.global/documents/",
+												"https://schema.3sixty.global/common/"
 											],
 											"type": "Document",
 											"id": "2721000:0",
@@ -1038,14 +1038,14 @@
 								"const": "https://schema.org"
 							},
 							{
-								"const": "https://schema.twindev.org/documents/"
+								"const": "https://schema.3sixty.global/documents/"
 							},
 							{
-								"const": "https://schema.twindev.org/common/"
+								"const": "https://schema.3sixty.global/common/"
 							}
 						],
 						"items": {
-							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
+							"$ref": "https://schema.3sixty.global/json-ld/JsonLdContextDefinitionElement"
 						},
 						"minItems": 3,
 						"description": "JSON-LD Context."
@@ -1123,10 +1123,10 @@
 						"description": "The format of the document id."
 					},
 					"documentCode": {
-						"$ref": "https://schema.twindev.org/unece/UneceDocumentCodeList"
+						"$ref": "https://schema.3sixty.global/unece/UneceDocumentCodeList"
 					},
 					"annotationObject": {
-						"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+						"$ref": "https://schema.3sixty.global/json-ld/JsonLdNodeObject"
 					}
 				},
 				"required": [
@@ -1139,13 +1139,13 @@
 				"type": "object",
 				"properties": {
 					"blobStorageEntry": {
-						"$ref": "https://schema.twindev.org/blob-storage/BlobStorageEntry"
+						"$ref": "https://schema.3sixty.global/blob-storage/BlobStorageEntry"
 					},
 					"extractedData": {
 						"description": "The data extracted from the document using data extraction services."
 					},
 					"attestationInformation": {
-						"$ref": "https://schema.twindev.org/attestation/AttestationInformation"
+						"$ref": "https://schema.3sixty.global/attestation/AttestationInformation"
 					}
 				},
 				"allOf": [
@@ -1165,14 +1165,14 @@
 								"const": "https://schema.org"
 							},
 							{
-								"const": "https://schema.twindev.org/documents/"
+								"const": "https://schema.3sixty.global/documents/"
 							},
 							{
-								"const": "https://schema.twindev.org/common/"
+								"const": "https://schema.3sixty.global/common/"
 							}
 						],
 						"items": {
-							"$ref": "https://schema.twindev.org/json-ld/JsonLdContextDefinitionElement"
+							"$ref": "https://schema.3sixty.global/json-ld/JsonLdContextDefinitionElement"
 						},
 						"minItems": 3,
 						"description": "JSON-LD Context."
@@ -1231,7 +1231,7 @@
 								"description": "Flag to add the document id as an alias to the aig vertex, defaults to true."
 							},
 							"aliasAnnotationObject": {
-								"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+								"$ref": "https://schema.3sixty.global/json-ld/JsonLdNodeObject"
 							}
 						},
 						"description": "Additional options for the create operation."
@@ -1256,7 +1256,7 @@
 						"description": "Whether to add the document id as an alias on the connected vertex, defaults to false."
 					},
 					"aliasAnnotationObject": {
-						"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+						"$ref": "https://schema.3sixty.global/json-ld/JsonLdNodeObject"
 					}
 				},
 				"required": [
@@ -1275,10 +1275,10 @@
 								"description": "The format of the document id."
 							},
 							"documentCode": {
-								"$ref": "https://schema.twindev.org/unece/UneceDocumentCodeList"
+								"$ref": "https://schema.3sixty.global/unece/UneceDocumentCodeList"
 							},
 							"annotationObject": {
-								"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+								"$ref": "https://schema.3sixty.global/json-ld/JsonLdNodeObject"
 							}
 						}
 					},
@@ -1318,7 +1318,7 @@
 								"description": "Set to true to add the document id as an alias on the aig vertex, or false to remove it. Omit to leave alias state unchanged."
 							},
 							"aliasAnnotationObject": {
-								"$ref": "https://schema.twindev.org/json-ld/JsonLdNodeObject"
+								"$ref": "https://schema.3sixty.global/json-ld/JsonLdNodeObject"
 							}
 						},
 						"description": "Additional options for the update operation."

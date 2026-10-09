@@ -10,6 +10,7 @@
 	"versioning": "prerelease",
 	"prerelease": true,
 	"prerelease-type": "next",
+	"last-release-sha": "b884c20596f801795257e885c6124c6294bbcd7a",
 	"packages": {
 		"packages/document-management-models": {
 			"package-name": "document-management-models",

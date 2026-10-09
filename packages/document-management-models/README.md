@@ -1,11 +1,11 @@
-# TWIN Document Management Models
+# 3Sixty Document Management Models
 
 This package defines the core document data structures, JSON-LD contexts, and schema-aligned model contracts used across the repository. It provides a single source of truth for payload shape and semantic consistency between services and client integrations.
 
 ## Installation
 
 ```shell
-npm install @twin.org/document-management-models
+npm install @3sixty/document-management-models
 ```
 
 ## Examples

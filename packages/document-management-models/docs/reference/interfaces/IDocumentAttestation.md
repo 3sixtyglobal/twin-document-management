@@ -6,7 +6,7 @@ Interface describing a document attestation.
 
 ### @context {#context}
 
-> **@context**: \[`"https://schema.org"`, `"https://schema.twindev.org/documents/"`, `"https://schema.twindev.org/common/"`\]
+> **@context**: \[`"https://schema.org"`, `"https://schema.3sixty.global/documents/"`, `"https://schema.3sixty.global/common/"`\]
 
 JSON-LD Context.
 

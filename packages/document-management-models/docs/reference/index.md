@@ -1,4 +1,4 @@
-# @twin.org/document-management-models
+# @3sixty/document-management-models
 
 ## Classes
 

@@ -1,4 +1,4 @@
-# TWIN Document Management
+# 3Sixty Document Management
 
 This repository provides a modular set of components for storing, revising, querying, and retrieving business documents through auditable graph records and related blob content. The packages are designed to work together so services, clients, and shared schemas follow the same contract boundaries and data shapes.
 

@@ -1,7 +1,7 @@
 // Copyright 2024 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import type { IAttestationInformation } from "@twin.org/attestation-models";
-import type { IBlobStorageEntry } from "@twin.org/blob-storage-models";
+import type { IAttestationInformation } from "@3sixty/attestation-models";
+import type { IBlobStorageEntry } from "@3sixty/blob-storage-models";
 import type { IDocument } from "./IDocument.js";
 
 /**

@@ -5,9 +5,9 @@ Use these snippets to wire the service into existing components and handle a ful
 ## DocumentManagementService
 
 ```typescript
-import { ComponentFactory, Converter } from '@twin.org/core';
-import { DocumentManagementService } from '@twin.org/document-management-service';
-import { UneceDocumentCodeList } from '@twin.org/standards-unece';
+import { ComponentFactory, Converter } from '@3sixty/core';
+import { DocumentManagementService } from '@3sixty/document-management-service';
+import { UneceDocumentCodeList } from '@3sixty/standards-unece';
 
 // Register concrete components before constructing the service.
 ComponentFactory.register('auditable-item-graph', () => auditableItemGraphComponent);

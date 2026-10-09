@@ -1,81 +1,81 @@
 // Copyright 2026 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { TenantIdContextIdHandler } from "@twin.org/api-tenant-processor";
-import { NftAttestationConnector } from "@twin.org/attestation-connector-nft";
-import { AttestationConnectorFactory } from "@twin.org/attestation-models";
-import { AttestationService } from "@twin.org/attestation-service";
+import { TenantIdContextIdHandler } from "@3sixty/api-tenant-processor";
+import { NftAttestationConnector } from "@3sixty/attestation-connector-nft";
+import { AttestationConnectorFactory } from "@3sixty/attestation-models";
+import { AttestationService } from "@3sixty/attestation-service";
 import {
 	AuditableItemGraphService,
 	initSchema as initSchemaAuditableItemGraph,
 	type AuditableItemGraphChangeset,
 	type AuditableItemGraphVertex,
 	type AuditableItemGraphVertexIndex
-} from "@twin.org/auditable-item-graph-service";
+} from "@3sixty/auditable-item-graph-service";
 import {
 	type BackgroundTask,
 	BackgroundTaskService,
 	initSchema as initSchemaBackgroundTask
-} from "@twin.org/background-task-service";
-import { MemoryBlobStorageConnector } from "@twin.org/blob-storage-connector-memory";
-import { BlobStorageConnectorFactory } from "@twin.org/blob-storage-models";
+} from "@3sixty/background-task-service";
+import { MemoryBlobStorageConnector } from "@3sixty/blob-storage-connector-memory";
+import { BlobStorageConnectorFactory } from "@3sixty/blob-storage-models";
 import {
 	type BlobStorageEntry,
 	BlobStorageService,
 	initSchema as initSchemaBlobStorage
-} from "@twin.org/blob-storage-service";
+} from "@3sixty/blob-storage-service";
 import {
 	ContextIdHandlerFactory,
 	ContextIdKeys,
 	ContextIdStore,
 	type IContextIds
-} from "@twin.org/context";
-import { AlreadyExistsError, ComponentFactory, Converter, Is, RandomHelper } from "@twin.org/core";
-import { JsonConverterConnector } from "@twin.org/data-processing-converters";
-import { JsonPathExtractorConnector } from "@twin.org/data-processing-extractors";
+} from "@3sixty/context";
+import { AlreadyExistsError, ComponentFactory, Converter, Is, RandomHelper } from "@3sixty/core";
+import { JsonConverterConnector } from "@3sixty/data-processing-converters";
+import { JsonPathExtractorConnector } from "@3sixty/data-processing-extractors";
 import {
 	DataConverterConnectorFactory,
 	DataExtractorConnectorFactory
-} from "@twin.org/data-processing-models";
+} from "@3sixty/data-processing-models";
 import {
 	DataProcessingService,
 	type ExtractionRuleGroup,
 	initSchema as initSchemaDataProcessing
-} from "@twin.org/data-processing-service";
-import { DocumentManagementMetricIds } from "@twin.org/document-management-models";
-import { MemoryEntityStorageConnector } from "@twin.org/entity-storage-connector-memory";
-import { EntityStorageConnectorFactory } from "@twin.org/entity-storage-models";
-import { DidContextIdHandler } from "@twin.org/identity-models";
+} from "@3sixty/data-processing-service";
+import { DocumentManagementMetricIds } from "@3sixty/document-management-models";
+import { MemoryEntityStorageConnector } from "@3sixty/entity-storage-connector-memory";
+import { EntityStorageConnectorFactory } from "@3sixty/entity-storage-models";
+import { DidContextIdHandler } from "@3sixty/identity-models";
 import {
 	type ImmutableProof,
 	ImmutableProofService,
 	initSchema as initSchemaImmutableProof
-} from "@twin.org/immutable-proof-service";
-import { ModuleHelper } from "@twin.org/modules";
-import { nameof } from "@twin.org/nameof";
+} from "@3sixty/immutable-proof-service";
+import { ModuleHelper } from "@3sixty/modules";
+import { nameof } from "@3sixty/nameof";
 import {
 	EntityStorageNftConnector,
 	initSchema as initSchemaNft,
 	type Nft
-} from "@twin.org/nft-connector-entity-storage";
-import { NftConnectorFactory } from "@twin.org/nft-models";
+} from "@3sixty/nft-connector-entity-storage";
+import { NftConnectorFactory } from "@3sixty/nft-models";
 import {
 	EntityStorageNotarizationConnector,
 	initSchema as initSchemaNotarization,
 	type Notarization
-} from "@twin.org/notarization-connector-entity-storage";
-import { NotarizationConnectorFactory } from "@twin.org/notarization-models";
-import { UneceDocumentCodeList } from "@twin.org/standards-unece";
+} from "@3sixty/notarization-connector-entity-storage";
+import { NotarizationConnectorFactory } from "@3sixty/notarization-models";
+import { UneceDocumentCodeList } from "@3sixty/standards-unece";
 import {
 	MetricType,
 	type ITelemetryComponent,
 	type ITelemetryMetric
-} from "@twin.org/telemetry-models";
+} from "@3sixty/telemetry-models";
 import {
 	EntityStorageVerifiableStorageConnector,
 	initSchema as initSchemaVerifiableStorage,
 	type VerifiableItem
-} from "@twin.org/verifiable-storage-connector-entity-storage";
-import { VerifiableStorageConnectorFactory } from "@twin.org/verifiable-storage-models";
+} from "@3sixty/verifiable-storage-connector-entity-storage";
+import { VerifiableStorageConnectorFactory } from "@3sixty/verifiable-storage-models";
 import {
 	setupTestEnv,
 	TEST_NODE_IDENTITY,

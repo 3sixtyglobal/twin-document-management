@@ -11,13 +11,13 @@ import {
 	type INotFoundResponse,
 	type IRestRoute,
 	type ITag
-} from "@twin.org/api-models";
+} from "@3sixty/api-models";
 import {
 	AuditableItemGraphContexts,
 	AuditableItemGraphTypes
-} from "@twin.org/auditable-item-graph-models";
-import { ContextIdStore } from "@twin.org/context";
-import { Coerce, ComponentFactory, Converter, Guards, Is } from "@twin.org/core";
+} from "@3sixty/auditable-item-graph-models";
+import { ContextIdStore } from "@3sixty/context";
+import { Coerce, ComponentFactory, Converter, Guards, Is } from "@3sixty/core";
 import {
 	DocumentContexts,
 	DocumentTypes,
@@ -31,11 +31,11 @@ import {
 	type IDocumentManagementQueryResponse,
 	type IDocumentManagementRemoveRequest,
 	type IDocumentManagementUpdatePartialRequest
-} from "@twin.org/document-management-models";
-import { nameof } from "@twin.org/nameof";
-import { SchemaOrgContexts, SchemaOrgTypes } from "@twin.org/standards-schema-org";
-import { UneceDocumentCodeList } from "@twin.org/standards-unece";
-import { HeaderTypes, HttpStatusCode, type IHttpHeaders, MimeTypes } from "@twin.org/web";
+} from "@3sixty/document-management-models";
+import { nameof } from "@3sixty/nameof";
+import { SchemaOrgContexts, SchemaOrgTypes } from "@3sixty/standards-schema-org";
+import { UneceDocumentCodeList } from "@3sixty/standards-unece";
+import { HeaderTypes, HttpStatusCode, type IHttpHeaders, MimeTypes } from "@3sixty/web";
 
 /**
  * The source used when communicating about these routes.
@@ -490,8 +490,8 @@ export function generateRestRoutesDocumentManagement(
 												dateCreated: "2024-08-22T04:13:20.000Z",
 												resourceObject: {
 													"@context": [
-														"https://schema.twindev.org/documents/",
-														"https://schema.twindev.org/common/",
+														"https://schema.3sixty.global/documents/",
+														"https://schema.3sixty.global/common/",
 														"https://schema.org"
 													],
 													type: "Document",

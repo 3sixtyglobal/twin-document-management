@@ -5,9 +5,9 @@ These examples walk through common client calls for creating, updating, reading,
 ## DocumentManagementRestClient
 
 ```typescript
-import { DocumentManagementRestClient } from '@twin.org/document-management-rest-client';
-import { Converter } from '@twin.org/core';
-import { UneceDocumentCodeList } from '@twin.org/standards-unece';
+import { DocumentManagementRestClient } from '@3sixty/document-management-rest-client';
+import { Converter } from '@3sixty/core';
+import { UneceDocumentCodeList } from '@3sixty/standards-unece';
 
 const client = new DocumentManagementRestClient({
   endpoint: 'http://localhost:3000'

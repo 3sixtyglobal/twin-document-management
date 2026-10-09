@@ -1,10 +1,10 @@
 {
-	"name": "@twin.org/document-management-models",
-	"version": "0.10.1-next.2",
+	"name": "@3sixty/document-management-models",
+	"version": "0.20.0-next.0",
 	"description": "Shared data models, schemas, and context definitions for document lifecycle records.",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/3sixtyglobal/twin-document-management.git",
+		"url": "git+https://github.com/3sixtyglobal/document-management.git",
 		"directory": "packages/document-management-models"
 	},
 	"author": "martyn.janes@iota.org",
@@ -31,24 +31,24 @@
 		"dist:no-test": "pnpm run clean && pnpm run build && concurrently -g -n locales,types \"pnpm run validate-locales\" \"pnpm run test:build\""
 	},
 	"dependencies": {
-		"@twin.org/attestation-models": "next",
-		"@twin.org/auditable-item-graph-models": "next",
-		"@twin.org/blob-storage-models": "next",
-		"@twin.org/core": "next",
-		"@twin.org/data-core": "next",
-		"@twin.org/data-json-ld": "next",
-		"@twin.org/nameof": "next",
-		"@twin.org/standards-schema-org": "next",
-		"@twin.org/standards-unece": "next",
-		"@twin.org/telemetry-models": "next",
-		"@twin.org/web": "next"
+		"@3sixty/attestation-models": "next",
+		"@3sixty/auditable-item-graph-models": "next",
+		"@3sixty/blob-storage-models": "next",
+		"@3sixty/core": "next",
+		"@3sixty/data-core": "next",
+		"@3sixty/data-json-ld": "next",
+		"@3sixty/nameof": "next",
+		"@3sixty/standards-schema-org": "next",
+		"@3sixty/standards-unece": "next",
+		"@3sixty/telemetry-models": "next",
+		"@3sixty/web": "next"
 	},
 	"devDependencies": {
-		"@twin.org/nameof-transformer": "next",
-		"@twin.org/nameof-vitest-plugin": "next",
-		"@twin.org/ts-to-jsonld-context": "next",
-		"@twin.org/ts-to-schema": "next",
-		"@twin.org/validate-locales": "next",
+		"@3sixty/nameof-transformer": "next",
+		"@3sixty/nameof-vitest-plugin": "next",
+		"@3sixty/ts-to-jsonld-context": "next",
+		"@3sixty/ts-to-schema": "next",
+		"@3sixty/validate-locales": "next",
 		"@vitest/coverage-v8": "5.0.1",
 		"concurrently": "10.0.5",
 		"copyfiles": "2.4.1",
@@ -92,7 +92,7 @@
 		"schemas"
 	],
 	"bugs": {
-		"url": "git+https://github.com/3sixtyglobal/twin-document-management/issues"
+		"url": "git+https://github.com/3sixtyglobal/document-management/issues"
 	},
-	"homepage": "https://twindev.org"
+	"homepage": "https://3sixty.global"
 }

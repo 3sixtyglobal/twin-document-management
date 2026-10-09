@@ -1,9 +1,9 @@
 {
 	"prefix": "twin-documents",
-	"contextUrl": "https://schema.twindev.org/documents/",
+	"contextUrl": "https://schema.3sixty.global/documents/",
 	"additionalContextUrls": {
-		"twin-common": "https://schema.twindev.org/common/",
-		"twin-immutable-proof": "https://schema.twindev.org/immutable-proof/",
+		"twin-common": "https://schema.3sixty.global/common/",
+		"twin-immutable-proof": "https://schema.3sixty.global/immutable-proof/",
 		"schema": "http://schema.org/"
 	},
 	"fixedMappings": {

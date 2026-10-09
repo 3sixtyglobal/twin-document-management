@@ -1,4 +1,4 @@
-# @twin.org/document-management-service
+# @3sixty/document-management-service
 
 ## Classes
 

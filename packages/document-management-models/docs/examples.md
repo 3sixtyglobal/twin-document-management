@@ -5,12 +5,12 @@ These snippets show typical setup steps for registering data types and creating 
 ## DocumentManagementDataTypes
 
 ```typescript
-import { DataTypeHandlerFactory } from '@twin.org/data-core';
+import { DataTypeHandlerFactory } from '@3sixty/data-core';
 import {
   DocumentContexts,
   DocumentManagementDataTypes,
   DocumentTypes
-} from '@twin.org/document-management-models';
+} from '@3sixty/document-management-models';
 
 DocumentManagementDataTypes.registerTypes();
 
@@ -18,6 +18,6 @@ const handler = DataTypeHandlerFactory.get(
   `${DocumentContexts.Namespace}${DocumentTypes.Document}`
 );
 
-console.log(handler.namespace); // https://schema.twindev.org/document-management/
+console.log(handler.namespace); // https://schema.3sixty.global/document-management/
 console.log(handler.type); // Document
 ```

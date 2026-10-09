@@ -1,11 +1,11 @@
-# TWIN Document Management Service
+# 3Sixty Document Management Service
 
 This package delivers the service-side implementation for document lifecycle operations, including create, update, revision access, and search behaviour. It also exposes REST route generation so APIs can present a consistent contract for document handling.
 
 ## Installation
 
 ```shell
-npm install @twin.org/document-management-service
+npm install @3sixty/document-management-service
 ```
 
 ## Examples

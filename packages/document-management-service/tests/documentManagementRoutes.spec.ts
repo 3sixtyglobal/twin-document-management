@@ -1,6 +1,6 @@
 // Copyright 2026 IOTA Stiftung.
 // SPDX-License-Identifier: Apache-2.0.
-import { HttpBodyLimit, type IRestRoute } from "@twin.org/api-models";
+import { HttpBodyLimit, type IRestRoute } from "@3sixty/api-models";
 import { generateRestRoutesDocumentManagement } from "../src/documentManagementRoutes.js";
 
 /**

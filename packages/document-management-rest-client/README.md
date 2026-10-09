@@ -1,11 +1,11 @@
-# TWIN Document Management REST Client
+# 3Sixty Document Management REST Client
 
 This package provides a client for invoking document lifecycle endpoints over HTTP with a stable, contract-led API. It is intended for consumers that need to create, update, fetch revisions, remove revisions, and query document records from remote services.
 
 ## Installation
 
 ```shell
-npm install @twin.org/document-management-rest-client
+npm install @3sixty/document-management-rest-client
 ```
 
 ## Examples
